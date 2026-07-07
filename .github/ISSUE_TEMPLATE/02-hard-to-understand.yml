@@ -1,0 +1,31 @@
+name: Hard to understand
+description: Tell us where you got stuck while reading. On this site, "confusing" counts as a bug.
+title: "[confusing] "
+labels: ["readability"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The goal of this site is to be readable by a curious 13-year-old with zero background.
+        Telling us where you stumbled is itself the best contribution.
+        You can write in English or Japanese.
+  - type: input
+    id: page
+    attributes:
+      label: Which page?
+      placeholder: https://sincekmori.github.io/how-ai-works/vectors/
+    validations:
+      required: true
+  - type: textarea
+    id: where
+    attributes:
+      label: Where did you get stuck, and how?
+      description: For example, "this sentence lost me", "this term appeared out of nowhere", "the figure doesn't connect to the text".
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What might have helped? (optional)
+    validations:
+      required: false

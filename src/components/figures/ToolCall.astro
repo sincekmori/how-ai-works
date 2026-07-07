@@ -1,0 +1,91 @@
+---
+// One turn of tool use: the model emits a structured "call this tool" request,
+// the program runs the real tool, the result is fed back, and the model writes
+// the final answer. The model never runs the tool itself — the program does.
+interface Props {
+  lang?: 'en' | 'ja';
+}
+const { lang = 'ja' } = Astro.props;
+const S = {
+  ja: {
+    aria: 'モデルが道具の呼び出しを出し、プログラムが実行し、結果を戻し、モデルが答える一周の図',
+    model: 'モデル',
+    prog: 'プログラム',
+    tool: '道具\n（天気 API）',
+    s1: '① 「get_weather("東京") を呼んで」\n（構造化出力）',
+    s2: '② 実行',
+    s3: '③ 28℃, 晴れ',
+    s4: '④ 結果を戻す',
+    s5: '⑤ 「傘はいらなそうです」',
+    cap: 'モデルは道具を<strong>自分では動かしません</strong>。かわりに「この道具を、この値で呼んで」という<strong>構造化された依頼</strong>を出します（前章の構造化出力そのもの）。実際に動かすのは、あいだにいるプログラム。結果を受け取ったモデルが、最後の返事を作ります。',
+  },
+  en: {
+    aria: 'The model emits a tool call, the program runs it, the result is fed back, and the model answers — one turn',
+    model: 'model',
+    prog: 'program',
+    tool: 'tool\n(weather API)',
+    s1: '① "call get_weather(\'Tokyo\')"\n(structured output)',
+    s2: '② run',
+    s3: '③ 28°C, sunny',
+    s4: '④ feed result back',
+    s5: '⑤ "You won\'t need an umbrella"',
+    cap: 'The model <strong>does not run the tool itself</strong>. Instead it emits a <strong>structured request</strong> — "call this tool with these values" — which is exactly the structured output from the last chapter. The program in the middle runs it. The model reads the result and writes the final reply.',
+  },
+}[lang];
+const lines = (t: string) => t.split('\n');
+---
+
+<figure class="figure">
+  <svg viewBox="0 0 660 320" role="img" aria-label={S.aria}>
+    <!-- model (left), program (center), tool (right) -->
+    <rect class="f-box" x="30" y="120" width="150" height="80" rx="12"></rect>
+    <text class="f-lbl" x="105" y="165" text-anchor="middle">{S.model}</text>
+
+    <rect class="f-box" x="255" y="120" width="150" height="80" rx="12"></rect>
+    {
+      lines(S.prog).map((ln, i) => (
+        <text class="f-lbl" x="330" y={154 + i * 22} text-anchor="middle">
+          {ln}
+        </text>
+      ))
+    }
+
+    <rect class="f-box" x="480" y="120" width="150" height="80" rx="12"></rect>
+    {
+      lines(S.tool).map((ln, i) => (
+        <text class="f-lbl" x="555" y={154 + i * 22} text-anchor="middle">
+          {ln}
+        </text>
+      ))
+    }
+
+    <defs>
+      <marker id="tc-ah" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto">
+        <path d="M0,0 L7,3 L0,6 Z" style="fill: var(--accent)"></path>
+      </marker>
+    </defs>
+
+    <!-- ① model -> program (tool call) -->
+    <line class="f-vec" x1="182" y1="140" x2="253" y2="140" marker-end="url(#tc-ah)"></line>
+    {
+      lines(S.s1).map((ln, i) => (
+        <text class="f-mut" x="217" y={70 + i * 18} text-anchor="middle">
+          {ln}
+        </text>
+      ))
+    }
+    <!-- ② program -> tool -->
+    <line class="f-vec" x1="407" y1="140" x2="478" y2="140" marker-end="url(#tc-ah)"></line>
+    <text class="f-mut" x="442" y="110" text-anchor="middle">{S.s2}</text>
+    <!-- ③ tool -> program (result) -->
+    <line class="f-vec2" x1="478" y1="180" x2="407" y2="180" marker-end="url(#tc-ah)"></line>
+    <text class="f-mut" x="442" y="212" text-anchor="middle">{S.s3}</text>
+    <!-- ④ program -> model (feed back) -->
+    <line class="f-vec2" x1="253" y1="180" x2="182" y2="180" marker-end="url(#tc-ah)"></line>
+    <text class="f-mut" x="217" y="212" text-anchor="middle">{S.s4}</text>
+    <!-- ⑤ model final answer (down) -->
+    <line class="f-vec" x1="105" y1="202" x2="105" y2="250" marker-end="url(#tc-ah)"></line>
+    <text class="f-lbl" x="120" y="278" text-anchor="start">{S.s5}</text>
+  </svg>
+  <figcaption set:html={S.cap} />
+</figure>

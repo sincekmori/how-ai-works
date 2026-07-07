@@ -1,0 +1,16 @@
+---
+import ChapterView from '../../components/ChapterView.astro';
+import { getSortedChapters, chapterSlug } from '../../lib/chapters';
+
+export async function getStaticPaths() {
+  const chapters = await getSortedChapters('ja');
+  return chapters.map((entry) => ({
+    params: { slug: chapterSlug(entry) },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+---
+
+<ChapterView entry={entry} lang="ja" />

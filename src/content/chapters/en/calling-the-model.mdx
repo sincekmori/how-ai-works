@@ -1,0 +1,95 @@
+---
+title: "Behind the Chat: Calling the Model"
+order: 17
+description: Part II begins. We start by actually touching a ChatGPT-like chat screen, bridge from "chat is all most people need" to why we talk about calling the model from a program at all, and see that a model is a "window" you call across the network. Then we raise the question that runs through all of Part II — what goes wrong once the reader of the reply is a program, not a person.
+draft: false
+---
+
+import RequestResponse from "../../../components/figures/RequestResponse.astro";
+import ChatScreen from "../../../components/ChatScreen.svelte";
+
+Here begins the book's second half, **Part II: How LLMs Are Put to Work**.
+In Part I we toured the model's **insides**.
+Turning words into numbers, measuring closeness, learning from mistakes, generating one word at a time.
+In Part II we look at how you actually **use** that clever box to build things.
+
+## The screen everyone pictures
+
+When you hear "use an AI," the thing you picture is probably that screen.
+You type a question into a box, and the reply appears below — a **chat screen** like ChatGPT.
+Ask in words, get an answer in words.
+So let's start with "that screen" itself — here it is.
+Send a question and watch the reply come out.
+
+<ChatScreen lang="en" client:visible />
+
+It's very convenient.
+In fact, for most people in the world, "using an AI" simply **means chatting on this screen**.
+Looking things up, getting help with writing — chat covers it.
+You never need to build an app, and nothing is missing.
+
+## Then why talk about "building" at all?
+
+And yet this Part II is about to talk about **using the model from a program**.
+If chat is enough, why?
+
+The reason appears the moment you look around you.
+The weather app on your phone, auto-captions on videos, the camera that translates a foreign menu, the "questions? chat here" box on a shopping site.
+Behind features like these, the same LLMs are — more and more — working as **components inside apps**.
+And nobody there is opening a chat screen.
+**A program inside the app is talking to the model in a person's place.**
+
+So "how to use AI" has two faces.
+The first: you, chatting on a screen, directly.
+The second: a program calling the model and putting it to work behind a feature.
+Part II stars the second one.
+Even if you never plan to build an app, knowing this underside makes "AI-powered" features far less mysterious — why they behave the way they do, and how far to trust them.
+
+So what does "a program calls the model" actually mean?
+
+## A model is a window you can call
+
+The clue is the chat screen you just used.
+When you pressed that send button, what happened behind it?
+A request was sent across the network to the model on the other side, and a reply came back.
+The model is not sitting inside your computer or phone.
+Usually it lives **across the network**, and screens and programs **call** it to use it.
+
+The shape of the exchange is the same as ordinary web use.
+Just as a browser asks a site "show me this page" and gets the contents back, a program sends the model a **request** ("answer this") and the model sends back a **response**.
+The side that asks is the **client**; the side that answers is the **server**.
+
+<RequestResponse lang="en" />
+
+So think of a model as "a window that offers a text-returning feature, callable across the network."
+It's in the same family as search, translation, or maps, which you call across the network the same way.
+The chat screen itself is just one of many apps calling this window behind the scenes.
+
+## Change the reader, and everything changes
+
+Here is the "why?" that runs through all of Part II.
+On the chat screen, the thing reading the model's reply was a **human**.
+Humans are clever, so a little vagueness is fine — we fill it in from context.
+If the reply is "Tokyo will be sunny tomorrow, up to around 28°C," we take the meaning without any effort.
+
+But inside an app, the thing receiving that reply is a **program**.
+And a program cannot read the way a human does.
+It doesn't understand what it reads — it just processes sequences of characters, mechanically, by fixed steps.
+Reliably pulling just "28" out of "up to around 28°C," every single time, is actually very hard.
+Today it's "28°C," but tomorrow it might be "roughly 30 degrees," and the day after, "a bit chilly, isn't it?"
+A human reads all of those; to a program they're differently-shaped, awkward data every time.
+
+## The problem Part II solves
+
+This is where Part II begins.
+
+> **The model returns free-form text. But the program receiving it is worst at exactly that — free-form text.**
+
+How do we bridge that mismatch?
+Bridge it, and the model's reply can flow into the next step of processing.
+Once it flows, the model stops being a "chat partner" and becomes a **component in an app**.
+And once it's a component, what it can do opens up fast — using tools, taking on multi-step jobs.
+
+Before that first step, let's look a little closer at what rides inside the request we send to the window.
+Besides the question text, a request can carry settings that change how the reply comes out.
+The next chapter turns those knobs.

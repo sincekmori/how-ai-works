@@ -1,0 +1,22 @@
+name: Suggestion or site bug
+description: Suggest a topic, report a broken demo or layout issue, or anything else.
+title: "[suggestion] "
+labels: ["suggestion"]
+body:
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Type
+      options:
+        - Topic or chapter suggestion
+        - Demo or layout bug
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: detail
+    attributes:
+      label: Details
+      description: For bugs, please include the page URL and your device/browser.
+    validations:
+      required: true

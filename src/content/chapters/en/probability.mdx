@@ -1,0 +1,76 @@
+---
+title: "Turning Hesitation into Numbers (Probability)"
+order: 5
+description: Why does an AI give slightly different replies to the same question? Starting from the fact that the next word simply isn't determined, this chapter arrives at keeping hesitation as "shares that add up to 1" (a probability distribution), with a lottery demo to spin.
+draft: false
+---
+
+import ProbabilityBars from "../../../components/figures/ProbabilityBars.astro";
+import ShareLottery from "../../../components/ShareLottery.svelte";
+
+Has this ever happened while you chat with an AI?
+You ask the same question, and the reply comes back slightly different each time.
+By the end of this chapter, that little mystery will be solved.
+
+## Why remember all the candidates, not just the winner?
+
+Think back to the demo in the first chapter.
+Even right before writing "Mount Fuji", the model still kept 5% of a chance on "Everest".
+**Why remember all the candidates, instead of just the winner?**
+
+Because **the rest can't honestly be thrown away**.
+Nobody can pin down the one word that follows "My favorite food is".
+For some people it's curry; for others it's ramen.
+Since the next word genuinely isn't determined, the most honest representation is to keep all of "which candidates, and how likely each one is".
+It's the same reason a weather forecast says "70% chance of rain" instead of flatly declaring "sunny tomorrow!".
+
+<ProbabilityBars lang="en" />
+
+## Why scale the shares to add up to 1?
+
+At this point we add one important rule.
+**Scale the shares so that, across all candidates, they add up to exactly 1 (= 100%).**
+Why bother with such a rule?
+If someone just told you "Fuji scores 8 points", you couldn't tell whether that's confident or timid.
+Only once every candidate's share is scaled so the whole adds up to 100% can you read it at a glance: "93% on Fuji — it is betting nearly its whole allowance on Fuji."
+We turn loose scores into shares of one whole — tickets in a lottery.
+
+This add-up-to-1 way of handing out shares is called a **probability distribution**.
+And because it expresses "how likely, given the text so far", it goes by the name **conditional probability**.
+Every time an LLM writes one more word, it rebuilds this entire table of shares from scratch.
+
+(Inside the model, by the way, things are first computed as free-form "scores", and a converter turns them into add-up-to-1 shares at the very end. We'll meet that converter in the chapter that needs it.)
+
+## Spin the lottery
+
+We said the shares are "tickets in a lottery".
+So we should be able to actually draw.
+In the demo below, draw the same question's lottery again and again.
+
+<ShareLottery client:visible lang="en" />
+
+Did you notice?
+**The same question does not always produce the same word.**
+Yet as the draws pile up, the share of times each word came out creeps closer and closer to the share it was handed.
+
+And that is the answer to the mystery at the top.
+Chat replies differ a little each time because the model doesn't always take the top candidate — sometimes it **draws lots according to the shares**, letting second place win now and then.
+Only a model that keeps its hesitation as shares can do this trick; how the lottery's dial gets tuned is a later chapter's treat.
+
+## One more payoff: the size of a miss becomes measurable
+
+Keeping hesitation as shares has an even more important payoff.
+**It lets you measure how badly a guess missed.**
+If the correct word was "Fuji", a model that had said "93% on Fuji" and one that had put only "3% on Fuji" both "had it among the candidates" — yet one clearly did far better.
+A mistake can be given a size.
+This one fact is what powers the next chapter's theme: how the machine gets better.
+
+## Summary
+
+- The next word genuinely isn't determined, so **keep the hesitation: one share per candidate**.
+- Scale the shares to **add up to 1** — that's what makes confidence readable at a glance. This handing-out is a **probability distribution** (a **conditional** one, since it depends on the text so far).
+- Shares are also lottery tickets, which is why the same question can get different replies.
+- Shares make **the size of a miss** measurable — the bridge to learning.
+
+So on what kind of machine does "measure the miss and fix it" actually run?
+Time to open up the "model" itself: enter the neural network.

@@ -1,0 +1,67 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getSortedChapters, chapterSlug, type Locale } from '../lib/chapters';
+import { groupChapters } from '../lib/parts';
+import { issuesUrl, localeHref, siteName } from '../lib/urls';
+import { t } from '../i18n/ui';
+import CopyForLLM from './CopyForLLM.svelte';
+import Logo from './Logo.astro';
+
+interface Props {
+  lang: Locale;
+}
+const { lang } = Astro.props;
+const s = t(lang);
+const chapters = await getSortedChapters(lang);
+const groups = groupChapters(chapters);
+const llmsFull = localeHref(lang, 'llms-full.txt');
+const llmsIndex = localeHref(lang, 'llms.txt');
+const firstChapter = localeHref(lang, `${chapterSlug(chapters[0])}/`);
+---
+
+<BaseLayout title={siteName(lang)} description={s.metaDesc} lang={lang}>
+  <div class="hero">
+    <div class="hero__logo"><Logo size={56} /></div>
+    <h1>{siteName(lang)}</h1>
+    <p class="lead">{s.homeLead}</p>
+    <div class="hero__points">
+      {s.homePoints.map((p) => <span class="hero__point">{p}</span>)}
+    </div>
+    <p class="hero__cta"><a class="btn btn--accent btn--hero" href={firstChapter}>{s.startReading}</a></p>
+  </div>
+
+  {
+    groups.map((division) => (
+      <section class="division">
+        {division.title[lang] && <h2 class="division__title">{division.title[lang]}</h2>}
+        {division.groups.map((g) => (
+          <div class="part">
+            {g.title[lang] && <h3 class="part__title">{g.title[lang]}</h3>}
+            <div class="card-grid">
+              {g.items.map(({ chapter, number }) => (
+                <a class="card" href={localeHref(lang, `${chapterSlug(chapter)}/`)}>
+                  <div class="num">{String(number).padStart(2, '0')}</div>
+                  <h3>{chapter.data.title}</h3>
+                </a>
+              ))}
+            </div>
+          </div>
+        ))}
+      </section>
+    ))
+  }
+
+  <h2>{s.homeExportHeading}</h2>
+  <p>{s.homeExportBody}</p>
+  <p style="display:flex;gap:0.6rem;flex-wrap:wrap;align-items:center">
+    <CopyForLLM client:load href={llmsFull} lang={lang} />
+    <a class="btn" href={llmsFull}>{s.openFull}</a>
+    <a class="btn" href={llmsIndex}>{s.openIndex}</a>
+  </p>
+
+  <p class="home-note">{s.homeNeutral}</p>
+  <p class="home-note">
+    {s.disclaimer}
+    <a href={issuesUrl} target="_blank" rel="noopener noreferrer">{s.reportIssue}</a>
+  </p>
+</BaseLayout>

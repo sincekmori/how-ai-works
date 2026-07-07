@@ -1,0 +1,85 @@
+---
+// One Transformer block: self-attention (mix across words) then a per-word
+// feed-forward net, each wrapped by "add back (residual) + normalise". Stacked N times.
+interface Props {
+  lang?: 'en' | 'ja';
+}
+const { lang = 'ja' } = Astro.props;
+const S = {
+  ja: {
+    aria: 'Transformer ブロック 1 つの構成',
+    out: '出力（次のブロックへ）↑',
+    norm: '足し戻す（残差）＋ ならす（正規化）',
+    ffTitle: '② フィードフォワード',
+    ffSub: '各単語が、集めた情報を噛み砕く',
+    attnTitle: '① 自己注意',
+    attnSub: '単語どうしで、横に情報を混ぜる',
+    in: '入力（各単語のベクトル）',
+    bypass: '近道（残差）',
+    stack: 'この 1 ブロックを ×N 積む',
+    cap: 'Transformer の 1 ブロックは <strong>①自己注意</strong>（前章のしくみ。単語どうしで横に情報を混ぜる）と <strong>②フィードフォワード</strong>（第 4 章の小さなニューラルnet。各単語が集めた情報を噛み砕く）の 2 段でできています。各段の前後で、入力を出力に <strong>足し戻し（残差）</strong>、数値を <strong>ならす（正規化）</strong>。これが深く積んでも学習を安定させる工夫です。このブロックを何層も積み重ねたものが Transformer 本体です。',
+  },
+  en: {
+    aria: 'The make-up of one Transformer block',
+    out: 'Output (to the next block) ↑',
+    norm: 'add back (residual) + normalize',
+    ffTitle: '② Feed-forward',
+    ffSub: 'each word chews on the gathered info',
+    attnTitle: '① Self-attention',
+    attnSub: 'words mix information sideways',
+    in: 'Input (each word’s vector)',
+    bypass: 'shortcut (residual)',
+    stack: 'stack this block ×N',
+    cap: 'One Transformer block has two stages: <strong>① self-attention</strong> (the previous chapter’s mechanism — words mix information sideways) and <strong>② feed-forward</strong> (the small neural net from Chapter 4 — each word chews on the info it gathered). Around each stage, the input is <strong>added back (residual)</strong> to the output and the numbers are <strong>normalized</strong> — the tricks that keep training stable even when stacked deep. Stack many of these blocks and you get the Transformer itself.',
+  },
+}[lang];
+---
+
+<figure class="figure">
+  <svg viewBox="0 0 480 372" role="img" aria-label={S.aria}>
+    <defs>
+      <marker id="tb-arrow" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto">
+        <path d="M0,0 L6,3 L0,6 Z" style="fill: var(--fg-muted)"></path>
+      </marker>
+    </defs>
+
+    <!-- output -->
+    <text class="f-lbl" x="240" y="26" text-anchor="middle">{S.out}</text>
+    <line class="f-axis" x1="240" y1="34" x2="240" y2="58" marker-end="url(#tb-arrow)"></line>
+    <text class="f-mut" x="240" y="78" text-anchor="middle">{S.norm}</text>
+
+    <!-- FFN -->
+    <rect class="f-box" x="120" y="90" width="240" height="52" rx="10"></rect>
+    <text class="f-lbl" x="240" y="112" text-anchor="middle">{S.ffTitle}</text>
+    <text class="f-mut" x="240" y="131" text-anchor="middle">{S.ffSub}</text>
+
+    <line class="f-axis" x1="240" y1="142" x2="240" y2="166" marker-end="url(#tb-arrow)"></line>
+    <text class="f-mut" x="240" y="186" text-anchor="middle">{S.norm}</text>
+
+    <!-- Attention -->
+    <rect class="f-box" x="120" y="198" width="240" height="52" rx="10"></rect>
+    <text class="f-lbl" x="240" y="220" text-anchor="middle">{S.attnTitle}</text>
+    <text class="f-mut" x="240" y="239" text-anchor="middle">{S.attnSub}</text>
+
+    <line class="f-axis" x1="240" y1="250" x2="240" y2="300" marker-end="url(#tb-arrow)"></line>
+    <text class="f-lbl" x="240" y="322" text-anchor="middle">{S.in}</text>
+
+    <!-- residual bypass on the left -->
+    <path
+      class="f-axis"
+      style="stroke-dasharray: 5 4"
+      d="M84 300 L84 60"
+      marker-end="url(#tb-arrow)"
+      fill="none"></path>
+    <text class="f-mut" x="78" y="180" text-anchor="middle" transform="rotate(-90 78 180)"
+      >{S.bypass}</text
+    >
+
+    <!-- stack note on the right -->
+    <path class="f-axis" d="M392 90 L408 90 L408 250 L392 250" fill="none"></path>
+    <text class="f-lbl" x="416" y="166" transform="rotate(90 416 166)" text-anchor="middle"
+      >{S.stack}</text
+    >
+  </svg>
+  <figcaption set:html={S.cap} />
+</figure>

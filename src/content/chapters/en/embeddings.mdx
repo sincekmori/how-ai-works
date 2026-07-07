@@ -1,0 +1,77 @@
+---
+title: "Embeddings: How Is the Map of Meaning Built?"
+order: 7
+description: Who decides a word's "row of numbers"? The mechanism that learns them automatically from surrounding words, the giant lookup table, adding and subtracting meaning, and how meaning shifts with context (a setup for attention) — shown with figures and in 3D.
+draft: false
+---
+
+import ContextClues from "../../../components/figures/ContextClues.astro";
+import WordAnalogy from "../../../components/figures/WordAnalogy.astro";
+import EmbeddingCloud from "../../../components/EmbeddingCloud.svelte";
+
+In the vectors chapter we said that "a word becomes a row of numbers (a vector), and the closer two words are in meaning, the closer their numbers are."
+But one big question is still hanging in the air — **who decides those numbers?**
+
+We can't just type them in by hand.
+There are tens of thousands of different words, and each one needs hundreds of numbers.
+Doing that by hand is simply impossible.
+So how does a computer ever figure out that "cat and dog are close"?
+That's the theme of this chapter.
+The row of numbers assigned to a word in this way is called an **embedding**.
+
+## The surrounding words tell you the meaning
+
+The clue is **what kinds of situations (surrounding words) a word shows up in**.
+For example, both "cat" and "dog" often appear near words like "food," "pet," "cute," and "vet."
+A word like "car," on the other hand, does not show up next to those words.
+
+<ContextClues lang="en" />
+
+In other words, **words that get used surrounded by similar words also have similar meanings**.
+This is the idea that "you can know a word by the company it keeps" — a principle called the **distributional hypothesis** ("distributional" because it's about how a word is distributed across contexts).
+As the computer reads enormous amounts of text, it uses the **gradient** (the "nudge a little at a time" idea from the previous chapter) to slowly adjust the numbers so that **words appearing in similar contexts end up with closer rows of numbers**.
+The rows of numbers built up through all that adjusting are the embeddings.
+Nobody told the machine the right answer, yet closeness of meaning rises up out of usage alone — that's the fascinating part.
+
+## What it really is: a giant lookup table
+
+Once training is done, the rows of numbers for every word are stored in one big **embedding table**.
+To use a word, you just pull out that word's row.
+The **number of rows in the table is the size of the vocabulary** (tens of thousands), and **the length of each row is how many numbers there are per word** (hundreds to thousands).
+It's fine to think of an "embedding" as, in the end, the act of looking up a single row from this table.
+
+## Adding and subtracting meaning
+
+As a "reward" for turning words into numbers, something surprising happens: **relationships between meanings can be expressed with addition and subtraction**.
+Here is the famous example.
+
+<WordAnalogy lang="en" />
+
+Why does this work?
+Each word's row of numbers naturally comes to hold "directions" of meaning, such as "royalty-ness" or "gender."
+So if you take the "shift from man to woman" and add it to "king," you land right on "queen."
+This is evidence that meaning shows up as a position on a map — and this kind of trick is called an **analogy** (king − man + woman ≈ queen).
+
+## The same word can mean different things by context
+
+There is, however, a situation where a single fixed row of numbers gets you into trouble.
+Take the English word "bank": depending on the sentence, it can mean the **side of a river** or a **place that holds money**.
+If you lock in one row of numbers per word, you can't tell these apart.
+
+So recent models **rebuild a word's row of numbers on the spot, depending on the surrounding words** (a **contextual embedding** — one that changes with context).
+"Sat on the grassy **_ of the river" gives you the riverside meaning; "deposited the check at the _**" gives you the money meaning.
+The mechanism that makes this possible is **attention**, which arrives starting in the next chapter.
+For now, just remember that "an embedding isn't fixed — it can change with context."
+
+## Take a peek at the map of meaning
+
+Finally, let's take a peek at the world of embeddings in 3D.
+You should be able to see that words close in meaning cluster together (drag to rotate it).
+
+<EmbeddingCloud client:only="svelte" lang="en" />
+
+## Summary
+
+- An **embedding** is the "word → row of numbers" that comes out of training. It isn't decided by hand — it's **learned automatically from usage (the surrounding words)**.
+- What it really is: a **giant lookup table (embedding table)**, with one row per word.
+- Relationships between meanings show up as **addition and subtraction** (king − man + woman ≈ queen, an **analogy**), and they can even **change depending on context** (→ on to attention).

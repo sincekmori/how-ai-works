@@ -1,0 +1,77 @@
+---
+// Naive attention builds the whole n×n score grid in memory (O(n²)).
+// FlashAttention computes it block by block, keeping only a small piece at a time —
+// same answer, far less memory.
+interface Props {
+  lang?: 'en' | 'ja';
+}
+const { lang = 'ja' } = Astro.props;
+const S = {
+  ja: {
+    naiveTitle: '素朴な計算',
+    naiveSub: 'n×n の表を丸ごと保存',
+    naiveNote: 'メモリ大（n が増えると二乗で増える）',
+    flashTitle: 'FlashAttention',
+    flashSub: '小さなブロックで順番に',
+    flashNote: '保存はブロック 1 つぶんだけ（答えは同じ）',
+    cap: 'アテンションは「全単語 × 全単語」の点数表を作ります。長い文では、この表は <strong>n×n</strong> ととても大きく、メモリを圧迫します（素朴なやり方＝左）。<strong>FlashAttention</strong> は、この巨大な表を一度に作らず <strong>小さなブロックに分けて順番に計算</strong>します（右）。出てくる答えはまったく同じなのに、必要なメモリがぐっと減り、しかも速くなります。',
+  },
+  en: {
+    naiveTitle: 'Naive computation',
+    naiveSub: 'store the whole n×n table',
+    naiveNote: 'big memory (grows with the square of n)',
+    flashTitle: 'FlashAttention',
+    flashSub: 'small blocks, one after another',
+    flashNote: 'store only one block (same answer)',
+    cap: 'Attention builds a score table of "every word × every word". For a long sentence this table is very big — <strong>n×n</strong> — and crowds out memory (the naive way, left). <strong>FlashAttention</strong> does not build that huge table at once; it <strong>splits it into small blocks and computes them in order</strong> (right). The answer it produces is exactly the same, yet the memory needed drops sharply and it even runs faster.',
+  },
+}[lang];
+const idx = [0, 1, 2, 3, 4, 5];
+const step = 24;
+const lx = 70;
+const rx = 380;
+const top = 78;
+---
+
+<figure class="figure">
+  <svg viewBox="0 0 600 250" role="img" aria-label="素朴な注意の n×n 表と、ブロック分割の対比">
+    <!-- left: full grid -->
+    <text class="f-lbl" x="142" y="40" text-anchor="middle">{S.naiveTitle}</text>
+    <text class="f-mut" x="142" y="60" text-anchor="middle">{S.naiveSub}</text>
+    {
+      idx.map((r) =>
+        idx.map((c) => (
+          <rect class="f-bar-bg" x={lx + c * step} y={top + r * step} width="20" height="20" rx="3" />
+        )),
+      )
+    }
+    <text x="142" y={top + 6 * step + 22} text-anchor="middle" style="fill: #ef4444; font-size: 12px"
+      >{S.naiveNote}</text
+    >
+
+    <!-- right: blocked grid -->
+    <text class="f-lbl" x="452" y="40" text-anchor="middle">{S.flashTitle}</text>
+    <text class="f-mut" x="452" y="60" text-anchor="middle">{S.flashSub}</text>
+    {
+      idx.map((r) =>
+        idx.map((c) => {
+          const hot = r >= 2 && r <= 3 && c >= 2 && c <= 3;
+          return (
+            <rect
+              class={hot ? 'f-bar' : 'f-box'}
+              x={rx + c * step}
+              y={top + r * step}
+              width="20"
+              height="20"
+              rx="3"
+            />
+          );
+        }),
+      )
+    }
+    <text x="452" y={top + 6 * step + 22} text-anchor="middle" style="fill: #22c55e; font-size: 12px"
+      >{S.flashNote}</text
+    >
+  </svg>
+  <figcaption set:html={S.cap} />
+</figure>

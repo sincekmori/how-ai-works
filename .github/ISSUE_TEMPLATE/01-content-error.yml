@@ -1,0 +1,32 @@
+name: Content error
+description: Report a factual or technical error in the text, a figure, a demo, or a calculation.
+title: "[error] "
+labels: ["content-error"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you! Anything from a typo to a technical mistake is welcome.
+        You can write your report in English or Japanese.
+  - type: input
+    id: page
+    attributes:
+      label: Which page?
+      description: Paste the page URL or the chapter title.
+      placeholder: https://sincekmori.github.io/how-ai-works/similarity/
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What is wrong?
+      description: Quote the sentence or figure and explain the error.
+    validations:
+      required: true
+  - type: textarea
+    id: correction
+    attributes:
+      label: What would be correct? (optional)
+      description: If you have a source (paper, book, article), please link it.
+    validations:
+      required: false

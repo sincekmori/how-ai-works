@@ -1,0 +1,66 @@
+---
+// Three ingredients must grow together: model size, data, compute. A giant model
+// starved of data wastes the budget.
+interface Props {
+  lang?: 'en' | 'ja';
+}
+const { lang = 'ja' } = Astro.props;
+const S = {
+  ja: {
+    aria: 'モデル・データ・計算の 3 つをバランスよく増やす',
+    title: 'この 3 つを「いっしょに」増やすほど賢くなる',
+    more: 'もっと',
+    warn: 'どれか 1 つだけ大きくしてもダメ。例：大きいのにデータ不足＝もったいない。',
+    items: [
+      { x: 130, label: 'モデルの大きさ', sub: '（つまみの数）' },
+      { x: 300, label: 'データの量', sub: '（教材の多さ）' },
+      { x: 470, label: '計算の量', sub: '（時間・電気）' },
+    ],
+    cap: '賢さを伸ばすレバーは 3 つ。<strong>モデルの大きさ</strong>・<strong>データの量</strong>・<strong>計算の量</strong>。大事なのは、どれか 1 つを突出させるのではなく、<strong>3 つをバランスよく一緒に増やす</strong>こと。巨大なのに読む文章が足りないモデルは、せっかくの容量を活かせず、予算のムダづかいになります。',
+  },
+  en: {
+    aria: 'Grow model, data, and compute together in balance',
+    title: 'The more you grow these three "together," the smarter it gets',
+    more: 'more',
+    warn: 'Growing just one is not enough. E.g. big but short on data = wasteful.',
+    items: [
+      { x: 130, label: 'model size', sub: '(the number of knobs)' },
+      { x: 300, label: 'amount of data', sub: '(how much study material)' },
+      { x: 470, label: 'amount of compute', sub: '(time · electricity)' },
+    ],
+    cap: 'There are three levers for boosting smartness — <strong>model size</strong>, <strong>amount of data</strong>, and <strong>amount of compute</strong>. What matters is not pushing just one of them way up, but <strong>growing all three together, in balance</strong>. A model that is giant yet short on text to read can\'t make use of all that capacity, and wastes the budget.',
+  },
+}[lang];
+const {items} = S;
+---
+
+<figure class="figure">
+  <svg viewBox="0 0 600 220" role="img" aria-label={S.aria}>
+    <text class="f-lbl" x="300" y="26" text-anchor="middle">{S.title}</text>
+
+    {
+      items.map((it) => (
+        <>
+          <circle class="f-box" cx={it.x} cy="100" r="42" />
+          <text class="f-num" x={it.x} y="96" text-anchor="middle" style="font-size: 26px">
+            ↑
+          </text>
+          <text class="f-mut" x={it.x} y="116" text-anchor="middle">
+            {S.more}
+          </text>
+          <text class="f-lbl" x={it.x} y="166" text-anchor="middle">
+            {it.label}
+          </text>
+          <text class="f-mut" x={it.x} y="186" text-anchor="middle">
+            {it.sub}
+          </text>
+        </>
+      ))
+    }
+
+    <text x="300" y="210" text-anchor="middle" style="fill: #ef4444; font-size: 12.5px"
+      >{S.warn}</text
+    >
+  </svg>
+  <figcaption set:html={S.cap} />
+</figure>

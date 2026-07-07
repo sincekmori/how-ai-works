@@ -1,0 +1,297 @@
+---
+import 'katex/dist/katex.min.css';
+import '../styles/global.css';
+import {
+  getSortedChapters,
+  neighbours,
+  chapterSlug,
+  LOCALES,
+  DEFAULT_LOCALE,
+  type Locale,
+} from '../lib/chapters';
+import { groupChapters } from '../lib/parts';
+import { withBase, localeHref, absoluteLocale, absoluteUrl, siteName } from '../lib/urls';
+import { t } from '../i18n/ui';
+import LangSwitcher from '../components/LangSwitcher.astro';
+import Logo from '../components/Logo.astro';
+import ThemeToggle from '../components/ThemeToggle.svelte';
+import CopyForLLM from '../components/CopyForLLM.svelte';
+
+interface Heading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+interface Props {
+  title: string;
+  description?: string;
+  headings?: Heading[];
+  slug?: string;
+  lang?: Locale;
+}
+const { title, description = '', headings = [], slug, lang = 'en' } = Astro.props;
+const s = t(lang);
+
+const chapters = await getSortedChapters(lang);
+const groups = groupChapters(chapters);
+const { prev, next } = slug ? neighbours(chapters, slug) : { prev: null, next: null };
+const tocHeadings = headings.filter((h) => h.depth === 2 || h.depth === 3);
+const llmsFull = localeHref(lang, 'llms-full.txt');
+const llmsIndex = localeHref(lang, 'llms.txt');
+const pageTitle = title === siteName(lang) ? title : `${title} — ${siteName(lang)}`;
+const isProd = import.meta.env.PROD;
+const base = import.meta.env.BASE_URL;
+const altPath = slug ? `${slug}/` : '';
+// One branded OG card per locale (public/og-<lang>.png). Locale-derived, not a
+// hardcoded map, so adding a language just needs its card + a dictionary entry.
+const ogImage = absoluteUrl(`og-${lang}.png`);
+const otherLocales = LOCALES.filter((l) => l !== lang);
+---
+
+<!doctype html>
+<html lang={s.htmlLang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Locale auto-detect: redirect to the visitor's preferred language before paint. -->
+    <script is:inline define:vars={{ base }}>
+      (function () {
+        try {
+          var b = base.endsWith('/') ? base : `${base  }/`;
+          var path = location.pathname;
+          var jaPrefix = `${b  }ja/`;
+          var inJa = path.indexOf(jaPrefix) === 0;
+          var cur = inJa ? 'ja' : 'en';
+          var stored = null;
+          try {
+            stored = localStorage.getItem('how-ai-works:lang');
+          } catch {}
+          var want =
+            stored ||
+            ((navigator.language || '').toLowerCase().indexOf('ja') === 0 ? 'ja' : 'en');
+          if (want !== cur) {
+            var rest = inJa ? path.slice(jaPrefix.length) : path.slice(b.length);
+            var target = b + (want === 'ja' ? 'ja/' : '') + rest + location.search + location.hash;
+            location.replace(target);
+          }
+        } catch {}
+      })();
+    </script>
+    <title>{pageTitle}</title>
+    {description && <meta name="description" content={description} />}
+    <link rel="icon" href={withBase('favicon.svg')} />
+    <link rel="canonical" href={absoluteLocale(lang, altPath)} />
+    {
+      LOCALES.map((l) => (
+        <link rel="alternate" hreflang={l} href={absoluteLocale(l, altPath)} />
+      ))
+    }
+    <link rel="alternate" hreflang="x-default" href={absoluteLocale(DEFAULT_LOCALE, altPath)} />
+    <!-- OGP / Twitter cards: every page has a per-locale branded image;
+         title and description are page-specific. -->
+    <meta property="og:type" content={slug ? 'article' : 'website'} />
+    <meta property="og:site_name" content={siteName(lang)} />
+    <meta property="og:title" content={title} />
+    {description && <meta property="og:description" content={description} />}
+    <meta property="og:url" content={absoluteLocale(lang, altPath)} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={siteName(lang)} />
+    <meta property="og:locale" content={s.ogLocale} />
+    {otherLocales.map((l) => <meta property="og:locale:alternate" content={t(l).ogLocale} />)}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    {description && <meta name="twitter:description" content={description} />}
+    <meta name="twitter:image" content={ogImage} />
+    <!-- No-flash: apply persisted theme before first paint. -->
+    <script is:inline>
+      (function () {
+        try {
+          var theme = localStorage.getItem('how-ai-works:theme');
+          var prefersDark =
+            window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+          if (theme === 'dark' || (!theme && prefersDark)) {
+            document.documentElement.classList.add('dark');
+          }
+        } catch {}
+      })();
+    </script>
+    {isProd && <link rel="stylesheet" href={localeHref(lang, 'pagefind/pagefind-ui.css')} />}
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar" id="sidebar">
+        <div class="brand" style="font-size:1.05rem;margin-bottom:0.6rem">
+          <a href={localeHref(lang, '')}><Logo size={20} /> {siteName(lang)}</a>
+        </div>
+        {isProd && <div id="search"></div>}
+        <p class="nav-title">{s.navCurriculum}</p>
+        {
+          groups.map((division) => (
+            <>
+              {division.title[lang] && <p class="nav-division">{division.title[lang]}</p>}
+              {division.groups.map((g) => (
+                <>
+                  {g.title[lang] && <p class="nav-part">{g.title[lang]}</p>}
+                  <ul class="nav-list">
+                    {g.items.map(({ chapter: c, number }) => {
+                      const cslug = chapterSlug(c);
+                      return (
+                        <li>
+                          <a
+                            class="nav-link"
+                            href={localeHref(lang, `${cslug}/`)}
+                            aria-current={cslug === slug ? 'page' : undefined}
+                          >
+                            <span class="nav-num">{String(number).padStart(2, '0')}</span>
+                            <span>{c.data.title}</span>
+                            {c.data.draft && <span class="nav-draft">draft</span>}
+                          </a>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </>
+              ))}
+            </>
+          ))
+        }
+        <p class="nav-title">{s.navExport}</p>
+        <div style="display:flex;flex-direction:column;gap:0.4rem;align-items:flex-start">
+          <CopyForLLM client:load href={llmsFull} lang={lang} compact />
+          <a class="nav-link" href={llmsFull}>{s.openFull}</a>
+          <a class="nav-link" href={llmsIndex}>{s.openIndex}</a>
+        </div>
+      </aside>
+      <!-- Restore the sidebar scroll position saved on the previous page, so
+           clicking a chapter low in the list doesn't snap the nav back to the
+           top. Runs right after the <aside> exists, before first paint. -->
+      <script is:inline>
+        (function () {
+          try {
+            var sb = document.querySelector('#sidebar');
+            var saved = sessionStorage.getItem('sidebar-scroll');
+            if (saved === null) {
+              var cur = sb.querySelector('[aria-current="page"]');
+              if (cur) {
+                // Manual math instead of scrollIntoView, which would also
+                // scroll the window itself.
+                sb.scrollTop = cur.offsetTop - sb.clientHeight / 2;
+              }
+            } else {
+              sb.scrollTop = Number(saved);
+            }
+            sb.addEventListener(
+              'scroll',
+              () => {
+                sessionStorage.setItem('sidebar-scroll', String(sb.scrollTop));
+              },
+              { passive: true },
+            );
+          } catch {}
+        })();
+      </script>
+
+      <div class="main">
+        <header class="topbar">
+          <button
+            class="btn icon-btn hamburger"
+            id="nav-toggle"
+            aria-label={s.navToggle}
+            aria-expanded="false"
+          >
+            ☰
+          </button>
+          <span class="brand"
+            ><a href={localeHref(lang, '')}><Logo size={18} /> {siteName(lang)}</a></span
+          >
+          <span class="topbar__spacer"></span>
+          <LangSwitcher lang={lang} slug={slug} />
+          <ThemeToggle client:load lang={lang} />
+        </header>
+
+        <div class="content-wrap">
+          <div class="content-layout">
+            <article class="prose" data-pagefind-body>
+              <slot />
+              {
+                (prev || next) && (
+                  <nav class="pager">
+                    {prev ? (
+                      <a href={localeHref(lang, `${chapterSlug(prev)}/`)}>
+                        <div class="dir">{s.prev}</div>
+                        <div>{prev.data.title}</div>
+                      </a>
+                    ) : (
+                      <span />
+                    )}
+                    {next ? (
+                      <a class="next" href={localeHref(lang, `${chapterSlug(next)}/`)}>
+                        <div class="dir">{s.next}</div>
+                        <div>{next.data.title}</div>
+                      </a>
+                    ) : (
+                      <span />
+                    )}
+                  </nav>
+                )
+              }
+            </article>
+
+            {
+              tocHeadings.length > 0 && (
+                <aside class="toc-aside" data-pagefind-ignore>
+                  <p class="nav-title">{s.toc}</p>
+                  <nav class="toc">
+                    <ul>
+                      {tocHeadings.map((h) => (
+                        <li class={`depth-${h.depth}`}>
+                          <a href={`#${h.slug}`}>{h.text}</a>
+                        </li>
+                      ))}
+                    </ul>
+                  </nav>
+                </aside>
+              )
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script is:inline>
+      (function () {
+        var btn = document.querySelector('#nav-toggle');
+        if (!btn) {
+          return;
+        }
+        btn.addEventListener('click', () => {
+          var open = document.body.classList.toggle('sidebar-open');
+          btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
+        document.body.addEventListener('click', (e) => {
+          if (
+            document.body.classList.contains('sidebar-open') &&
+            !e.target.closest('#sidebar') &&
+            !e.target.closest('#nav-toggle')
+          ) {
+            document.body.classList.remove('sidebar-open');
+            btn.setAttribute('aria-expanded', 'false');
+          }
+        });
+      })();
+    </script>
+
+    {
+      isProd && (
+        <script
+          is:inline
+          src={localeHref(lang, 'pagefind/pagefind-ui.js')}
+          onload="new PagefindUI({ element: '#search', bundlePath: this.dataset.bundle, showSubResults: true, resetStyles: false });"
+          data-bundle={localeHref(lang, 'pagefind/')}
+        />
+      )
+    }
+  </body>
+</html>

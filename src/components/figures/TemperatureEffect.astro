@@ -1,0 +1,78 @@
+---
+// Temperature reshapes the SAME next-word distribution: low = peaked (safe),
+// high = flat (adventurous). Same words, different boldness.
+interface Props {
+  lang?: 'en' | 'ja';
+}
+const { lang = 'ja' } = Astro.props;
+const low = [85, 8, 4, 3];
+const high = [40, 25, 20, 15];
+const trackX = 150;
+const trackW = 380;
+const S = {
+  ja: {
+    aria: 'temperature による次の単語の確率の変化',
+    heading: '「空は ＿」の次の単語の確率',
+    words: ['青い', '広い', '高い', '赤い'],
+    lowLabel: '低い temperature → とがった山（無難）',
+    highLabel: '高い temperature → なだらか（大胆・多様）',
+    cap: '同じ予測でも、<strong>temperature（温度）</strong> というつまみで「選び方の大胆さ」を変えられます。<strong>低く</strong>すると確率の山がとがって、いちばん無難な「青い」ばかりを選ぶ（堅実・くり返しがち）。<strong>高く</strong>すると山がなだらかになり、「広い」「高い」なども選ばれて多様で創造的に（ただしハズしやすい）。',
+  },
+  en: {
+    aria: 'How temperature changes the next-word probabilities',
+    heading: 'Next-word probability for “The sky is ___”',
+    words: ['blue', 'wide', 'high', 'red'],
+    lowLabel: 'low temperature → sharp hill (safe)',
+    highLabel: 'high temperature → flat (bold, varied)',
+    cap: 'For the same prediction, the <strong>temperature</strong> dial lets you change "how bold the choice is." Turn it <strong>down</strong> and the probability hill becomes sharp, so it keeps picking the safest word "blue" (dependable but repetitive). Turn it <strong>up</strong> and the hill flattens, so "wide," "high," and others get picked too — varied and creative (but more likely to miss).',
+  },
+}[lang];
+const {words} = S;
+---
+
+<figure class="figure">
+  <svg viewBox="0 0 600 268" role="img" aria-label={S.aria}>
+    <text class="f-lbl" x="300" y="22" text-anchor="middle">{S.heading}</text>
+
+    <!-- low T -->
+    <text x="20" y="50" style="fill: #22c55e; font-size: 13px; font-weight: 700">{S.lowLabel}</text>
+    {
+      words.map((w, i) => {
+        const y = 70 + i * 24;
+        return (
+          <>
+            <text class="f-mut" x="120" y={y + 5} text-anchor="end">
+              {w}
+            </text>
+            <rect class="f-bar-bg" x={trackX} y={y - 9} width={trackW} height="16" rx="5" />
+            <rect class="f-bar" x={trackX} y={y - 9} width={(trackW * low[i]) / 100} height="16" rx="5" />
+            <text class="f-mut" x={trackX + (trackW * low[i]) / 100 + 6} y={y + 4}>
+              {low[i]}%
+            </text>
+          </>
+        );
+      })
+    }
+
+    <!-- high T -->
+    <text x="20" y="180" style="fill: #f97316; font-size: 13px; font-weight: 700">{S.highLabel}</text>
+    {
+      words.map((w, i) => {
+        const y = 200 + i * 24;
+        return (
+          <>
+            <text class="f-mut" x="120" y={y + 5} text-anchor="end">
+              {w}
+            </text>
+            <rect class="f-bar-bg" x={trackX} y={y - 9} width={trackW} height="16" rx="5" />
+            <rect class="f-bar" x={trackX} y={y - 9} width={(trackW * high[i]) / 100} height="16" rx="5" />
+            <text class="f-mut" x={trackX + (trackW * high[i]) / 100 + 6} y={y + 4}>
+              {high[i]}%
+            </text>
+          </>
+        );
+      })
+    }
+  </svg>
+  <figcaption set:html={S.cap} />
+</figure>

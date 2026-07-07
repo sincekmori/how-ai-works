@@ -1,0 +1,73 @@
+---
+// From raw model to helpful assistant in three stages.
+interface Props {
+  lang?: 'en' | 'ja';
+}
+const { lang = 'ja' } = Astro.props;
+const S = {
+  ja: {
+    aria: '素のモデルを助手に育てる 3 ステップ',
+    title: '素のモデルを、助手に育てる 3 ステップ',
+    stages: [
+      { n: '①', title: '事前学習', what: 'ひたすら次の単語当て', got: '物知り（でも素）' },
+      { n: '②', title: 'お手本まね', what: '良い受け答えで練習', got: '指示に従える' },
+      { n: '③', title: '好みで調整', what: '人の好みで微調整', got: '親切・安全' },
+    ],
+    note: '①で知識を、②で受け答えの型を、③で親切さと安全をみがく。',
+    cap: 'LLM は 3 段階で育ちます。<strong>①事前学習</strong>（前章）で世界の文章から知識を得て、<strong>②お手本まね</strong>（教師ありファインチューニング・指示チューニング）で受け答えの型を覚え、<strong>③好みで調整</strong>（RLHF など）で親切さ・安全さをみがきます。この章は②と③の話です。',
+  },
+  en: {
+    aria: 'Three steps that grow a raw model into an assistant',
+    title: 'Three steps to grow a raw model into an assistant',
+    stages: [
+      { n: '①', title: 'Pre-training', what: 'Predict the next word', got: 'knowledgeable' },
+      { n: '②', title: 'Copy examples', what: 'Practice good replies', got: 'follows instructions' },
+      { n: '③', title: 'Tune to taste', what: 'Tune to human preference', got: 'helpful & safe' },
+    ],
+    note: '① builds knowledge, ② the reply pattern, ③ helpfulness & safety.',
+    cap: 'An LLM grows in three stages. <strong>① Pre-training</strong> (last chapter) gains knowledge from the world’s text, <strong>② copying examples</strong> (supervised fine-tuning, instruction tuning) learns the pattern of good replies, and <strong>③ tuning to preference</strong> (RLHF, etc.) polishes helpfulness and safety. This chapter is about ② and ③.',
+  },
+}[lang];
+const {stages} = S;
+const xs = [14, 234, 454];
+const boxW = 192;
+---
+
+<figure class="figure">
+  <svg viewBox="0 0 660 200" role="img" aria-label={S.aria}>
+    <text class="f-lbl" x="330" y="24" text-anchor="middle">{S.title}</text>
+
+    <defs>
+      <marker id="ts-arrow" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto">
+        <path d="M0,0 L6,3 L0,6 Z" style="fill: var(--fg-muted)"></path>
+      </marker>
+    </defs>
+
+    {
+      xs.map((x, i) => (
+        <>
+          <rect class="f-box" x={x} y="48" width={boxW} height="92" rx="10" />
+          <text class="f-num" x={x + 18} y="76" style="font-size: 17px">
+            {stages[i].n}
+          </text>
+          <text class="f-lbl" x={x + boxW / 2 + 10} y="76" text-anchor="middle">
+            {stages[i].title}
+          </text>
+          <text class="f-mut" x={x + boxW / 2} y="104" text-anchor="middle">
+            {stages[i].what}
+          </text>
+          <rect class="f-bar-bg" x={x + 14} y="114" width={boxW - 28} height="20" rx="6" />
+          <text class="f-mut" x={x + boxW / 2} y="128" text-anchor="middle">
+            → {stages[i].got}
+          </text>
+        </>
+      ))
+    }
+
+    <line class="f-axis" x1="210" y1="94" x2="230" y2="94" marker-end="url(#ts-arrow)"></line>
+    <line class="f-axis" x1="430" y1="94" x2="450" y2="94" marker-end="url(#ts-arrow)"></line>
+
+    <text class="f-mut" x="330" y="172" text-anchor="middle">{S.note}</text>
+  </svg>
+  <figcaption set:html={S.cap} />
+</figure>

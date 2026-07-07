@@ -1,0 +1,63 @@
+---
+// Quantization = store each weight with fewer bits (coarser rounding). Less memory,
+// a little less precision.
+interface Props {
+  lang?: 'en' | 'ja';
+}
+const { lang = 'ja' } = Astro.props;
+const S = {
+  ja: {
+    title: '数を「あらく」丸めて、軽くする',
+    example: '例：重み 0.83726… → 0.84 → 0.8',
+    bars: [
+      { label: '16 ビット', w: 100, note: '元の細かさ' },
+      { label: '8 ビット', w: 50, note: 'メモリ半分' },
+      { label: '4 ビット', w: 25, note: 'メモリ 1/4' },
+    ],
+    foot: 'ビット数を半分にすると、保存に必要なメモリもおよそ半分。',
+    cap: 'モデルのつまみ（重み）は、ふつう 16 ビットなどの細かい小数で持ちます。それを 8 ビットや 4 ビットの <strong>あらい表現に丸める</strong>のが <strong>量子化</strong> です。3.14159… を 3.1 にするように、少し精度を犠牲にするかわりに、メモリが大きく減って <strong>小さなハードでも動かせる</strong>ようになります。コツは「どこを・どの粒度で丸めるか」を工夫して、精度の低下を小さく保つことです。',
+  },
+  en: {
+    title: 'Round numbers "coarsely" to make them lighter',
+    example: 'Example: weight 0.83726… → 0.84 → 0.8',
+    bars: [
+      { label: '16 bits', w: 100, note: 'original detail' },
+      { label: '8 bits', w: 50, note: 'half the memory' },
+      { label: '4 bits', w: 25, note: '1/4 the memory' },
+    ],
+    foot: 'Halve the number of bits, and the memory needed to store it roughly halves too.',
+    cap: "A model's knobs (its weights) are normally held as fine decimal numbers like 16-bit values. <strong>Quantization</strong> means <strong>rounding them into a coarser form</strong> with 8 or 4 bits. Just as you might turn 3.14159… into 3.1, you sacrifice a little precision in exchange for a big drop in memory, so it <strong>even runs on small hardware</strong>. The knack is to choose where and at what granularity to round, keeping the loss of precision small.",
+  },
+}[lang];
+const {bars} = S;
+const trackX = 130;
+const trackW = 380;
+---
+
+<figure class="figure">
+  <svg viewBox="0 0 600 220" role="img" aria-label="ビット幅を下げてメモリを節約する量子化">
+    <text class="f-lbl" x="20" y="30">{S.title}</text>
+    <text class="f-mut" x="20" y="54">{S.example}</text>
+
+    {
+      bars.map((b, i) => {
+        const y = 92 + i * 38;
+        return (
+          <>
+            <text class="f-mut" x="120" y={y + 5} text-anchor="end">
+              {b.label}
+            </text>
+            <rect class="f-bar-bg" x={trackX} y={y - 12} width={trackW} height="24" rx="6" />
+            <rect class="f-bar" x={trackX} y={y - 12} width={(trackW * b.w) / 100} height="24" rx="6" />
+            <text class="f-mut" x={trackX + (trackW * b.w) / 100 + 8} y={y + 5}>
+              {b.note}
+            </text>
+          </>
+        );
+      })
+    }
+
+    <text class="f-mut" x="300" y="206" text-anchor="middle">{S.foot}</text>
+  </svg>
+  <figcaption set:html={S.cap} />
+</figure>

@@ -1,0 +1,72 @@
+---
+title: "A Shape a Machine Can Trust: JSON"
+order: 20
+description: Free-form text is easy for people and painful for programs. We make "painful for programs" concrete by seeing what the machine actually sees, then pick up the structured-data format the whole world uses instead — JSON — down to keys, values, and how to read it, hands-on.
+draft: false
+---
+
+import JsonEye from "../../../components/JsonEye.svelte";
+
+The previous chapter showed that pulling data out of free text is endless whack-a-mole.
+It led us to the idea of "have it returned in an easy-to-pull shape from the start," and told us that shape is called **JSON**.
+This chapter looks at what JSON actually is.
+
+## What a "fixed shape" looks like
+
+As the previous chapter showed, free-form text is differently-shaped, awkward data to a program every time.
+The opposite — lining it up in a **shape agreed on in advance** — looks like this.
+Here is "Tokyo, sunny tomorrow, 28°C," written in a fixed shape.
+
+```json
+{
+  "city": "Tokyo",
+  "condition": "sunny",
+  "temperature": 28,
+  "humidity": 45
+}
+```
+
+This is **JSON**.
+There are several "fixed shapes" in the world, and this is the most widely used standard among them.
+It looks a little forbidding, but the rules are very simple.
+You just pair up a **key** and a **value** with a colon, and list the pairs.
+The key `"city"` with the value `"Tokyo"`, the key `"temperature"` with the value `28`, and so on.
+
+Values come in kinds.
+Something in quotes like `"Tokyo"` is a **string**; a number like `28` is a **number**.
+You can also put in an **array** — an ordered list in square brackets, like `["poker", "shogi"]`.
+Keys and strings are always wrapped in `"` (double quotes).
+
+## Aim with the key
+
+The lovely thing about JSON is that **a program can use the key to pull out one value, precisely**.
+
+Let's see how, first.
+A program keeps the JSON it received in a named container (called a **variable**).
+Since this is weather data, let's name it weather.
+Then writing weather["city"] — "container name[key]" — pulls out just that key's value.
+Try it below: click a key and watch.
+
+<JsonEye lang="en" client:visible />
+
+Here is the most important feeling to take away.
+**The key names are fixed; only the values change.**
+Sunny or rainy, the key `"condition"` is always the same.
+So a program can aim for "the value at `condition`" with the same code every single time.
+That's a world apart from hunting for a number inside free-form text: it's exact, and it never wobbles.
+
+Bigger, more tangled JSON is coming.
+But you read it the same way.
+However intricate it gets, you follow the keys and look only at the value you want.
+This key-following way of reading keeps paying off from here on.
+
+## Made for the machine, not the person
+
+One last thing that trips people up.
+JSON is a shape made for "readable to a machine," not primarily "readable to a person."
+So keys are normally written in letters and digits, not, say, Japanese (a program treats a key like a variable name).
+Spaces and newlines mean the same thing to a machine whether they're there or not, so JSON is often sent squeezed tight.
+
+We now have a program-friendly shape.
+What remains is the main event: **how to make the model answer in this JSON**.
+The next chapter first asks it naively to "reply in JSON," sees where that breaks down, and then how we finally guarantee the shape.

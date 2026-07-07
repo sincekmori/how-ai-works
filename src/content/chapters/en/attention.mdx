@@ -1,0 +1,122 @@
+---
+title: "Attention: Look Directly at the Words That Matter"
+order: 9
+description: The big invention that broke the previous chapter's walls — attention. Each word looks directly and all at once at the partners it relates to, near or far, and reads them weighted by relevance. The three roles (query, key, value), scores turned into percentages with softmax, self-attention, and multi-head — all explained for a curious beginner with figures and an interactive demo.
+draft: false
+---
+
+import QueryKeyValue from "../../../components/figures/QueryKeyValue.astro";
+import AttentionScores from "../../../components/figures/AttentionScores.astro";
+import AttentionDemo from "../../../components/AttentionDemo.svelte";
+
+In the last chapter we saw where the old way got stuck.
+Cram everything into one tiny memo and hand it down the line like a bucket brigade — so distant words get forgotten, and you can only process one at a time, which is slow.
+And we finished with a wish: "**If only the word I'm looking at could peek directly at whatever other words matter — near or far — and do it for every word at the same time.**"
+
+The thing that turns that wish straight into a mechanism is the star of this chapter: **attention**.
+As the name says, it's a way of deciding "which words to pay attention to, and how much."
+This later becomes the heart of the Transformer, and it's common to every major LLM today.
+
+## One single idea: read with "weights"
+
+Suppose you're reading a sentence like this —
+
+"The dog threw the ball, so **it** chased it."
+
+You instantly know what "it" refers to, right?
+The **ball**.
+As you read, your eyes naturally jumped back to "ball" from earlier.
+In that moment, your mind isn't looking at every word equally — it's **paying strong attention to the words that are strongly related**.
+
+Attention makes a machine do exactly this: **read the strongly related parts more strongly**.
+And it does so not just for one word, but for **every word in the sentence at the same time**, computing where each one should look.
+
+## Three roles: query, key, value
+
+So how does a machine decide what's "strongly related" versus "weakly related"?
+Here, we give every word **three roles**.
+
+<QueryKeyValue lang="en" />
+
+It's easiest to picture looking for a book in a library.
+The topic you're searching for is the **query** (your question), the label on each book's spine is the **key** (its headline), and what's inside the book is the **value** (its contents).
+You compare your topic (query) against the labels (keys) of all the books on the shelf, and the better a book matches, the more carefully you read its contents (value).
+Attention does exactly this, but between words.
+
+## Give scores, then turn them into percentages
+
+How do we measure "how well" a query and a key match?
+Here, recall the **dot product** from the closeness-of-meaning chapter.
+The dot product was a calculation that captures, in a single number, **how alike the directions of two lists of numbers (vectors) are — that is, how well they agree**.
+So if we take the dot product of a query and a key, its size becomes the "match score" directly.
+The better they agree, the bigger the score; if they're unrelated, the score is small.
+
+Once we have the scores, we turn them into **percentages (how much attention to pay)**.
+Say the result of matching the query for "it" against every word's key came out like this:
+
+<AttentionScores lang="en" />
+
+The reason we don't use the raw scores is that we want **a split that adds up to 100%**.
+This conversion is called **softmax**.
+Softmax doesn't just hand "a bigger share to whatever scored higher" — it also **exaggerates the gaps**, making the best match clearly stand out.
+This is how a split like "pay 84% attention to ball, 11% to dog, 4% to threw" gets decided.
+
+Finally, using these percentages, we **blend together each word's value (its contents)**.
+84% of the ball's contents, 11% of the dog's contents, and so on.
+The "**information mixed, weighted by relevance**" that comes out becomes that word's new contents.
+That's one round of attention.
+
+## Let's try it out
+
+Let's check "which word is looking where" by switching between them below.
+The taller the bar, the more strongly that word is being attended to.
+
+<AttentionDemo client:visible lang="en" />
+
+What's worth noticing is **distance**.
+"it" finds "ball" from six words back without any trouble at all.
+You can see that the previous chapter's "the farther back, the more it forgets" wall has vanished here.
+
+## Self-attention: everyone looks at everyone, all at once
+
+What we just saw was the viewpoint of one word.
+The amazing thing about attention is that **every word in the sentence does this toward every word, all at once**.
+This is called **self-attention** (it's "self" because the words direct attention among themselves — the words of the same sentence).
+
+Now recall the two walls from the previous chapter.
+
+- **Wall 1 (forgetting distant words)** → Attention links any two words **directly**, no matter how far apart they are. Distance doesn't matter. The forgetting problem disappears.
+- **Wall 2 (can only process in line, so it's slow)** → All the word matchups can be computed **at the same time**. There's no need to wait for the previous word's processing to finish. It gets dramatically faster.
+
+**One idea broke two walls at once** — that's why attention is called a breakthrough.
+
+## Adding viewpoints: multi-head
+
+That said, there's more than one way to pay attention.
+Sometimes you want to see "who relates to whom — the grammatical links," and sometimes you want to see "closeness in meaning."
+A single matchup can only capture one kind of relationship.
+
+So we **run the same thing as several sets in parallel, each from a different viewpoint**, and combine the results at the end.
+This is called **multi-head attention** (each individual viewpoint is a "head").
+With one head handling grammar, another handling meaning, and so on, the relationships among words can be captured from many angles.
+GPT, Llama, Claude, Gemini, Mistral, Qwen — every major LLM today has this self-attention plus multi-head at its heart (the number of heads and the finer tricks differ from model to model).
+
+## The grown-up notation (no need to memorize it)
+
+Everything so far is written in books and online as a single line of math.
+You already understand all the meaning, so just glancing at it is enough.
+
+$$
+\mathrm{Attention}(Q, K, V) = \mathrm{softmax}\!\left(\frac{Q K^\top}{\sqrt{d_k}}\right) V
+$$
+
+$Q$ is the query, $K$ the key, and $V$ the value, each stacked together for all the words. $Q K^\top$ is "the score between query and key (how well they agree)," $\mathrm{softmax}$ is "the percentages that add to 100%," and multiplying by $V$ at the end is the "blend the contents by those percentages" step.
+The $\sqrt{d_k}$ we divide by is an adjustment that gently keeps the scores from getting too big — when the vectors are long (lots of numbers), scores tend to blow up and make the percentages extreme ($d_k$ is the length of a key).
+
+## Summary
+
+- Attention = a mechanism that **reads weighted by relevance**. Each word looks directly and all at once at the partners it relates to.
+- Every word holds three roles: **query (question), key (headline), value (contents)**.
+- Score the match with the **dot product** of query and key, turn it into percentages adding to 100% with **softmax**, and **blend the values** by those percentages.
+- **Self-attention** does this for every word against every word at the same time, breaking both of the previous chapter's walls (forgetting, slowness) in one go.
+- **Multi-head** runs several viewpoints in parallel to capture relationships from many angles. This is the heart of the modern LLM.

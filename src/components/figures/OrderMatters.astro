@@ -1,0 +1,114 @@
+---
+// Same words, different order = opposite meaning. The subject (the "doer") chip is
+// filled with the accent colour so the meaning flip is visible. The example is
+// adapted per language (JA particles vs the classic English "dog bites man").
+interface Props {
+  lang?: 'en' | 'ja';
+}
+const { lang = 'ja' } = Astro.props;
+
+const data = {
+  ja: {
+    intro: '同じ 5 つの単語。並べる順番がちがうだけ。',
+    rows: [
+      {
+        chips: [
+          { t: '犬', w: 46, hot: true },
+          { t: 'が', w: 36 },
+          { t: '猫', w: 46 },
+          { t: 'を', w: 36 },
+          { t: '追いかけた', w: 118 },
+        ],
+        result: '→ 追いかけたのは',
+        word: '犬',
+      },
+      {
+        chips: [
+          { t: '猫', w: 46, hot: true },
+          { t: 'が', w: 36 },
+          { t: '犬', w: 46 },
+          { t: 'を', w: 36 },
+          { t: '追いかけた', w: 118 },
+        ],
+        result: '→ 追いかけたのは',
+        word: '猫',
+      },
+    ],
+    cap: '使った単語はまったく同じ。それでも「が」の前に来る言葉（色をつけた方）が入れかわると、追いかける側とされる側が逆になります。<strong>ことばの意味は、単語そのものだけでなく「順番」で決まる</strong>。だから機械は、文を順番ごと読み取らなければなりません。',
+  },
+  en: {
+    intro: 'The same three words. Only the order changes.',
+    rows: [
+      {
+        chips: [
+          { t: 'Dog', w: 70, hot: true },
+          { t: 'bites', w: 78 },
+          { t: 'man', w: 74 },
+        ],
+        result: '→ Who bites?',
+        word: 'Dog',
+      },
+      {
+        chips: [
+          { t: 'Man', w: 70, hot: true },
+          { t: 'bites', w: 78 },
+          { t: 'dog', w: 74 },
+        ],
+        result: '→ Who bites?',
+        word: 'Man',
+      },
+    ],
+    cap: 'The words are identical. Yet when the first word — the subject (coloured) — swaps, who bites and who gets bitten flip. <strong>Meaning comes not just from the words but from their order</strong> — so a machine has to read a sentence order and all.',
+  },
+}[lang];
+
+const startX = 30;
+const gap = 8;
+const rows = data.rows.map((row, ri) => {
+  let x = startX;
+  const chips = row.chips.map((c) => {
+    const placed = { ...c, x };
+    x += c.w + gap;
+    return placed;
+  });
+  return { chips, resultX: x + 12, y: ri === 0 ? 48 : 110, textY: ri === 0 ? 71 : 133, result: row.result, word: row.word };
+});
+---
+
+<figure class="figure">
+  <svg viewBox="0 0 620 190" role="img" aria-label="Same words, different order, different meaning">
+    <text class="f-mut" x="310" y="22" text-anchor="middle">{data.intro}</text>
+    {
+      rows.map((row) => (
+        <>
+          {row.chips.map((c) =>
+            c.hot ? (
+              <>
+                <rect class="f-bar" x={c.x} y={row.y} width={c.w} height="34" rx="8" />
+                <text
+                  x={c.x + c.w / 2}
+                  y={row.textY - 1}
+                  text-anchor="middle"
+                  style="fill: #fff; font-size: 16px; font-weight: 700"
+                >
+                  {c.t}
+                </text>
+              </>
+            ) : (
+              <>
+                <rect class="f-box" x={c.x} y={row.y} width={c.w} height="34" rx="8" />
+                <text class="f-lbl" x={c.x + c.w / 2} y={row.textY - 2} text-anchor="middle">
+                  {c.t}
+                </text>
+              </>
+            ),
+          )}
+          <text class="f-lbl" x={row.resultX} y={row.textY - 2}>
+            {row.result} <tspan style="fill: var(--accent); font-weight: 700">{row.word}</tspan>
+          </text>
+        </>
+      ))
+    }
+  </svg>
+  <figcaption set:html={data.cap} />
+</figure>

@@ -1,0 +1,42 @@
+---
+// Two links (EN | 日本語) to the equivalent page in each locale. Clicking one
+// records the choice in localStorage so the auto-detect script won't override it.
+import { localeHref } from '../lib/urls';
+import type { Locale } from '../lib/chapters';
+
+interface Props {
+  lang: Locale;
+  slug?: string;
+}
+const { lang, slug } = Astro.props;
+const path = slug ? `${slug}/` : '';
+---
+
+<div class="langsw" role="group" aria-label="Language">
+  <a
+    href={localeHref('en', path)}
+    class={`langsw__opt${lang === 'en' ? ' is-active' : ''}`}
+    data-lang="en"
+    hreflang="en"
+    aria-current={lang === 'en' ? 'true' : undefined}>EN</a
+  >
+  <a
+    href={localeHref('ja', path)}
+    class={`langsw__opt${lang === 'ja' ? ' is-active' : ''}`}
+    data-lang="ja"
+    hreflang="ja"
+    aria-current={lang === 'ja' ? 'true' : undefined}>日本語</a
+  >
+</div>
+
+<script>
+  for (const a of document.querySelectorAll<HTMLAnchorElement>('.langsw__opt')) {
+    a.addEventListener('click', () => {
+      try {
+        localStorage.setItem('how-ai-works:lang', a.dataset.lang ?? 'en');
+      } catch {
+        /* ignore */
+      }
+    });
+  }
+</script>

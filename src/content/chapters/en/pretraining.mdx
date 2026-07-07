@@ -1,0 +1,92 @@
+---
+title: "Pretraining: getting smart by endlessly guessing the next word"
+order: 11
+description: Where does an LLM's knowledge come from? Pretraining is the stage where the model practices one thing — guessing the next word — over an enormous amount of text. With figures and an interactive demo, we explain why no human has to write the answers (self-supervised) and why that single game teaches knowledge, arithmetic, and grammar, in a way a curious beginner can follow.
+draft: false
+---
+
+import SelfLabel from "../../../components/figures/SelfLabel.astro";
+import SelfSupervisedExamples from "../../../components/figures/SelfSupervisedExamples.astro";
+import NextWordTrainer from "../../../components/NextWordTrainer.svelte";
+
+By now we have the machinery for reading a sentence (the Transformer).
+But a brand-new Transformer has its knobs set at random — it knows nothing.
+So where does all that knowledge and feel for language actually come from?
+The answer is **pretraining**.
+It's the stage an LLM spends the most time and money on: the "**study, and keep studying**" phase.
+
+## It's really just one game
+
+What happens during pretraining is astonishingly simple.
+**Show the model the first part of some text and have it guess the word that comes next.**
+That's all — repeated over an unimaginable amount of text.
+
+Why does such a simple game work at all?
+The biggest point is that **no human has to write the answers**.
+
+<SelfLabel lang="en" />
+
+Hide the next word, and that hidden word _is_ the answer.
+**The answer is already sitting inside the text.**
+This way of learning — where the data carries its own answers — is called **self-supervised** learning.
+Thanks to it, we can use the world's text as-is: books, news, web pages, even program code.
+No army of people has to label correct answers by hand.
+
+## Why does just "guessing the next word" make it smart?
+
+"Can something that simple really make it smart?" you might ask.
+This is the most surprising part: **guessing the next word well actually requires all sorts of abilities.**
+
+<SelfSupervisedExamples lang="en" />
+
+To fill in "The tallest mountain in Japan is **\_" you need **knowledge**.
+"3 + 4 = \_**" needs **arithmetic**.
+"The past tense of 'go' is **\_" needs **grammar**.
+"It started raining, so she opened her \_**" needs **common sense**.
+In other words, the harder the model tries to guess the next word well, the more it picks up knowledge, arithmetic, grammar, and common sense — all **on its own, as a side effect**.
+That's why one single game becomes an all-purpose workout.
+
+## Repeat "guess" and "correct"
+
+So how does it actually improve?
+It's the very same loop we saw in the probability and neural networks chapters: **predict, then measure the mistake, then correct**.
+
+The model doesn't commit to a single next word — it puts a **probability** on each candidate (remember the "probability bar chart" from the probability chapter).
+If it gives the correct word a high probability, great; if it can only give it a low one, then it was "**that surprised — its mistake was big**".
+We call this size of surprise the **loss**, and we nudge the knobs (the weights) a little in the direction that makes it smaller.
+
+Try one step of that below.
+We'll have the model guess the next word after "The capital of Japan is \_\_\_".
+At first the model is unsure, but each time you press "learn", the probability of the correct word "Tokyo" rises and the **surprise (loss) goes down**.
+
+<NextWordTrainer client:visible lang="en" />
+
+This gets repeated — while changing the text — **billions of times**.
+Each correction is tiny, but stacked up over an astronomical number of repetitions, the model slowly swallows the whole world of language.
+
+## How hard is it, really?
+
+This "study and keep studying" is defined by its sheer scale.
+The teaching material is a **giant pile of text** gathered from books and the web (and the prep matters too — choosing good text, removing duplicates).
+It's then run for **weeks** across many high-powered computers (GPUs).
+This stage is the most expensive and power-hungry part of building an LLM.
+There's actually a law governing "how big a model you should train, with how much data and compute", and we'll cover that in the **scaling laws** chapter a little later.
+
+By the way, there's a trick to how you move the knobs too.
+The size of each step (the **learning rate**) starts small and is adjusted gradually.
+Take a giant stride right away and you trip (the training breaks).
+
+## What happens when pretraining ends?
+
+The model built this way becomes shockingly good at writing the continuation of a text.
+But a model at this stage (called a **base model**) is only good at "**writing a plausible continuation**".
+It isn't yet a thoughtful assistant that answers your questions helpfully or turns down dangerous requests.
+Raising a raw model into a useful conversation partner — that's the **fine-tuning** story in the next chapter.
+
+## Summary
+
+- **Pretraining** = the stage of endlessly practicing one thing — "**guess the next word**" — over an enormous amount of text.
+- The hidden next word is the answer, so no human has to write answers (**self-supervised**). That's why the world's text can all be teaching material.
+- Guessing well requires knowledge, arithmetic, grammar, and common sense → those get picked up as a **side effect**.
+- Raise the probability of the correct word and lower the **loss (surprise)**, nudging the knobs ever so slightly, billions of times.
+- The result is a **base model** that's good at continuing text. Turning it into an assistant needs the next chapter's tuning.

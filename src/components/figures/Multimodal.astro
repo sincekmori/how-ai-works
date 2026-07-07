@@ -1,0 +1,72 @@
+---
+// Multimodal: turn images/audio/text each into the SAME kind of vectors, then let
+// the language model handle the mixed stream as usual.
+interface Props {
+  lang?: 'en' | 'ja';
+}
+const { lang = 'ja' } = Astro.props;
+const S = {
+  ja: {
+    aria: '画像・音声・文字を同じベクトル列にそろえて言語モデルへ',
+    sources: ['画像', '音声', '文字'],
+    encoder: 'エンコーダ',
+    align1: '同じ意味の空間の',
+    align2: 'ベクトル列にそろえる',
+    note: 'どの入力も「同じ形のベクトル」に変換すれば、あとは言語モデルの仕組みをそのまま使える。',
+    cap: '文字だけでなく画像・音声・動画も扱うのが <strong>マルチモーダル</strong> です。やり方の基本は、それぞれを専用の <strong>エンコーダ</strong> で「言語モデルが理解できるのと同じ形のベクトル列」に変換し、文字のトークンに混ぜること。こうすると、これまで学んだ Transformer の仕組みを <strong>ほぼそのまま流用</strong> できます。',
+  },
+  en: {
+    aria: 'Aligning images, audio, and text into the same vector sequence for the language model',
+    sources: ['image', 'audio', 'text'],
+    encoder: 'encoder',
+    align1: 'line up into one',
+    align2: 'shared vector space',
+    note: 'Turn any input into "the same kind of vector," and the language model machinery just works as-is.',
+    cap: 'Understanding not just text but images, audio, and video too is what we call <strong>multimodal</strong>. The basic recipe: turn each one, with its own dedicated <strong>encoder</strong>, into "the same kind of vector sequence the language model understands," then mix it in among the text tokens. That way the Transformer machinery you have already learned can be reused <strong>almost as-is</strong>.',
+  },
+}[lang];
+const {sources} = S;
+---
+
+<figure class="figure">
+  <svg viewBox="0 0 600 220" role="img" aria-label={S.aria}>
+    <defs>
+      <marker id="mm-arrow" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto">
+        <path d="M0,0 L6,3 L0,6 Z" style="fill: var(--fg-muted)"></path>
+      </marker>
+    </defs>
+
+    {
+      sources.map((s, i) => {
+        const y = 44 + i * 54;
+        return (
+          <>
+            <rect class="f-box" x="20" y={y - 18} width="80" height="36" rx="9" />
+            <text class="f-lbl" x="60" y={y + 5} text-anchor="middle">
+              {s}
+            </text>
+            <rect class="f-bar-bg" x="130" y={y - 18} width="96" height="36" rx="9" />
+            <text class="f-mut" x="178" y={y + 5} text-anchor="middle">
+              {S.encoder}
+            </text>
+            <line class="f-axis" x1="100" y1={y} x2="128" y2={y} marker-end="url(#mm-arrow)" />
+            <line class="f-axis" x1="226" y1={y} x2="260" y2="100" marker-end="url(#mm-arrow)" />
+          </>
+        );
+      })
+    }
+
+    <rect class="f-box" x="262" y="64" width="156" height="72" rx="10"></rect>
+    <text class="f-mut" x="340" y="94" text-anchor="middle">{S.align1}</text>
+    <text class="f-mut" x="340" y="112" text-anchor="middle">{S.align2}</text>
+
+    <line class="f-axis" x1="418" y1="100" x2="442" y2="100" marker-end="url(#mm-arrow)"></line>
+    <rect class="f-bar" x="444" y="64" width="136" height="72" rx="10"></rect>
+    <text x="512" y="104" text-anchor="middle" style="fill: #fff; font-size: 15px; font-weight: 700"
+      >Transformer</text
+    >
+
+    <text class="f-mut" x="300" y="200" text-anchor="middle">{S.note}</text>
+  </svg>
+  <figcaption set:html={S.cap} />
+</figure>

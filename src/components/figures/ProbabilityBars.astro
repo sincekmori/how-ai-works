@@ -1,0 +1,55 @@
+---
+// A probability distribution over next-word candidates, shown as bars that sum to 1.
+interface Props {
+  lang?: 'en' | 'ja';
+}
+const { lang = 'ja' } = Astro.props;
+const S = {
+  ja: {
+    aria: '次の単語の確率分布。すべて足すと1',
+    cat: '猫',
+    dog: '犬',
+    bird: '鳥',
+    other: 'その他',
+    total: '合計 = 1.00（100%）',
+    cap: '「マットの上で丸くなっているのは＿＿」の次に来る単語の<strong>ありそうさ</strong>の配分。「丸くなっている」という手がかりのおかげで、猫がいちばん大きな割合をもらっています。どれか 1 つに決めつけず割合で持ち、<strong>すべて足すと必ず 1（100%）</strong>になります。これが確率分布です。',
+  },
+  en: {
+    aria: 'A probability distribution over next words. They all add up to 1.',
+    cat: 'cat',
+    dog: 'dog',
+    bird: 'bird',
+    other: 'other',
+    total: 'total = 1.00 (100%)',
+    cap: 'How <strong>likely</strong> each word is to come after "Curled up on the mat is a ___". Thanks to the clue "curled up", cat gets the biggest share. Instead of committing to one answer, the model keeps a share for each candidate, and <strong>they always add up to 1 (100%)</strong>. This is a probability distribution.',
+  },
+}[lang];
+---
+
+<figure class="figure">
+  <svg viewBox="0 0 600 260" role="img" aria-label={S.aria}>
+    <!-- 猫 0.60 -->
+    <text class="f-lbl" x="92" y="55" text-anchor="end">{S.cat}</text>
+    <rect class="f-bar-bg" x="108" y="38" width="400" height="28" rx="5"></rect>
+    <rect class="f-bar" x="108" y="38" width="240" height="28" rx="5"></rect>
+    <text class="f-mut" x="516" y="57">60%</text>
+    <!-- 犬 0.20 -->
+    <text class="f-lbl" x="92" y="105" text-anchor="end">{S.dog}</text>
+    <rect class="f-bar-bg" x="108" y="88" width="400" height="28" rx="5"></rect>
+    <rect class="f-bar" x="108" y="88" width="80" height="28" rx="5"></rect>
+    <text class="f-mut" x="516" y="107">20%</text>
+    <!-- 鳥 0.12 -->
+    <text class="f-lbl" x="92" y="155" text-anchor="end">{S.bird}</text>
+    <rect class="f-bar-bg" x="108" y="138" width="400" height="28" rx="5"></rect>
+    <rect class="f-bar" x="108" y="138" width="48" height="28" rx="5"></rect>
+    <text class="f-mut" x="516" y="157">12%</text>
+    <!-- その他 0.08 -->
+    <text class="f-lbl" x="92" y="205" text-anchor="end">{S.other}</text>
+    <rect class="f-bar-bg" x="108" y="188" width="400" height="28" rx="5"></rect>
+    <rect class="f-bar" x="108" y="188" width="32" height="28" rx="5"></rect>
+    <text class="f-mut" x="516" y="207">8%</text>
+
+    <text class="f-lbl" x="300" y="245" text-anchor="middle">{S.total}</text>
+  </svg>
+  <figcaption set:html={S.cap} />
+</figure>

@@ -1,0 +1,113 @@
+---
+title: "A Universal Socket for Tools: MCP"
+order: 23
+description: Connecting even one tool takes work — teaching the model a description, writing a go-between program. As models and tools multiply, this hand-wiring balloons to M×N and breaks down. MCP standardizes "how tools plug in" itself. With one shared socket where tools describe themselves, the wiring becomes M+N — felt through a figure and a slider demo.
+draft: false
+---
+
+import McpSocket from "../../../components/figures/McpSocket.astro";
+import McpPlug from "../../../components/McpPlug.svelte";
+
+The previous chapter let us hand the model tools.
+But it ended with a warning.
+Add more tools, and the wiring gets stuck.
+This chapter is about that jam, and the standard that gets us out of it: **MCP**.
+
+## What does "connecting" even involve?
+
+First, let's make "connecting a model to a tool" concrete.
+When we gave the model the weather tool last chapter, this much preparation was quietly happening underneath.
+
+One: **teach it the description**.
+"There's a tool called get_weather; give it a city and a date and it returns the weather" — the tool's name, what it does, and the shape of its inputs, told to the model at every conversation.
+Without the description, the model doesn't even know the tool exists.
+Two: **write the go-between program**.
+The part that reads the model's request, turns it into the real weather service's calling convention, calls it, and hands the result back to the model.
+Three: repeat both **for every tool**.
+
+It's work, but with one tool and one model, you can grit your teeth.
+
+## Hand-wiring grows by multiplication
+
+Reality, though, multiplies fast.
+There are many kinds of model (GPT, Llama, Claude, Gemini, …).
+And the fine shape of "how you write the request" differs a little from model to model.
+Nor do tools stop at weather (search, maps, calendar, …).
+
+Say you worked hard and wired the weather tool up for one model.
+It works. Joy.
+Then a friend says, "I want that weather tool in my app too!"
+But the friend's app is built on a different model.
+The way you hand over the description and the request shape both differ — so it's **the same tool, wired all over again**.
+Another friend uses yet another model… and the wiring keeps growing even though not a single new tool was added.
+
+Now, what happens if you naively "connect everything directly"?
+With M kinds of model and N kinds of tool, the number of wiring agreements is **M × N (M times N)**.
+Add one model, and you need wiring for every tool.
+Add one tool, and you need wiring for every model.
+It's a nest of wires almost immediately, and it gets unmanageable.
+
+<McpSocket lang="en" />
+
+## Put a shared socket in the middle
+
+There's a clever move.
+Stop wiring models to tools **directly**, and put one **shared agreement** in the middle.
+Decide once: "a tool describes itself in this common shape, and is called in this common shape."
+Then each model only has to speak that common shape, and each tool only has to offer that common shape.
+Everyone just plugs into **one shared socket**.
+
+That shared-socket agreement is **MCP (Model Context Protocol)**.
+Think of it like **USB-C**.
+Devices used to need differently-shaped charging cables; once USB-C settled on one common shape, a single cable connects to all sorts of devices.
+MCP is USB-C for the world of tools.
+
+## Where did the wiring work go?
+
+In the MCP world, those "three preparations" change like this.
+
+First, a tool is wrapped up as an **MCP server**.
+The server's best trick is that, when asked, it can **describe itself**.
+"I am a tool called get_weather; I take a city and a date, and I return the weather" — name, capability, input shape, all in the common form.
+The chore of hand-writing the description and handing it to each model has vanished.
+
+Second, the app side builds an **MCP client** — one socket, built once.
+That's the common version of the go-between program.
+Build it once, and whatever tool gets plugged in, the conversation follows the same steps.
+
+Adding a new tool now equals **pushing one more plug into the socket**.
+The app asks the plugged-in tool "what can you do?", and shows the answer straight to the model.
+The model asks "call this tool with these values" exactly the way it did last chapter.
+No hand-written descriptions, no per-tool go-betweens, no re-wiring.
+
+## How much does it help?
+
+"Standardizing helps" might feel abstract.
+Let's see it in numbers.
+Move the sliders below to change the number of models and tools.
+
+<McpPlug lang="en" client:visible />
+
+Hand-wiring grows by **multiplication (M × N)**; MCP grows by **addition (M + N)**.
+While the numbers are small, there's little difference.
+But as they grow, multiplication balloons while addition creeps.
+With 5 models and 20 tools, hand-wiring is 100 wires; MCP is 25.
+That gap is what matters in a world where tools keep multiplying.
+A tool that supports MCP once can be used by any model that speaks MCP.
+And someone building a new tool offers it once in the MCP shape, without worrying about each model.
+
+## A standard is everyone's gain
+
+The important thing is that MCP **belongs to no single company**.
+A shared agreement is valuable precisely because everyone uses the same one.
+MCP is an open specification, and many models and tools are adopting it.
+Recall the thread of this part:
+the model speaks JSON, emits a fixed shape via structured output, and calls tools in that shape.
+Just as structured output fixed "the shape of one reply" and gave programs peace of mind, MCP fixes "the shape of connecting to a tool" and spreads that same peace of mind across a much bigger circle.
+MCP is the effort to make that "how you call a tool" one shape, shared across the world.
+
+The parts are now on the table.
+Answer in a fixed shape (structured output), hand it tools (function calling), and connect tools in a common shape (MCP).
+In the final chapter, we combine these to have the model carry out a **multi-step job**.
+Think, use a tool, read the result, think again.
+Enter the **agent**.

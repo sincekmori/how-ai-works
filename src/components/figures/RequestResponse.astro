@@ -1,0 +1,89 @@
+---
+// Reframes the model as a service you call over the network: your program sends
+// a request, the model sends a response back. And the reader flips from a person
+// (fine with free text) to a program (needs a fixed shape).
+interface Props {
+  lang?: 'en' | 'ja';
+}
+const { lang = 'ja' } = Astro.props;
+const S = {
+  ja: {
+    aria: 'プログラムがリクエストを送り、モデルがレスポンスを返す図。読み手が人からプログラムに変わる',
+    client: 'プログラム',
+    server: 'モデル\n（ネットの向こうの窓口）',
+    req: 'リクエスト（お願い）',
+    res: 'レスポンス（返事）',
+    human: '人が読むなら\n自由な文で OK',
+    program: 'プログラムが読むなら\n形が決まっていないと困る',
+    cap: 'モデルは、ネットの向こうにある<strong>呼び出せる窓口</strong>です。プログラムが<strong>リクエスト</strong>を送り、モデルが<strong>レスポンス</strong>を返します。ここで大事な変化が起きます。返事を読むのが人ではなく<strong>プログラム</strong>になると、自由な文章では都合が悪くなるのです。',
+  },
+  en: {
+    aria: 'A program sends a request and the model returns a response; the reader flips from a person to a program',
+    client: 'program',
+    server: 'model\n(a window across the net)',
+    req: 'request (a favor asked)',
+    res: 'response (the reply)',
+    human: 'a person reading it\nis fine with free text',
+    program: 'a program reading it\nneeds a fixed shape',
+    cap: 'A model is a <strong>window you can call</strong>, sitting across the network. A program sends a <strong>request</strong>, and the model sends back a <strong>response</strong>. Here is the important shift: once the reader is a <strong>program</strong> instead of a person, free-form text stops being convenient.',
+  },
+}[lang];
+const lines = (t: string) => t.split('\n');
+---
+
+<figure class="figure">
+  <svg viewBox="0 0 640 300" role="img" aria-label={S.aria}>
+    <!-- client -->
+    <rect class="f-box" x="30" y="70" width="180" height="80" rx="12"></rect>
+    {
+      lines(S.client).map((ln, i) => (
+        <text class="f-lbl" x="120" y={104 + i * 22} text-anchor="middle">
+          {ln}
+        </text>
+      ))
+    }
+    <!-- server -->
+    <rect class="f-box" x="430" y="70" width="180" height="80" rx="12"></rect>
+    {
+      lines(S.server).map((ln, i) => (
+        <text class="f-lbl" x="520" y={104 + i * 22} text-anchor="middle">
+          {ln}
+        </text>
+      ))
+    }
+
+    <!-- request arrow (client -> server) -->
+    <line class="f-vec" x1="212" y1="96" x2="426" y2="96" marker-end="url(#rr-ah)"></line>
+    <text class="f-mut" x="320" y="86" text-anchor="middle">{S.req}</text>
+    <!-- response arrow (server -> client) -->
+    <line class="f-vec2" x1="428" y1="128" x2="214" y2="128" marker-end="url(#rr-ah2)"></line>
+    <text class="f-mut" x="320" y="148" text-anchor="middle">{S.res}</text>
+
+    <defs>
+      <marker id="rr-ah" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto">
+        <path d="M0,0 L7,3 L0,6 Z" style="fill: var(--accent)"></path>
+      </marker>
+      <marker id="rr-ah2" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto">
+        <path d="M0,0 L7,3 L0,6 Z" style="fill: var(--fg-muted)"></path>
+      </marker>
+    </defs>
+
+    <!-- two readers -->
+    <line class="f-axis" x1="320" y1="170" x2="320" y2="200" stroke-dasharray="4 4"></line>
+    {
+      lines(S.human).map((ln, i) => (
+        <text class="f-mut" x="150" y={222 + i * 20} text-anchor="middle">
+          {ln}
+        </text>
+      ))
+    }
+    {
+      lines(S.program).map((ln, i) => (
+        <text class="f-lbl" x="480" y={222 + i * 20} text-anchor="middle">
+          {ln}
+        </text>
+      ))
+    }
+  </svg>
+  <figcaption set:html={S.cap} />
+</figure>

@@ -1,0 +1,78 @@
+---
+title: "Opening Up the Chat (It Has Exactly One Job)"
+order: 1
+description: Starting from the chat screen everyone has seen, this introduction uncovers what an LLM really does — "guess the next word from the text so far". A lid-open demo lets you run the mechanism yourself, and you leave with a map of the "why?"s the rest of the book answers.
+draft: false
+---
+
+import ChatPeek from "../../../components/ChatPeek.svelte";
+
+You've seen a screen like this, haven't you?
+You type a question on your phone or laptop, and an AI answers — that chat.
+
+Watch closely and you'll notice something.
+The reply doesn't appear all at once: it **shows up from the front, a little at a time, as if it were being written live**.
+That is not a loading animation put there to keep you busy.
+Behind the screen, the reply really is **being made up on the spot, one word at a time**.
+
+Of course, there is no tiny person living behind the screen.
+There is only a computer — and, deep down, the only thing a computer can do is **arithmetic on numbers**.
+How can a machine that can only crunch numbers hold up its end of a conversation?
+That is the question running through this whole site.
+
+## The big reveal: it has exactly one job
+
+Let's give away the outermost secret right at the start.
+The job of an LLM (a "large language model"), boiled all the way down, is just this:
+
+**"Read the text so far, and guess the next word."**
+
+That's it.
+Once it guesses a word, it writes it at the end of the text and returns to the very same question: "read the text so far (now one word longer), and guess the next word."
+Loop this, and a reply sprouts out, word by word.
+The chat below is a demo of exactly that — with the lid open.
+Go ahead and press the buttons.
+
+<ChatPeek client:visible lang="en" />
+
+That table of candidates and shares in the bottom half — that is everything going on inside this machine's head.
+What looked like "an answer" was really the result of running "compare the shares, take the top one" six times in a row.
+
+## Why one word at a time?
+
+And here is where I'd like you to ask: **why one word at a time?
+Why not produce the whole reply in one go?**
+
+The reason is the size of the problem.
+Suppose we tried to build a machine that guesses a whole sentence at once.
+Say there are roughly tens of thousands of words.
+Then the number of possible 10-word sentences is "tens of thousands × tens of thousands × ..." multiplied ten times over — far more than the number of stars in the universe.
+"Pick the one right sentence out of all of these" is far too big a problem.
+"Guess the next word", on the other hand, has tens of thousands of candidates: a lot, but small enough to actually compare.
+**When a problem is too big, split it into repeats of the same small problem.**
+That is one of the oldest tricks in computing, and it is the foundation LLMs stand on.
+
+And this "one word at a time" is exactly why the reply trickles onto your screen from the front.
+It was never a special effect — the mechanism itself was showing through.
+
+## Your map from here
+
+So the mystery has moved down one level.
+"It can hold a conversation" turns out to mean "it is astonishingly good at guessing the next word."
+But now new "why?"s pop up, one after another.
+This book is a journey that chases them down, one "why?" per chapter.
+
+- What even counts as "one word"? Where does a machine cut text? → [the tokenization chapter](../tokenization/)
+- A machine that only handles numbers — how does it turn **words** into numbers? → [the vectors chapter](../vectors/)
+- How do you compute **closeness of meaning**, like "Mount Fuji" and "Everest" being related? → [the distance & dot product chapter](../similarity/)
+- What exactly are those **shares** in the demo that add up to 100%? → [the probability chapter](../probability/)
+- A freshly built machine should guess nonsense. How does it get **better**? → [the neural networks & learning chapter](../neural-networks/)
+- How does a machine actually "read" a long text? → the [attention](../attention/) and [Transformer](../transformer/) chapters
+
+No chapter asks you to memorize answers.
+Each one starts from "why do it this way — and would another way work?"
+Dig through the mysteries one chapter at a time, and by the end you should be able to see all the way through to the other side of that chat screen.
+
+So, on to the first "why?".
+We've been casually saying "one word at a time" — but what even counts as "one word" to a machine?
+That, it turns out, is a surprisingly tricky question.

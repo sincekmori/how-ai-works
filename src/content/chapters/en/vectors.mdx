@@ -1,0 +1,77 @@
+---
+title: "Turning Words into Numbers (Vectors)"
+order: 3
+description: A computer can only handle numbers — so how can it represent words? Starting from why serial numbers fail, this chapter arrives at the vector idea — one number per side of a word's meaning — through figures and a hands-on demo.
+draft: false
+---
+
+import WordAspects from "../../../components/figures/WordAspects.astro";
+import VectorViews from "../../../components/figures/VectorViews.astro";
+import AspectMixer from "../../../components/AspectMixer.svelte";
+
+In the previous chapter, text became a line of parts called tokens.
+But the parts are still made of **letters**.
+A computer can only calculate with numbers.
+So what number should the word "cat" become?
+
+## Why serial numbers fail
+
+The most naive idea is to give each word a **serial number** (cat = 2398, dog = 2401, ...).
+That does technically "turn words into numbers".
+But these numbers are useless for guessing the next word: whether two numbers are close has nothing to do with whether the meanings are close.
+
+Fine — then why not renumber the words so that similar meanings get nearby numbers?
+It turns out that's impossible too.
+Meaning has **many sides** — how animal-like something is, how big, how fast, and so on.
+A cat is close to a dog (both are pets) and also close to a tiger (both are felines).
+Yet a dog and a tiger aren't that close.
+A triangle of relationships like that cannot be laid out along a single number line.
+
+## One number per side of the meaning
+
+So we change our approach.
+If meaning has many sides, **use as many numbers as there are sides**.
+The first number might be "how animal-like it is", the second "how big it is", and so on — one number per side of the meaning.
+
+<WordAspects lang="en" />
+
+Do this, and "cat" and "dog" end up with rows of numbers that are alike, while "car" is very different.
+And look at the triangle that stumped us a moment ago.
+On the "animal-ness" scale the tiger matches the cat almost exactly, while on the "size" scale they sit far apart.
+The relationship that wouldn't fit on one number line falls out naturally the moment each side of meaning gets its own scale.
+In other words, **closeness in meaning shows up as closeness in the rows of numbers**.
+That is exactly the property we wanted.
+This "ordered row of numbers, one per word" is called a **vector**.
+
+Try building a row of numbers with your own hands in the demo below.
+Move the sliders and match the "profile" of the target word.
+
+<AspectMixer client:visible lang="en" />
+
+## The arrow and the row of numbers: two faces of the same thing
+
+Here, let's fill in "one more gap" that trips a lot of people up.
+If this is your first time, it's enough to think of a vector as "just a list of numbers".
+On the other hand, if you learned vectors in school, you were taught "a vector is an arrow (a direction and a length)".
+In fact, the arrow and the "row of numbers" are **two faces of the same thing**.
+As the figure below shows, the two numbers (170, 60) are the same as "an arrow to the point you reach by going 170 across and 60 up from the origin".
+The arrow is the "look", the row of numbers is "its coordinates", and they point to the same thing.
+
+<VectorViews lang="en" />
+
+And here is the most important leap.
+Real word vectors are made of **hundreds to thousands** of numbers.
+A 1000-dimensional arrow can't be drawn on paper.
+But as a "row of numbers", you can add them and compare them in exactly the same way no matter how many dimensions there are.
+We **borrow the intuition we got from arrows (close vs. far, directions lining up) as-is, while doing the actual math on the rows of numbers**.
+This feel — "calmly handling high dimensions you can't draw, as rows of numbers" — keeps paying off from here on.
+
+## Summary
+
+- Serial numbers "make words numbers" but can't express closeness of meaning — meaning is many-sided and won't fit on one number line.
+- So we give a word **one number per side of its meaning**. This row of numbers is a **vector**, and words with close meanings get similar rows.
+- A vector has two faces — a row of numbers and an arrow — and even in high dimensions the row of numbers computes just the same.
+
+We now have rows of numbers.
+And immediately, the next question appears.
+How do we get "cat and dog are close" **by calculation**?

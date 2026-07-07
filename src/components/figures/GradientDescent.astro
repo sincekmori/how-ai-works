@@ -1,0 +1,63 @@
+---
+// Learning as rolling downhill: the loss curve (a valley), a ball partway up, and
+// a step taken in the downhill direction (opposite the gradient/slope).
+interface Props {
+  lang?: 'en' | 'ja';
+}
+const { lang = 'ja' } = Astro.props;
+const S = {
+  ja: {
+    aria: '損失の谷を勾配の逆向きに下る',
+    yAxis: '損失（まちがいの大きさ）',
+    xAxis: 'パラメータ →',
+    here: 'いまの位置',
+    step: '勾配の逆向きに一歩',
+    minErr: 'まちがい最小',
+    cap: '縦が「まちがいの大きさ（損失）」、横が「調整できるパラメータ」。学習は、足元の傾き（<strong>勾配</strong>）を調べ、その<strong>逆向きに一歩ずつ</strong>下って谷（まちがい最小）を目指す作業です。',
+  },
+  en: {
+    aria: 'Descending the loss valley in the direction opposite the gradient',
+    yAxis: 'loss (size of the error)',
+    xAxis: 'parameter →',
+    here: 'where we are now',
+    step: 'one step, opposite the slope',
+    minErr: 'smallest error',
+    cap: 'Up is "size of the error (loss)", across is "a parameter you can tune". Learning means checking the slope under your feet (the <strong>gradient</strong>) and stepping <strong>one step at a time in the opposite direction</strong>, heading down toward the valley (smallest error).',
+  },
+}[lang];
+---
+
+<figure class="figure">
+  <svg viewBox="0 0 560 280" role="img" aria-label={S.aria}>
+    <defs>
+      <marker id="ah-gd" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto">
+        <path d="M0,0 L7,3 L0,6 Z" style="fill: var(--accent)"></path>
+      </marker>
+    </defs>
+
+    <!-- axes -->
+    <path class="f-axis" d="M70,50 L70,245 L540,245"></path>
+    <text class="f-mut" transform="rotate(-90 26 150)" x="26" y="150" text-anchor="middle"
+      >{S.yAxis}</text
+    >
+    <text class="f-mut" x="310" y="268" text-anchor="middle">{S.xAxis}</text>
+
+    <!-- loss valley -->
+    <path class="f-curve" d="M90,70 Q300,400 510,70"></path>
+
+    <!-- ball + downhill step -->
+    <line
+      class="f-vec"
+      x1="174"
+      y1="176"
+      x2="224"
+      y2="214"
+      style="stroke-dasharray: 6 5"
+      marker-end="url(#ah-gd)"></line>
+    <circle class="f-dot" cx="174" cy="176" r="8"></circle>
+    <text class="f-mut" x="150" y="160" text-anchor="end">{S.here}</text>
+    <text class="f-mut" x="238" y="200">{S.step}</text>
+    <text class="f-mut" x="318" y="232">{S.minErr}</text>
+  </svg>
+  <figcaption set:html={S.cap} />
+</figure>

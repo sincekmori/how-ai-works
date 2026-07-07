@@ -1,0 +1,72 @@
+---
+// Worked example of one attention step: compare a query to each key -> a score
+// (how well they agree) -> softmax turns scores into percentages that add to 100,
+// exaggerating the gaps so the best match stands out.
+interface Props {
+  lang?: 'en' | 'ja';
+}
+const { lang = 'ja' } = Astro.props;
+const S = {
+  ja: {
+    aria: 'クエリとキーの点数から割合（注目度）を決める例',
+    header: '「それ」の質問 × 各単語の見出し',
+    scoreLabel: '点数（合い具合）',
+    softmaxLabel: '→ softmax → 注目の割合',
+    bottom: '割合の合計は 100%。点数が高いほど、大きく注目する。',
+    rows: [
+      { word: 'ボール', score: 3, pct: 84 },
+      { word: '犬', score: 1, pct: 11 },
+      { word: '投げた', score: 0, pct: 4 },
+    ],
+    cap: 'クエリ（質問）と各単語のキー（見出し）がどれくらい合うかを <strong>点数</strong> にし、それを <strong>softmax（ソフトマックス）</strong>という変換で <strong>合計 100% の割合</strong> に直します。softmax は差を強調するので、いちばん合う単語がはっきり目立ちます。ここでは「それ」が <strong>ボール</strong> に 84% 注目しています。',
+  },
+  en: {
+    aria: 'Example of turning query–key scores into attention percentages',
+    header: 'the query for "it" × each word’s headline',
+    scoreLabel: 'score (how well they agree)',
+    softmaxLabel: '→ softmax → attention share',
+    bottom: 'The shares add up to 100%. The higher the score, the more attention.',
+    rows: [
+      { word: 'ball', score: 3, pct: 84 },
+      { word: 'dog', score: 1, pct: 11 },
+      { word: 'threw', score: 0, pct: 4 },
+    ],
+    cap: 'We turn how well the query (question) matches each word’s key (headline) into a <strong>score</strong>, then convert it with <strong>softmax</strong> into <strong>shares that add to 100%</strong>. Because softmax exaggerates the gaps, the best-matching word stands out clearly. Here, "it" pays <strong>84%</strong> of its attention to <strong>ball</strong>.',
+  },
+}[lang];
+const {rows} = S;
+const trackX = 210;
+const trackW = 340;
+---
+
+<figure class="figure">
+  <svg viewBox="0 0 600 210" role="img" aria-label={S.aria}>
+    <text class="f-lbl" x="20" y="26">{S.header}</text>
+    <text class="f-mut" x="150" y="52" text-anchor="middle">{S.scoreLabel}</text>
+    <text class="f-mut" x={trackX + trackW / 2} y="52" text-anchor="middle">{S.softmaxLabel}</text>
+
+    {
+      rows.map((r, i) => {
+        const y = 74 + i * 42;
+        return (
+          <>
+            <text class="f-lbl" x="20" y={y + 6}>
+              {r.word}
+            </text>
+            <text class="f-num" x="150" y={y + 7} text-anchor="middle">
+              {r.score}
+            </text>
+            <rect class="f-bar-bg" x={trackX} y={y - 11} width={trackW} height="22" rx="6" />
+            <rect class="f-bar" x={trackX} y={y - 11} width={(trackW * r.pct) / 100} height="22" rx="6" />
+            <text class="f-mut" x={trackX + (trackW * r.pct) / 100 + 8} y={y + 5}>
+              {r.pct}%
+            </text>
+          </>
+        );
+      })
+    }
+
+    <text class="f-mut" x="300" y="200" text-anchor="middle">{S.bottom}</text>
+  </svg>
+  <figcaption set:html={S.cap} />
+</figure>

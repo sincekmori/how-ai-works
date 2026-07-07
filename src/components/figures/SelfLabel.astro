@@ -1,0 +1,56 @@
+---
+// Self-supervised: hide the next word and the text itself is the answer key —
+// no human has to label anything.
+interface Props {
+  lang?: 'en' | 'ja';
+}
+const { lang = 'ja' } = Astro.props;
+const S = {
+  ja: {
+    aria: '次の単語を隠すと、文章そのものが答えになる',
+    top: '文章そのものが「答え」になっている',
+    showLabel: 'モデルに見せる：',
+    shown: '…おじいさん と',
+    blank: '＿＿＿？',
+    answerLabel: '答え（文の続き）：',
+    answer: 'おばあさん',
+    bottom: '隠した次の単語が、そのまま正解。だれかが用意しなくていい。',
+    cap: '事前学習のしかけはとてもシンプル。文章の途中で止めて <strong>次の単語を隠し</strong>、当てさせます。隠した単語＝正解は <strong>文章そのものの中にある</strong>ので、人が 1 つ 1 つ正解を用意する必要がありません。このように「データ自身が答えを持っている」学び方を <strong>自己教師あり</strong>と呼びます。だから、インターネットじゅうの文章をそのまま教材にできるのです。',
+  },
+  en: {
+    aria: 'Hide the next word and the text itself becomes the answer',
+    top: 'The text itself is the "answer"',
+    showLabel: 'Shown to the model:',
+    shown: '…an old man and',
+    blank: '___?',
+    answerLabel: 'Answer (rest of the text):',
+    answer: 'old woman',
+    bottom: 'The hidden next word is the answer. No one has to supply it.',
+    cap: 'The pretraining trick is dead simple. Stop partway through a text, <strong>hide the next word</strong>, and have the model guess it. The hidden word — the answer — <strong>is already inside the text itself</strong>, so no one has to write answers one by one. This way of learning, where the data carries its own answers, is called <strong>self-supervised</strong> learning. That is why the whole internet of text can be used as teaching material as-is.',
+  },
+}[lang];
+---
+
+<figure class="figure">
+  <svg viewBox="0 0 600 196" role="img" aria-label={S.aria}>
+    <text class="f-mut" x="300" y="24" text-anchor="middle">{S.top}</text>
+
+    <!-- shown to the model -->
+    <text class="f-mut" x="24" y="64">{S.showLabel}</text>
+    <rect class="f-box" x="150" y="46" width="300" height="34" rx="9"></rect>
+    <text class="f-lbl" x="164" y="69">{S.shown}</text>
+    <rect class="f-bar-bg" x="350" y="46" width="90" height="34" rx="9"></rect>
+    <text class="f-mut" x="395" y="69" text-anchor="middle">{S.blank}</text>
+
+    <!-- the answer is just the real next word -->
+    <line class="f-axis" x1="395" y1="84" x2="395" y2="112" style="stroke-dasharray: 4 4"></line>
+    <text class="f-mut" x="24" y="140">{S.answerLabel}</text>
+    <rect class="f-bar" x="350" y="120" width="90" height="34" rx="9"></rect>
+    <text x="395" y="143" text-anchor="middle" style="fill: #fff; font-size: 15px; font-weight: 700"
+      >{S.answer}</text
+    >
+
+    <text class="f-mut" x="300" y="182" text-anchor="middle">{S.bottom}</text>
+  </svg>
+  <figcaption set:html={S.cap} />
+</figure>

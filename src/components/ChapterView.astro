@@ -1,0 +1,66 @@
+---
+import { render } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { chapterSlug, type Chapter, type Locale } from '../lib/chapters';
+import { references } from '../lib/references';
+import { absoluteLocale, issuesUrl, localeHref, siteName } from '../lib/urls';
+import { t } from '../i18n/ui';
+import CopyForLLM from './CopyForLLM.svelte';
+import AskAI from './AskAI.astro';
+import ShareBar from './ShareBar.astro';
+
+interface Props {
+  entry: Chapter;
+  lang: Locale;
+}
+const { entry, lang } = Astro.props;
+const s = t(lang);
+const slug = chapterSlug(entry);
+const { Content, headings } = await render(entry);
+
+const refs = references[slug] ?? [];
+const mdHref = localeHref(lang, `${slug}.md`);
+const mdAbs = absoluteLocale(lang, `${slug}.md`);
+const pageUrl = absoluteLocale(lang, `${slug}/`);
+const shareTitle = `${entry.data.title} | ${siteName(lang)}`;
+---
+
+<BaseLayout
+  title={entry.data.title}
+  description={entry.data.description}
+  headings={headings}
+  slug={slug}
+  lang={lang}
+>
+  <h1>{entry.data.title}</h1>
+  <p class="lead">{entry.data.description}</p>
+  <div class="page-actions" data-pagefind-ignore>
+    <CopyForLLM client:load href={mdHref} lang={lang} idleLabel={s.copyPage} />
+    <AskAI mdUrl={mdAbs} title={entry.data.title} lang={lang} />
+    <ShareBar url={pageUrl} title={shareTitle} lang={lang} />
+  </div>
+  <Content />
+  {
+    refs.length > 0 && (
+      <section class="refs">
+        <h2>{s.references}</h2>
+        <ol class="refs__list">
+          {refs.map((r) => (
+            <li>
+              <a href={r.url} target="_blank" rel="noopener noreferrer">
+                {r.title}
+              </a>
+              {(r.by || r.year) && (
+                <span class="refs__meta"> — {[r.by, r.year].filter(Boolean).join(', ')}</span>
+              )}
+            </li>
+          ))}
+        </ol>
+      </section>
+    )
+  }
+  <p class="home-note" data-pagefind-ignore>
+    {s.disclaimer}
+    <a href={issuesUrl} target="_blank" rel="noopener noreferrer">{s.reportIssue}</a>
+  </p>
+</BaseLayout>

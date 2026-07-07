@@ -1,0 +1,68 @@
+---
+// An agent loops: think -> use a tool -> read the result -> think again,
+// until the task is done.
+interface Props {
+  lang?: 'en' | 'ja';
+}
+const { lang = 'ja' } = Astro.props;
+const S = {
+  ja: {
+    aria: 'エージェントの考える・道具を使う・結果を見るのループ',
+    title: 'エージェント：考えて、道具を使って、見て、また考える',
+    think: '① 考える',
+    tool: '② 道具を使う',
+    toolSub: '検索・計算・コード',
+    result: '③ 結果を見る',
+    next: '④ 次の手を決める',
+    nextSub: '（くり返す）',
+    cap: 'モデル単体には限界があります（最新情報を知らない、計算をまちがえる…）。<strong>エージェント</strong> は、検索・計算・コード実行などの <strong>道具（ツール）</strong> を呼び、その結果を見て、次の行動を決める、という「考える→使う→見る」のループを回します。計画・記憶・複数ステップの実行を組み合わせ、<strong>1 回の返事を超えた仕事</strong> をこなそうとします。',
+  },
+  en: {
+    aria: 'The agent loop of think, use a tool, and look at the result',
+    title: 'Agent: think, use a tool, look, then think again',
+    think: '① Think',
+    tool: '② Use a tool',
+    toolSub: 'search, math, code',
+    result: '③ Read result',
+    next: '④ Pick next move',
+    nextSub: '(repeat)',
+    cap: 'A model on its own has limits (it does not know the latest news, it can get math wrong…). An <strong>agent</strong> calls <strong>tools</strong> — search, calculators, running code — looks at the result, and decides what to do next, running this "think → use → look" loop. Combining planning, memory, and multi-step execution, it takes on <strong>jobs bigger than a single reply</strong>.',
+  },
+}[lang];
+---
+
+<figure class="figure">
+  <svg viewBox="0 0 600 250" role="img" aria-label={S.aria}>
+    <defs>
+      <marker id="ag-arrow" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto">
+        <path d="M0,0 L6,3 L0,6 Z" style="fill: var(--fg-muted)"></path>
+      </marker>
+    </defs>
+
+    <text class="f-lbl" x="300" y="24" text-anchor="middle">{S.title}</text>
+
+    <!-- four nodes around a loop -->
+    <rect class="f-bar" x="230" y="48" width="140" height="44" rx="10"></rect>
+    <text x="300" y="75" text-anchor="middle" style="fill: #fff; font-size: 14px; font-weight: 700"
+      >{S.think}</text
+    >
+
+    <rect class="f-box" x="408" y="118" width="176" height="48" rx="10"></rect>
+    <text class="f-lbl" x="496" y="138" text-anchor="middle">{S.tool}</text>
+    <text class="f-mut" x="496" y="156" text-anchor="middle">{S.toolSub}</text>
+
+    <rect class="f-box" x="225" y="188" width="150" height="44" rx="10"></rect>
+    <text class="f-lbl" x="300" y="215" text-anchor="middle">{S.result}</text>
+
+    <rect class="f-box" x="16" y="118" width="176" height="48" rx="10"></rect>
+    <text class="f-lbl" x="104" y="138" text-anchor="middle">{S.next}</text>
+    <text class="f-mut" x="104" y="156" text-anchor="middle">{S.nextSub}</text>
+
+    <!-- arrows clockwise -->
+    <line class="f-axis" x1="372" y1="82" x2="476" y2="116" marker-end="url(#ag-arrow)"></line>
+    <line class="f-axis" x1="486" y1="168" x2="380" y2="205" marker-end="url(#ag-arrow)"></line>
+    <line class="f-axis" x1="222" y1="205" x2="112" y2="168" marker-end="url(#ag-arrow)"></line>
+    <line class="f-axis" x1="112" y1="116" x2="226" y2="82" marker-end="url(#ag-arrow)"></line>
+  </svg>
+  <figcaption set:html={S.cap} />
+</figure>

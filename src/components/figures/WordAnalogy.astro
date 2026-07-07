@@ -1,0 +1,54 @@
+---
+// Relationships become arithmetic: the "男 → 女" shift equals the "王様 → 女王"
+// shift, so 王様 − 男 + 女 ≈ 女王. Two parallel arrows show the identical shift.
+interface Props {
+  lang?: 'en' | 'ja';
+}
+const { lang = 'ja' } = Astro.props;
+
+const S = {
+  ja: {
+    topA: '王様',
+    topB: '女王',
+    botA: '男',
+    botB: '女',
+    mid: 'どちらも同じ「女性へのずれ」',
+    cap: '意味の関係も足し算・引き算で表せます。「男 → 女」の向きと「王様 → 女王」の向きが <strong>そっくり同じ</strong>。だから <strong>王様 − 男 ＋ 女 ≈ 女王</strong>。数にしたからこそできる芸当です。',
+  },
+  en: {
+    topA: 'king',
+    topB: 'queen',
+    botA: 'man',
+    botB: 'woman',
+    mid: 'both are the same "shift toward female"',
+    cap: 'Relationships between meanings can be expressed with addition and subtraction too. The "man → woman" direction and the "king → queen" direction are <strong>exactly the same</strong> — so <strong>king − man + woman ≈ queen</strong>. A trick only possible because words became numbers.',
+  },
+}[lang];
+---
+
+<figure class="figure">
+  <svg viewBox="0 0 560 240" role="img" aria-label="Showing meaning relationships as addition and subtraction">
+    <defs>
+      <marker id="ah-wa" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto">
+        <path d="M0,0 L7,3 L0,6 Z" style="fill: var(--accent)"></path>
+      </marker>
+    </defs>
+
+    <!-- top: king → queen -->
+    <text class="f-lbl" x="205" y="62" text-anchor="middle">{S.topA}</text>
+    <circle class="f-dot" cx="205" cy="78" r="5"></circle>
+    <text class="f-lbl" x="430" y="62" text-anchor="middle">{S.topB}</text>
+    <circle class="f-dot" cx="430" cy="78" r="5"></circle>
+    <line class="f-vec" x1="217" y1="78" x2="418" y2="78" marker-end="url(#ah-wa)"></line>
+
+    <!-- bottom: man → woman -->
+    <circle class="f-dot" cx="150" cy="188" r="5"></circle>
+    <text class="f-lbl" x="150" y="212" text-anchor="middle">{S.botA}</text>
+    <circle class="f-dot" cx="375" cy="188" r="5"></circle>
+    <text class="f-lbl" x="375" y="212" text-anchor="middle">{S.botB}</text>
+    <line class="f-vec" x1="162" y1="188" x2="363" y2="188" marker-end="url(#ah-wa)"></line>
+
+    <text class="f-mut" x="288" y="138" text-anchor="middle">{S.mid}</text>
+  </svg>
+  <figcaption set:html={S.cap} />
+</figure>

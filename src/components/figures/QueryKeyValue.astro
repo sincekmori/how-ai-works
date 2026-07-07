@@ -1,0 +1,69 @@
+---
+// Every word plays three roles at once: a Query (what am I looking for?),
+// a Key (what do I advertise about myself?), and a Value (what info do I hand over?).
+interface Props {
+  lang?: 'en' | 'ja';
+}
+const { lang = 'ja' } = Astro.props;
+const S = {
+  ja: {
+    aria: '1 つの単語が持つクエリ・キー・バリューの 3 つの役割',
+    word: '単語',
+    sub: '1 つの単語が…',
+    query: 'クエリ（質問）',
+    queryDesc: '私はいま、何に注目したい？',
+    key: 'キー（見出し）',
+    keyDesc: '私はこういう言葉ですよ、という看板',
+    value: 'バリュー（中身）',
+    valueDesc: '選ばれたときに実際に渡す中身',
+    cap: 'アテンションでは、どの単語も同時に <strong>3 つの役割</strong> を持ちます。<strong>クエリ</strong>＝自分が知りたいこと、<strong>キー</strong>＝自分を説明する看板、<strong>バリュー</strong>＝選ばれたときに渡す中身。図書館でたとえると、クエリ＝探しているテーマ、キー＝本の背表紙ラベル、バリュー＝本の中身、です。',
+  },
+  en: {
+    aria: 'The query, key, and value roles a single word holds',
+    word: 'word',
+    sub: 'one word holds…',
+    query: 'Query (question)',
+    queryDesc: 'What do I want to look at right now?',
+    key: 'Key (headline)',
+    keyDesc: 'A sign saying "this is the kind of word I am"',
+    value: 'Value (contents)',
+    valueDesc: 'The contents actually handed over when chosen',
+    cap: 'In attention, every word holds <strong>three roles</strong> at once. <strong>Query</strong> = what I want to know, <strong>key</strong> = the sign that describes me, <strong>value</strong> = the contents handed over when chosen. In library terms: query = the topic you’re searching for, key = a book’s spine label, value = what’s inside the book.',
+  },
+}[lang];
+---
+
+<figure class="figure">
+  <svg viewBox="0 0 620 220" role="img" aria-label={S.aria}>
+    <defs>
+      <marker id="qkv-arrow" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto">
+        <path d="M0,0 L6,3 L0,6 Z" style="fill: var(--fg-muted)"></path>
+      </marker>
+    </defs>
+
+    <!-- the word -->
+    <rect class="f-bar" x="24" y="90" width="80" height="44" rx="10"></rect>
+    <text x="64" y="118" text-anchor="middle" style="fill: #fff; font-size: 18px; font-weight: 700"
+      >{S.word}</text
+    >
+    <text class="f-mut" x="64" y="156" text-anchor="middle">{S.sub}</text>
+
+    <!-- three role boxes -->
+    <line class="f-axis" x1="104" y1="108" x2="214" y2="63" marker-end="url(#qkv-arrow)"></line>
+    <line class="f-axis" x1="104" y1="112" x2="214" y2="112" marker-end="url(#qkv-arrow)"></line>
+    <line class="f-axis" x1="104" y1="116" x2="214" y2="161" marker-end="url(#qkv-arrow)"></line>
+
+    <rect class="f-box" x="220" y="40" width="384" height="46" rx="9"></rect>
+    <text x="234" y="60" style="fill: var(--accent); font-size: 14px; font-weight: 700">{S.query}</text>
+    <text class="f-lbl" x="234" y="78">{S.queryDesc}</text>
+
+    <rect class="f-box" x="220" y="98" width="384" height="46" rx="9"></rect>
+    <text x="234" y="118" style="fill: var(--accent); font-size: 14px; font-weight: 700">{S.key}</text>
+    <text class="f-lbl" x="234" y="136">{S.keyDesc}</text>
+
+    <rect class="f-box" x="220" y="156" width="384" height="46" rx="9"></rect>
+    <text x="234" y="176" style="fill: var(--accent); font-size: 14px; font-weight: 700">{S.value}</text>
+    <text class="f-lbl" x="234" y="194">{S.valueDesc}</text>
+  </svg>
+  <figcaption set:html={S.cap} />
+</figure>

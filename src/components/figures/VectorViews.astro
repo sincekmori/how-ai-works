@@ -1,0 +1,68 @@
+---
+// Bridges the gap between "a vector is an arrow" (geometric, from school) and
+// "a vector is a list of numbers" (what computers actually use). Same object, two views.
+interface Props {
+  lang?: 'en' | 'ja';
+}
+const { lang = 'ja' } = Astro.props;
+const S = {
+  ja: {
+    aria: 'ベクトルは数の並びとしても矢印としても読める',
+    listTitle: '数の並び（リスト）として',
+    rowA: '身長',
+    rowB: '体重',
+    listEq: 'ベクトル = (170, 60)',
+    same: '同じもの',
+    arrowTitle: '矢印（向きと長さ）として',
+    axisX: '身長 →',
+    axisY: '体重 ↑',
+    cap: '同じベクトル (170, 60) を、左は「数の並び」、右は「矢印」として描いたもの。<strong>まったく同じものの 2 つの見方</strong>です。学校で「ベクトル＝矢印」と習った人は右の絵を思い浮かべますが、その正体は左の「数の並び」。LLM の単語は数百次元なので矢印には描けませんが、<strong>数の並びとしてなら同じように計算できます</strong>。',
+  },
+  en: {
+    aria: 'A vector read both as a list of numbers and as an arrow',
+    listTitle: 'As a list of numbers',
+    rowA: 'height',
+    rowB: 'weight',
+    listEq: 'vector = (170, 60)',
+    same: 'same thing',
+    arrowTitle: 'As an arrow (direction & length)',
+    axisX: 'height →',
+    axisY: 'weight ↑',
+    cap: 'The same vector (170, 60) drawn two ways: on the left as a "list of numbers", on the right as an "arrow" — <strong>two views of the exact same thing</strong>. If school taught you "a vector is an arrow", you picture the right-hand drawing; underneath, it really is the left-hand "list of numbers". Words in an LLM have hundreds of dimensions, so you cannot draw them as arrows — but <strong>as a list of numbers you can do the same math just fine</strong>.',
+  },
+}[lang];
+---
+
+<figure class="figure">
+  <svg viewBox="0 0 680 300" role="img" aria-label={S.aria}>
+    <defs>
+      <marker id="ah-vv" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto">
+        <path d="M0,0 L7,3 L0,6 Z" style="fill: var(--accent)"></path>
+      </marker>
+    </defs>
+
+    <!-- left: list view -->
+    <text class="f-lbl" x="145" y="40" text-anchor="middle">{S.listTitle}</text>
+    <rect class="f-box" x="40" y="70" width="210" height="150" rx="10"></rect>
+    <text class="f-mut" x="72" y="118">{S.rowA}</text>
+    <text class="f-num" x="225" y="124" text-anchor="end">170</text>
+    <line class="f-axis" x1="55" y1="148" x2="235" y2="148"></line>
+    <text class="f-mut" x="72" y="190">{S.rowB}</text>
+    <text class="f-num" x="225" y="196" text-anchor="end">60</text>
+    <text class="f-mut" x="145" y="248" text-anchor="middle">{S.listEq}</text>
+
+    <!-- middle: equals -->
+    <text class="f-eq" x="320" y="150" text-anchor="middle">=</text>
+    <text class="f-mut" x="320" y="178" text-anchor="middle">{S.same}</text>
+
+    <!-- right: arrow view -->
+    <text class="f-lbl" x="535" y="40" text-anchor="middle">{S.arrowTitle}</text>
+    <path class="f-axis" d="M430,80 L430,250 L655,250"></path>
+    <line class="f-vec" x1="430" y1="250" x2="609" y2="130" marker-end="url(#ah-vv)"></line>
+    <circle class="f-dot" cx="609" cy="130" r="5"></circle>
+    <text class="f-lbl" x="600" y="118" text-anchor="end">(170, 60)</text>
+    <text class="f-mut" x="545" y="270" text-anchor="middle">{S.axisX}</text>
+    <text class="f-mut" x="430" y="72" text-anchor="middle">{S.axisY}</text>
+  </svg>
+  <figcaption set:html={S.cap} />
+</figure>

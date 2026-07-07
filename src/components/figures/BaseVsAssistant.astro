@@ -1,0 +1,70 @@
+---
+// Why tuning is needed: a base model just continues text; it doesn't try to help.
+// The same prompt, before and after alignment.
+interface Props {
+  lang?: 'en' | 'ja';
+}
+const { lang = 'ja' } = Astro.props;
+const S = {
+  ja: {
+    aria: '素のモデルと調整後アシスタントの応答のちがい',
+    prompt: 'あなた：「明日の天気は？」',
+    baseTitle: 'ベースモデル（素）',
+    baseLine1: '→「明日の天気は？」と',
+    baseLine2: '　弟が聞いてきた。ぼくは…',
+    baseBad: '✕ 質問に答えず、文章を続けるだけ',
+    asstTitle: 'アシスタント（調整後）',
+    asstLine1: '→ どの地域の天気を',
+    asstLine2: '　知りたいですか？',
+    asstGood: '✓ ちゃんと役に立とうとする',
+    note: '同じモデルでも、調整の前と後でふるまいがまるで変わる。',
+    cap: '事前学習を終えた <strong>ベースモデル</strong> は、文章の続きを書く天才ですが、こちらを助けようとはしません（質問されても、質問の続きを書いてしまったりします）。質問に答え、ていねいにふるまい、危ない頼みは断る。そんな <strong>助手（アシスタント）</strong>に仕上げる作業が、この章の <strong>ファインチューニング</strong> です。',
+  },
+  en: {
+    aria: 'How a raw model and a tuned assistant respond differently',
+    prompt: 'You: "What’s the weather tomorrow?"',
+    baseTitle: 'Base model (raw)',
+    baseLine1: '→ "What’s the weather',
+    baseLine2: '　tomorrow?" my brother asked…',
+    baseBad: '✗ Doesn’t answer — just continues the text',
+    asstTitle: 'Assistant (tuned)',
+    asstLine1: '→ Which area’s weather',
+    asstLine2: '　would you like to know?',
+    asstGood: '✓ Actually tries to help',
+    note: 'Same model, yet its behavior changes completely before and after tuning.',
+    cap: 'A pre-trained <strong>base model</strong> is a genius at continuing text, but it won’t try to help you (ask it a question and it may just keep writing the question). The work of polishing it into an <strong>assistant</strong> that answers your question, behaves politely, and refuses dangerous requests is this chapter’s <strong>fine-tuning</strong>.',
+  },
+}[lang];
+---
+
+<figure class="figure">
+  <svg viewBox="0 0 600 250" role="img" aria-label={S.aria}>
+    <!-- prompt -->
+    <rect class="f-box" x="146" y="16" width="308" height="36" rx="10"></rect>
+    <text class="f-lbl" x="300" y="39" text-anchor="middle">{S.prompt}</text>
+
+    <line class="f-axis" x1="300" y1="52" x2="160" y2="78" opacity="0.6"></line>
+    <line class="f-axis" x1="300" y1="52" x2="440" y2="78" opacity="0.6"></line>
+
+    <!-- left: base model -->
+    <text class="f-lbl" x="150" y="96" text-anchor="middle">{S.baseTitle}</text>
+    <rect class="f-box" x="20" y="108" width="260" height="64" rx="10"></rect>
+    <text class="f-mut" x="34" y="132">{S.baseLine1}</text>
+    <text class="f-mut" x="34" y="154">{S.baseLine2}</text>
+    <text x="150" y="196" text-anchor="middle" style="fill: #ef4444; font-size: 12.5px"
+      >{S.baseBad}</text
+    >
+
+    <!-- right: assistant -->
+    <text class="f-lbl" x="450" y="96" text-anchor="middle">{S.asstTitle}</text>
+    <rect class="f-box" x="320" y="108" width="260" height="64" rx="10"></rect>
+    <text class="f-mut" x="334" y="132">{S.asstLine1}</text>
+    <text class="f-mut" x="334" y="154">{S.asstLine2}</text>
+    <text x="450" y="196" text-anchor="middle" style="fill: #22c55e; font-size: 12.5px"
+      >{S.asstGood}</text
+    >
+
+    <text class="f-mut" x="300" y="234" text-anchor="middle">{S.note}</text>
+  </svg>
+  <figcaption set:html={S.cap} />
+</figure>

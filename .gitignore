@@ -1,0 +1,22 @@
+# build output
+dist/
+# astro generated types & cache
+.astro/
+# dependencies
+node_modules/
+# logs
+*.log
+npm-debug.log*
+# environment
+.env
+.env.*
+!.env.example
+# claude worktrees
+.claude/worktrees/
+
+# os / editor
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea/

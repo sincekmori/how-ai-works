@@ -1,0 +1,111 @@
+---
+title: "Word Order, and the Wall the Old Way Hit"
+order: 8
+description: A sentence is a sequence of words, and order changes meaning. How did older models read it — and where did they get stuck? The recurrent "read one word, carry a memo" idea and its two walls (forgetting distant words, and being slow), shown with figures and an animation. This is the groundwork for why the next chapter's attention was such a breakthrough.
+draft: false
+---
+
+import OrderMatters from "../../../components/figures/OrderMatters.astro";
+import RecurrenceChain from "../../../components/figures/RecurrenceChain.astro";
+import SequentialVsParallel from "../../../components/figures/SequentialVsParallel.astro";
+import RecurrentReader from "../../../components/RecurrentReader.svelte";
+
+So far a word has become a row of numbers, and a neural network can transform those numbers to get smarter.
+But a big piece is still missing: **a sentence isn't one word — it's a whole line of words in a row**.
+And that order shapes the meaning.
+How is a machine supposed to read this sequence?
+
+This chapter is the "before" story for the big invention in the next chapter, **attention**.
+**How was it done in the old days, and where did it get stuck?**
+Once you feel this wall, the next chapter's idea clicks as the breakthrough it really was.
+
+## Why does order matter so much?
+
+First, look at how much order can change meaning.
+
+<OrderMatters lang="en" />
+
+The words are exactly the same, yet swapping the order flips who does what — who bites and who gets bitten.
+What's worse, **meaning can also link words that are far apart**.
+For example:
+
+"The old seaside house where **I** lived as a child, with the pine tree in the garden, is something **I** still think about sometimes."
+
+Who is doing the thinking at the end?
+The "I" from way back at the start.
+To understand the end of the sentence correctly, you have to **remember a word from far earlier**.
+That is the real difficulty in reading a sentence.
+
+## The old way: read one word at a time and carry a "memo"
+
+Older language models read much the way a person reads a book.
+**They read left to right, one word at a time, and after each word they rewrite a small memo — a summary of the story so far — and carry it to the next word.**
+
+<RecurrenceChain lang="en" />
+
+This "pass the result forward" approach is called **recurrence**, and the carried memo is called the **hidden state** ("hidden" because it's an internal note you don't see from outside).
+Read one word, update the memo, move on — repeat until the end of the sentence.
+
+For a while, this worked well.
+But two big walls stood in the way.
+
+## Wall 1: it "forgets" distant words
+
+The memo (the hidden state) has a **fixed size**.
+No matter how long the sentence, everything so far has to be crammed into this one box.
+So naturally, every time you add a new word, **the traces of the older words fade**.
+Think of the game of **telephone** — as a message passes from person to person, the original words get blurry.
+The same thing happens here.
+
+Use the buttons below to feel that forgetting.
+**You can only read one word at a time** (the next word doesn't appear until you finish the previous one).
+The further you read, the more the very first word, "I", fades inside the memo.
+
+<RecurrentReader client:visible lang="en" />
+
+By the time you reach the end, almost nothing of the first "I" is left.
+But in the earlier example, understanding the final "think about" needed exactly that "I".
+**A link between far-apart words gets broken by distance** — this is called the **long-range dependency problem** ("dependency" because the end depends on something far away).
+
+## Wall 2: it can't go fast (no doing things at once)
+
+The other wall is speed.
+In recurrence, **to make the memo for word 2 you first need the memo for word 1**.
+Word 3 waits for word 2, and so on — you have no choice but to **process strictly in order, one in a line**.
+
+<SequentialVsParallel lang="en" />
+
+The more words there are, the more the waiting piles up in a straight line.
+LLMs learn from a **staggering amount of text** — something like a whole internet's worth — so being able to process it only "one at a time, in line" was a heavy shackle.
+The ideal, shown at the bottom of the figure, is to handle **all the words at the same time**.
+
+## People did improve it. But the walls stayed.
+
+Of course, researchers didn't just sit on their hands.
+They added switches that decide **what to remember and what to forget** (called **gates**), so important information could be kept longer.
+These improved versions, named **LSTM** and **GRU**, did good work for years.
+
+Thanks to the gates, the "forgetting" got noticeably better.
+But **the two walls themselves did not go away**.
+The memo still flowed along a single track in order, so "can only process in line (slow)" and "still bad at very long-range links" remained at the root.
+
+## What we really wanted: to look directly
+
+Let's sum up the dead end in one line.
+**Squeezing everything into one tiny memo and handing it down the line like a bucket brigade** — that single design caused both the forgetting and the slowness.
+
+So what should we do?
+Flip the idea around.
+Instead of hoarding everything in a memo, **let the word you're looking at peek directly at whatever other words matter — near or far** — and do it for **every word at the same time**.
+Then long-range links can be made regardless of distance, and the waiting in line disappears.
+
+That single idea — **paying direct attention to whichever words are relevant** — is the star of the next chapter: **attention**.
+
+## Summary
+
+- A sentence is a **sequence** of words, and **order** changes meaning. Meaning can also link **far-apart words**.
+- The old way was **recurrence**: read one word at a time and carry a fixed-size **memo (hidden state)** forward.
+- Wall 1 — the **long-range dependency problem**: the memo is small, so distant (earlier) words fade like a game of telephone and get forgotten.
+- Wall 2 — **slowness**: you can't start the next word until the previous one is done, so everything runs strictly in line. A heavy shackle when learning from enormous text.
+- **LSTM / GRU** (gated improvements) helped, but the roots of both walls remained.
+- The key is to stop "hoarding and handing down" and instead **look at the relevant words directly and all at once** — that's the next chapter's **attention**.

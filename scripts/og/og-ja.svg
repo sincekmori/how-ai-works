@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" viewBox="0 0 1200 1200">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#09090b"/>
+      <stop offset="1" stop-color="#27272a"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="1200" fill="url(#bg)"/>
+  <g transform="translate(0,285)">
+
+  <!-- chat bubble with the logo spark inside -->
+  <g transform="translate(790,150)">
+    <rect x="0" y="0" width="320" height="230" rx="28" fill="#ffffff" opacity="0.08"/>
+    <rect x="0" y="0" width="320" height="230" rx="28" fill="none" stroke="#71717a" stroke-width="4"/>
+    <path d="M60,228 L60,282 L120,228 Z" fill="#71717a"/>
+    <!-- the logo spark (see src/components/Logo.astro), scaled up -->
+    <path d="M160 43 L182 88 L227 105 L182 122 L160 167 L138 122 L93 105 L138 88 Z" fill="#e4e4e7"/>
+  </g>
+
+  <text x="90" y="290" font-family="Hiragino Sans, sans-serif" font-size="72" font-weight="700" fill="#ffffff">AI のしくみと使い方</text>
+  <text x="94" y="380" font-family="Hiragino Sans, sans-serif" font-size="42" fill="#d4d4d8">AI はなぜ、言葉を話せるのか。</text>
+  <text x="94" y="440" font-family="Hiragino Sans, sans-serif" font-size="42" fill="#d4d4d8">予備知識ゼロから最先端まで。</text>
+  <text x="94" y="545" font-family="Hiragino Sans, sans-serif" font-size="30" fill="#a1a1aa">しくみから使い方まで、図とデモで学ぶ 全 24 章</text>
+  </g>
+</svg>

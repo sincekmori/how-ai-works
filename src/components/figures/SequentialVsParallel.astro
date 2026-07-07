@@ -1,0 +1,83 @@
+---
+// Wall #2: recurrence is strictly sequential (must finish word i before word i+1),
+// so it can't use all the words at once. Top = one-at-a-time (slow). Bottom = all-at-once (fast).
+interface Props {
+  lang?: 'en' | 'ja';
+}
+const { lang = 'ja' } = Astro.props;
+const xs = [110, 230, 350, 470, 590];
+const S = {
+  ja: {
+    topTitle: '昔のやり方：一列で順番に',
+    slow: 'おそい',
+    mid: '2 番目は 1 番目が終わるまで始められない。だから全部で 5 ステップかかる。',
+    botTitle: 'ねらい：全部いっぺんに',
+    fast: 'はやい',
+    cap: '再帰では、<strong>前の単語の処理が終わらないと次に進めません</strong>（上）。だから単語が増えるほど、待ち時間が一直線に積み上がります。LLM は膨大な文章で学ぶので、これは大きな足かせ。理想は、すべての単語を <strong>同時に</strong> 扱えること（下）。',
+  },
+  en: {
+    topTitle: 'The old way: one at a time, in line',
+    slow: 'slow',
+    mid: 'Word 2 cannot start until word 1 finishes — so it takes all 5 steps.',
+    botTitle: 'The goal: all at once',
+    fast: 'fast',
+    cap: 'In recurrence, <strong>you cannot move on until the previous word is done</strong> (top). So the more words there are, the more the waiting piles up in a straight line. Since LLMs learn from enormous amounts of text, that is a serious bottleneck. The ideal is to handle every word <strong>at the same time</strong> (bottom).',
+  },
+}[lang];
+---
+
+<figure class="figure">
+  <svg viewBox="0 0 660 260" role="img" aria-label="Sequential processing versus all-at-once processing">
+    <defs>
+      <marker id="sp-arrow" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto">
+        <path d="M0,0 L6,3 L0,6 Z" style="fill: var(--fg-muted)"></path>
+      </marker>
+    </defs>
+
+    <!-- Top: sequential -->
+    <text class="f-lbl" x="20" y="34">{S.topTitle}</text>
+    <text x="500" y="34" style="fill: #ef4444; font-size: 13px; font-weight: 700">{S.slow}</text>
+    {
+      xs.map((x, i) => (
+        <>
+          <rect class="f-box" x={x - 26} y="56" width="52" height="40" rx="9" />
+          <text class="f-mut" x={x} y="81" text-anchor="middle">
+            {i + 1}
+          </text>
+        </>
+      ))
+    }
+    {
+      xs.slice(0, -1).map((x, i) => (
+        <line
+          class="f-axis"
+          x1={x + 26}
+          y1="76"
+          x2={xs[i + 1] - 26}
+          y2="76"
+          marker-end="url(#sp-arrow)"
+        />
+      ))
+    }
+    <text class="f-mut" x="330" y="120" text-anchor="middle">{S.mid}</text>
+
+    <line class="f-axis" x1="20" y1="150" x2="640" y2="150" opacity="0.5"></line>
+
+    <!-- Bottom: parallel -->
+    <text class="f-lbl" x="20" y="182">{S.botTitle}</text>
+    <text x="500" y="182" style="fill: #22c55e; font-size: 13px; font-weight: 700">{S.fast}</text>
+    <line class="f-axis" x1="110" y1="198" x2="590" y2="198"></line>
+    {
+      xs.map((x, i) => (
+        <>
+          <line class="f-axis" x1={x} y1="198" x2={x} y2="216" marker-end="url(#sp-arrow)" />
+          <rect class="f-bar-bg" x={x - 26} y="220" width="52" height="40" rx="9" />
+          <text class="f-mut" x={x} y="245" text-anchor="middle">
+            {i + 1}
+          </text>
+        </>
+      ))
+    }
+  </svg>
+  <figcaption set:html={S.cap} />
+</figure>

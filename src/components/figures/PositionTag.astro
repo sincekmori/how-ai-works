@@ -1,0 +1,58 @@
+---
+// Attention is a weighted SUM, so it's order-blind: shuffle the inputs and you'd
+// get the same blend. We add a "position tag" to each word so order survives.
+interface Props {
+  lang?: 'en' | 'ja';
+}
+const { lang = 'ja' } = Astro.props;
+const xs = [70, 170, 270, 370, 470];
+const S = {
+  ja: {
+    aria: '各単語に位置タグを足して順番を表す',
+    top: 'アテンションは「重みつきの足し算」なので、そのままでは順番が見えない。',
+    add: 'そこで、各単語に「位置タグ」を足す：',
+    words: ['犬', 'が', '猫', 'を', '見た'],
+    nth: (i: number) => `${i + 1} 番目`,
+    bottom: 'タグがないと「犬が猫を」と「猫が犬を」を区別できない。タグが順番を取り戻す。',
+    cap: 'アテンションはすべての単語をいっぺんに見ますが、その正体は「重みをつけた足し算」。足し算は順番を入れかえても答えが同じなので、<strong>アテンションだけだと語順が分かりません</strong>。そこで各単語のベクトルに <strong>位置タグ（位置エンコーディング）</strong> を足し、「これは何番目か」を埋め込みます。タグの作り方には、決まった波の模様を使う方法・学習で覚える方法・回転で表す <strong>RoPE</strong> などがあり、長い文章への強さで選ばれます。',
+  },
+  en: {
+    aria: 'Adding a position tag to each word to show its order',
+    top: 'Attention is a “weighted sum,” so on its own it can’t see order.',
+    add: 'So we add a “position tag” to each word:',
+    words: ['The', 'dog', 'saw', 'the', 'cat'],
+    nth: (i: number) => `pos ${i + 1}`,
+    bottom: 'Without tags, “dog saw cat” and “cat saw dog” look the same. Tags bring order back.',
+    cap: 'Attention sees every word at once, but at heart it is a “weighted sum.” A sum gives the same answer whatever order you add in, so <strong>attention alone can’t tell word order</strong>. We therefore add a <strong>position tag (positional encoding)</strong> to each word’s vector, embedding “which one in line this is.” Ways to make the tags include a fixed wave pattern, learning them during training, or representing position with rotation — <strong>RoPE</strong> — chosen for their strength on long text.',
+  },
+}[lang];
+const {words} = S;
+---
+
+<figure class="figure">
+  <svg viewBox="0 0 560 220" role="img" aria-label={S.aria}>
+    <text class="f-mut" x="280" y="24" text-anchor="middle">{S.top}</text>
+    <text class="f-lbl" x="280" y="52" text-anchor="middle">{S.add}</text>
+
+    {
+      words.map((w, i) => (
+        <>
+          <rect class="f-bar-bg" x={xs[i] - 34} y="86" width="68" height="46" rx="10" />
+          <text class="f-lbl" x={xs[i]} y="115" text-anchor="middle">
+            {w}
+          </text>
+          <circle class="f-dot" cx={xs[i] + 26} cy="86" r="13" />
+          <text x={xs[i] + 26} y="91" text-anchor="middle" style="fill: #fff; font-size: 13px; font-weight: 700">
+            {i + 1}
+          </text>
+          <text class="f-mut" x={xs[i]} y="156" text-anchor="middle">
+            {S.nth(i)}
+          </text>
+        </>
+      ))
+    }
+
+    <text class="f-mut" x="280" y="196" text-anchor="middle">{S.bottom}</text>
+  </svg>
+  <figcaption set:html={S.cap} />
+</figure>

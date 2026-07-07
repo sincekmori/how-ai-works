@@ -1,0 +1,102 @@
+---
+title: "Giving the Model Tools: Function Calling"
+order: 22
+description: The model alone has limits — it doesn't know live facts and is bad at exact arithmetic. So we let it ask, via structured output, "call this tool with these values," and the program actually runs the tool and feeds the result back. A third participant — the tool — joins what had been a two-party conversation. We learn this one turn of tool use (function calling) with a figure and a step demo.
+draft: false
+---
+
+import ToolCall from "../../../components/figures/ToolCall.astro";
+import ToolLoop from "../../../components/ToolLoop.svelte";
+
+The previous chapter let us make the model answer in a fixed shape.
+This chapter uses that power in a surprising direction.
+We give the model **tools from the outside world**.
+
+## The limits of the model alone
+
+Even the cleverest model can't do some things.
+All a model knows is what it learned from text, up to when it was trained.
+So it doesn't know **today's weather** or **the current stock price**.
+And as we saw in Part 1, a model is a machine that picks words one at a time by "what seems likely."
+Computing a many-digit multiplication **exactly**, like a calculator, is not its strength.
+
+These aren't weaknesses that vanish if you make the model smarter.
+Live facts simply aren't inside the model at all.
+What's needed isn't a bigger brain but **letting it use tools on the outside**.
+To know the weather, ask a weather service; to compute, hit a calculator.
+That's what people do, after all.
+
+## But the model can't run a tool
+
+Here's the catch.
+All the model can do, in the end, is **emit words (tokens)**.
+It can't reach across the network to hit a weather API itself, or work a calculator itself.
+
+This is where the previous chapter's structured output pays off.
+Instead of **running the tool itself**, the model **writes out a request, in a fixed shape**: "call this tool with these values."
+When it wants the weather, for instance, it emits this shape:
+
+```json
+{ "tool": "get_weather", "city": "Tokyo", "when": "tomorrow" }
+```
+
+That is exactly the structured output from the last chapter.
+Because the shape is fixed, the program in the middle can read it reliably.
+The program then actually hits the weather API and feeds the result back to the model.
+The model reads that result and writes the final reply.
+This one turn is **tool use**, also known as **function calling**.
+
+<ToolCall lang="en" />
+
+## The conversation now has three participants
+
+Pause here for a moment.
+Something quiet but very big just happened.
+
+Every conversation in this book so far had **two** participants.
+You (or a program) asked, and the model answered.
+However long the exchange, the cast was those two, full stop.
+A world of nothing but requests and replies, back and forth.
+
+The moment tools arrive, a **third participant** joins the circle.
+A weather service, a calculator, a search engine.
+Something that is neither the model nor you — a tool — has become part of the exchange.
+
+But a tool doesn't speak language.
+So the model and the tool can't talk to each other directly.
+The program in the middle becomes the **go-between**.
+It carries the model's "call this tool" to the tool, and carries the tool's result back to the model.
+The three-way conversation always flows through the program in the middle.
+
+The model's utterances now come in two kinds, too.
+**Words meant for a person**, and **requests meant for a tool**.
+Your screen shows only the final reply.
+But in the transcript behind it, lines you have never seen — the requests to tools and the results from them — sit quietly in between.
+
+## Walk one turn
+
+Words alone are hard to picture, so let's follow it one step at a time.
+
+<ToolLoop lang="en" client:visible />
+
+The key is the division of labor.
+**The model only decides what to look up, and with which tool.**
+**The program in the middle actually runs the tool.**
+The model takes the result and finishes a human-facing reply.
+Think of it as splitting "the one who thinks" from "the one who does."
+
+Tools aren't just weather APIs.
+Web search, a calculator, running code, a calendar, a database.
+Anything that "can be called in a fixed shape and returns a result" can be a tool.
+Many of the assistants you use every day are calling tools like this behind the scenes.
+
+## The next problem: more tools
+
+Once you can hand it tools, you get greedy.
+Weather, search, maps, calendar — you want it to use all of them.
+But if you hand-wire the agreement "this tool is called like this" between the model and the program for every new tool, it quickly gets out of hand.
+Many models, many tools.
+Hand-wiring every combination is a nest of wires.
+
+The next chapter looks at a way to standardize "how tools plug in": **MCP**.
+It's about giving the world of tools a universal socket.

@@ -1,0 +1,76 @@
+---
+title: "Fine-tuning: Growing a Raw Model into a Helpful Assistant"
+order: 12
+description: The stage that takes the "base model" from pre-training and turns it into an assistant that follows instructions, is helpful, and is safe. Copying good examples (supervised fine-tuning, instruction tuning) and tuning to human preference with RLHF, explained for a middle-schooler with figures and an interactive demo. Including why "which is better?" is needed, not just "good examples."
+draft: false
+---
+
+import BaseVsAssistant from "../../../components/figures/BaseVsAssistant.astro";
+import ThreeStages from "../../../components/figures/ThreeStages.astro";
+import PreferencePicker from "../../../components/PreferencePicker.svelte";
+
+In the last chapter we built a **base model** that's great at continuing text.
+It's knowledgeable.
+But if you use it as-is, you run into a bit of trouble.
+
+<BaseVsAssistant lang="en" />
+
+The base model's job was to **imitate** text from all over the internet.
+So if you ask it "What's the weather tomorrow?", instead of answering it might just **keep writing** — something like "...my little brother asked."
+To make it into an **assistant** that answers your question, behaves politely, and refuses dangerous requests, you need one more round of polishing.
+That's **fine-tuning** (the finishing adjustment).
+
+This finishing has two main stages.
+Let's see the whole picture first.
+
+<ThreeStages lang="en" />
+
+## Step 2: Copy good examples
+
+First, we show it lots of **good examples of how to respond**.
+People prepare sets of (instruction, good response) — "when you're asked like this, it's good to answer like that" — and we have the model **imitate that way of responding**.
+What it's actually doing is still the same "predict the next word" from the last chapter; only the study material changes, from "random text off the internet" to "good example responses."
+
+This is called **supervised fine-tuning (SFT)**.
+And if you mix in **many kinds of instructions** — summarizing, translating, answering questions, and so on — as examples, the model can handle instructions it has never seen before.
+That's **instruction tuning**, and it's the source of that "ask me anything" feeling of a real assistant.
+
+To put it as an analogy: pre-training is the stage of "reading every book in the world on your own," and copying examples is the stage of "practicing responses with a teacher's model answers."
+
+## Step 3: Fine-tune with "which is better?"
+
+Copying examples alone already makes it pretty assistant-like.
+But it's still missing one last push.
+The reason is that **writing a perfect example every single time is extremely hard for humans**.
+
+So we flip the idea around.
+Instead of **writing a good answer from scratch**, we **show two answers and have someone pick "which is better?"**
+This way people can make far more judgments, far more easily.
+We gather lots of these "which is better" choices and fine-tune the model so it **becomes more likely to produce the preferred answer**.
+This is **RLHF (reinforcement learning from human feedback)**.
+
+Below, try being that "person who teaches the preferences" yourself.
+Pick the one you think is better.
+
+<PreferencePicker client:visible lang="en" />
+
+A little more on how it works.
+From the "which is better" choices we collected, we first build a **preference judge (reward model)**.
+This is the part that scores "this is the kind of answer people prefer."
+Next, we fine-tune the model in the direction that raises that score.
+(Recently, a simpler approach called **DPO** — which skips building the judge and tunes directly from the "which is better" choices — is also widely used.)
+In this way, helpfulness, honesty, and safety all go up sharply.
+
+## You don't have to rebuild everything: add-on style tuning
+
+By the way, moving **all of the millions of knobs** every time you tune is a lot of work.
+So a common method is to keep the original knobs fixed and **only train a small "add-on part"** (such as **LoRA**).
+It's like a swappable add-on: with little memory and a short amount of time, you can tune the model for each different use.
+
+## Summary
+
+- A pre-trained **base model** is knowledgeable, but as-is it doesn't act like an assistant (it just keeps writing the question).
+- **Copying examples (SFT, instruction tuning)** teaches it the pattern of good responses and the ability to "follow instructions."
+- **RLHF**: picking "**which is better?**" is easier than writing a perfect example. We gather those preferences and fine-tune toward being helpful and safe (the simpler **DPO** is also catching on).
+- "Add-on style" methods like **LoRA** let you tune for each use at a low cost.
+- After this finishing, it finally becomes the kind of **assistant** you're talking to.

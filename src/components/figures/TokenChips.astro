@@ -1,0 +1,52 @@
+---
+// Shows that text is split into "tokens": a common short word stays one chip,
+// while a long/rare word is built from several familiar pieces.
+interface Props {
+  lang?: 'en' | 'ja';
+}
+const { lang = 'ja' } = Astro.props;
+
+const S = {
+  ja: {
+    common: 'ねこ',
+    commonTok: 'ねこ',
+    commonNote: '1 トークン（よく使う語）',
+    rare: 'きょうりゅう',
+    rarePieces: ['きょう', 'りゅう'],
+    rareNote: '部品の組み合わせ',
+    aria: '文をトークン（部品）に分ける例',
+    cap: '文は「トークン」という部品に区切られます。よく使う短い語はそのまま 1 つ、長い・珍しい語は <strong>よく出る部品の組み合わせ</strong>で表します（区切り方は説明用の一例です）。こうすると、知らない単語が来ても部品で表せます。',
+  },
+  en: {
+    common: 'cat',
+    commonTok: 'cat',
+    commonNote: '1 token (a common word)',
+    rare: 'dinosaur',
+    rarePieces: ['dino', 'saur'],
+    rareNote: 'a combination of pieces',
+    aria: 'Example of splitting a sentence into tokens (pieces)',
+    cap: 'A sentence is split into pieces called "tokens". A common short word stays a single token, while a long or rare word is built from <strong>a combination of frequent pieces</strong> (the split shown is just one illustrative example). This way, even a word the model has never seen can still be represented from its pieces.',
+  },
+}[lang];
+---
+
+<figure class="figure">
+  <svg viewBox="0 0 600 190" role="img" aria-label={S.aria}>
+    <!-- example 1: common word -> 1 token -->
+    <text class="f-lbl" x="40" y="55" text-anchor="start">{S.common}</text>
+    <text class="f-mut" x="170" y="55" text-anchor="middle">→</text>
+    <rect class="f-bar-bg" x="210" y="36" width="84" height="34" rx="8"></rect>
+    <text class="f-lbl" x="252" y="58" text-anchor="middle">{S.commonTok}</text>
+    <text class="f-mut" x="310" y="55" text-anchor="start">{S.commonNote}</text>
+
+    <!-- example 2: long/rare word -> several tokens -->
+    <text class="f-lbl" x="40" y="135" text-anchor="start">{S.rare}</text>
+    <text class="f-mut" x="170" y="135" text-anchor="middle">→</text>
+    <rect class="f-bar-bg" x="205" y="116" width="84" height="34" rx="8"></rect>
+    <text class="f-lbl" x="247" y="138" text-anchor="middle">{S.rarePieces[0]}</text>
+    <rect class="f-bar-bg" x="297" y="116" width="84" height="34" rx="8"></rect>
+    <text class="f-lbl" x="339" y="138" text-anchor="middle">{S.rarePieces[1]}</text>
+    <text class="f-mut" x="398" y="135" text-anchor="start">{S.rareNote}</text>
+  </svg>
+  <figcaption set:html={S.cap} />
+</figure>

@@ -1,0 +1,75 @@
+---
+title: "Inference and Sampling: One Word at a Time — How Does It Choose?"
+order: 13
+description: How a trained model actually writes text — the process called inference. The autoregression loop that picks the next word one at a time and chains them together, plus the dials that shape the choice — temperature, top-k, and top-p — explained with figures and an interactive playground a middle-schooler can follow.
+draft: false
+---
+
+import AutoregLoop from "../../../components/figures/AutoregLoop.astro";
+import TemperatureEffect from "../../../components/figures/TemperatureEffect.astro";
+import SamplingPlayground from "../../../components/SamplingPlayground.svelte";
+
+By now we have a model that has been cleverly tuned.
+At last, it's time to use it to write text.
+Running a finished, trained model to produce an answer is called **inference**.
+So how does a model actually "write" a sentence?
+
+## Text is built one word at a time, then chained together
+
+As we saw in the pretraining chapter, the only thing a model can do is **output the probabilities for the next word**.
+Writing text is just doing that over and over.
+
+<AutoregLoop lang="en" />
+
+You feed the text so far into the model, get back the next-word probabilities, pick one word from them, and stick it onto the end.
+Then you feed the new sentence back in as input.
+This "**keep going by eating your own output**" approach is called **autoregression**.
+That's why text grows one word at a time, from left to right.
+
+## The clever part is in the "choosing"
+
+The key question here is "**given the probabilities, how do you pick a single word?**" What the model hands you is a set of **proportions** — like "blue 70%, wide 15%…" — not the answer itself.
+And the way you choose says a lot about the result's personality.
+
+- Always pick the **highest-probability** word (**greedy decoding**) → safe and stable. But it comes out the same every time, so it can turn monotonous or get stuck looping the same phrasing.
+- Pick **randomly, weighted by probability** → you get variety and it feels natural. But once in a while it picks a strange word too.
+
+So there are dials for tuning how the choice is made.
+
+## temperature: the adventurousness dial
+
+The most important one is **temperature**.
+Before choosing, it reshapes the hill of the probability distribution.
+
+<TemperatureEffect lang="en" />
+
+Turn the temperature **down** and the hill becomes sharp, concentrating on the safest word (dependable but monotonous).
+Turn it **up** and the hill flattens out, so bolder words also get chosen (varied and creative, but more likely to miss).
+For **creative** work like cooking ideas or writing lyrics, go higher; for arithmetic or factual questions, go lower — you pick to fit the task.
+
+## top-k and top-p: safety valves that cut off shady candidates
+
+Even when you raise the temperature to let it be adventurous, you don't want it picking a "clearly wrong" word.
+So there are two ways to **narrow the candidates**.
+
+- **top-k**: keep only the **top k** most probable words as candidates (for example, the top 40; everything else is cut).
+- **top-p (nucleus sampling)**: add up the probabilities from highest to lowest, and keep only the words you need **until the total reaches p** (say, 90%). Its strength is that the number of candidates changes automatically depending on the situation.
+
+Both are **safety valves** that keep the model from accidentally picking an impossible word.
+A common combination is to set the boldness with temperature, then narrow the playing field with top-k / top-p.
+
+## Try it yourself
+
+In the playground below, move temperature, top-k, and top-p around.
+You can watch how the next-word distribution changes, and see which candidates are **kept (solid color)** and which are **cut (faded color)**.
+
+<SamplingPlayground client:visible lang="en" />
+
+These ways of choosing (also called **decoding**) are model-agnostic techniques shared by almost every LLM — GPT, Llama, Claude, Gemini, Mistral, Qwen, and the rest.
+
+## Summary
+
+- **Inference** = using a trained model to write text. It picks the next word one at a time and chains them together (**autoregression**).
+- What the model gives you is probabilities. The cleverness is in **how you choose** a single word from them.
+- **temperature**: low = safe and monotonous, high = varied and creative (but more likely to miss).
+- **top-k / top-p**: safety valves that cut off shady candidates. Set the boldness with temperature; set the playing field with these two.

@@ -1,0 +1,71 @@
+---
+title: "The Frontier: The Leading Edge, Spreading Now"
+order: 16
+description: Advanced topics built on everything so far — MoE, which routes words to specialist experts; long context; multimodal models that also handle images and sound; and step-by-step reasoning — explained with figures and interactive demos so a middle-schooler can follow. These are not one vendor's tricks but directions the whole field is moving in.
+draft: false
+---
+
+import MoERouter from "../../../components/MoERouter.svelte";
+import Multimodal from "../../../components/figures/Multimodal.astro";
+import ReasoningSteps from "../../../components/figures/ReasoningSteps.astro";
+
+In this final chapter, we'll look out over the **frontier that is moving fastest right now**, built on top of everything so far.
+None of it belongs to a single company — these are directions being adopted widely, by open and closed models alike.
+And you can understand all of it with just the words from the earlier chapters.
+
+## Routing to experts: MoE
+
+In the Transformer chapter we learned that every block has a "feed-forward" part where each word chews on the information.
+Running **every word through all of it, every time** is expensive.
+So the idea of **MoE (Mixture of Experts)** is to **set up many small experts (mini feed-forward networks) and let each word use only a few of them**.
+
+<MoERouter client:visible lang="en" />
+
+A router (the dispatcher) decides "this word goes to this expert" and puts only the top few to work.
+Because there are so many in total, the **knowledge (capacity) is large** — yet each single word uses only a few, so the **computation stays light**.
+Picture opening many service counters and assigning each request to the right staff member.
+
+## Handling long text: long context
+
+"I want it to read a whole book" — supporting that kind of **long context** is also a frontier.
+The bottleneck is the property we met in the attention chapter: attention gets heavier with the **square** of the length.
+Implementations get past this by tweaking how positions are represented (scaling the **RoPE** from the Transformer chapter) and how attention is applied (fine-grained up close, rougher far away, and so on), so more and more systems handle contexts of hundreds of thousands to millions of words.
+The **KV cache, FlashAttention, and GQA** from the previous chapter are exactly the foundations that make this long context practical.
+
+## Handling more than text: multimodal
+
+Understanding not just text but images, audio, and video too is what we call **multimodal**.
+The core idea is wonderfully elegant.
+
+<Multimodal lang="en" />
+
+Each kind of input is turned by its own dedicated **encoder** into "**the same kind of vector sequence** the language model already works with," and then mixed in among the text tokens.
+That way, the Transformer machinery you've already learned can be used **almost as-is**.
+In other words: "translate everything into the same language (vectors) first, then think."
+
+## Thinking step by step: stronger reasoning
+
+For hard problems, **working through it step by step** lands the right answer more often than **answering all at once** — just like with people.
+
+<ReasoningSteps lang="en" />
+
+Have the model write out its intermediate thinking (**chain-of-thought**), train that way of thinking, and at answer time **spend more computation** to compare and check several candidate answers.
+These tricks for "**taking time to think carefully when answering**" (test-time compute) have become a major pillar of recent gains.
+It helps to think of it this way: separate from the "compute spent on training" from the pretraining chapter, we've gained a new lever — "**compute spent at use time**."
+
+## From "how it works" to "how you use it"
+
+That rounds out the inside of the box: from turning words into numbers, through attention, the Transformer, training and tuning, all the way to the frontier of the model itself.
+Even the newest techniques here are, once you unravel them, built from **the same parts** you've seen in this book.
+
+But there's one more turn to the story.
+So far the reply has always been read by a person.
+In the final part we step **outside the box**: how you actually put this clever machine to work — calling it from a program, making it answer in a fixed shape, handing it tools, and looping it through multi-step jobs.
+
+## Summary
+
+- **MoE**: use only some of many experts, getting "large capacity, light computation" at once.
+- **Long context**: clever position representations and attention, plus last chapter's efficiency tricks, to handle book-sized inputs.
+- **Multimodal**: line images and audio up into the same vector sequence and reuse the Transformer as-is.
+- **Stronger reasoning**: think step by step and spend compute when answering (test-time compute).
+- **Next**: with the model itself understood, the final part turns to using it — structured output, tools, MCP, and agents.

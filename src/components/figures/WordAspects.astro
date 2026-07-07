@@ -1,0 +1,77 @@
+---
+// Motivates the vector: a single ID number can't capture meaning, so we give each
+// word several numbers — one per "aspect". Similar words then get similar rows,
+// which is exactly what a word vector is.
+interface Props {
+  lang?: 'en' | 'ja';
+}
+const { lang = 'ja' } = Astro.props;
+const S = {
+  ja: {
+    aria: '単語を側面ごとの数の並びで表す表。猫と犬は似た並びになり、虎は動物っぽさだけ猫と近い',
+    colAnimal: '動物っぽさ',
+    colSize: '大きさ',
+    colSpeed: '速さ',
+    cat: '猫',
+    dog: '犬',
+    tiger: '虎',
+    car: '車',
+    note: '猫と犬は並びが似る。虎は「動物っぽさ」だけ猫と近い。車は大きく違う。',
+    cap: '1 つの単語に、意味の“側面”ごとの数をいくつも割りあてます（これは説明用の作り物の値です）。すると<strong>意味が近い単語どうしは数の並びも似て</strong>きます。猫と虎のように「ある側面だけ近い」関係も、そのまま表せます。この「1 単語ぶんの数の並び」こそがベクトルです。',
+  },
+  en: {
+    aria: 'A table of words as rows of per-aspect numbers. Cat and dog get similar rows; the tiger is close to the cat only in animal-ness.',
+    colAnimal: 'animal-ness',
+    colSize: 'size',
+    colSpeed: 'speed',
+    cat: 'cat',
+    dog: 'dog',
+    tiger: 'tiger',
+    car: 'car',
+    note: 'Cat and dog get similar rows. The tiger is near the cat only in animal-ness. The car is very different.',
+    cap: 'We give a single word several numbers — one per "aspect" of its meaning (these values are made up, just for illustration). Then <strong>words that are close in meaning end up with similar rows of numbers</strong>. Even a "close on one side only" relationship, like cat and tiger, is captured as-is. This "row of numbers for one word" is exactly what a vector is.',
+  },
+}[lang];
+---
+
+<figure class="figure">
+  <svg viewBox="0 0 600 285" role="img" aria-label={S.aria}>
+    <!-- column headers -->
+    <text class="f-mut" x="210" y="42" text-anchor="middle">{S.colAnimal}</text>
+    <text class="f-mut" x="350" y="42" text-anchor="middle">{S.colSize}</text>
+    <text class="f-mut" x="460" y="42" text-anchor="middle">{S.colSpeed}</text>
+    <text class="f-mut" x="525" y="42" text-anchor="middle">…</text>
+
+    <!-- highlight: 猫 and 犬 have similar rows -->
+    <rect class="f-bar-bg" x="40" y="60" width="510" height="40" rx="8"></rect>
+    <rect class="f-bar-bg" x="40" y="108" width="510" height="40" rx="8"></rect>
+
+    <!-- 猫 -->
+    <text class="f-lbl" x="80" y="86" text-anchor="middle">{S.cat}</text>
+    <text class="f-lbl" x="210" y="86" text-anchor="middle">0.9</text>
+    <text class="f-lbl" x="350" y="86" text-anchor="middle">0.2</text>
+    <text class="f-lbl" x="460" y="86" text-anchor="middle">0.6</text>
+    <text class="f-mut" x="525" y="86" text-anchor="middle">…</text>
+    <!-- 犬 -->
+    <text class="f-lbl" x="80" y="134" text-anchor="middle">{S.dog}</text>
+    <text class="f-lbl" x="210" y="134" text-anchor="middle">0.8</text>
+    <text class="f-lbl" x="350" y="134" text-anchor="middle">0.3</text>
+    <text class="f-lbl" x="460" y="134" text-anchor="middle">0.7</text>
+    <text class="f-mut" x="525" y="134" text-anchor="middle">…</text>
+    <!-- 虎 -->
+    <text class="f-lbl" x="80" y="182" text-anchor="middle">{S.tiger}</text>
+    <text class="f-lbl" x="210" y="182" text-anchor="middle">0.9</text>
+    <text class="f-lbl" x="350" y="182" text-anchor="middle">0.8</text>
+    <text class="f-lbl" x="460" y="182" text-anchor="middle">0.7</text>
+    <text class="f-mut" x="525" y="182" text-anchor="middle">…</text>
+    <!-- 車 -->
+    <text class="f-lbl" x="80" y="230" text-anchor="middle">{S.car}</text>
+    <text class="f-lbl" x="210" y="230" text-anchor="middle">0.1</text>
+    <text class="f-lbl" x="350" y="230" text-anchor="middle">0.7</text>
+    <text class="f-lbl" x="460" y="230" text-anchor="middle">0.9</text>
+    <text class="f-mut" x="525" y="230" text-anchor="middle">…</text>
+
+    <text class="f-mut" x="300" y="268" text-anchor="middle">{S.note}</text>
+  </svg>
+  <figcaption set:html={S.cap} />
+</figure>

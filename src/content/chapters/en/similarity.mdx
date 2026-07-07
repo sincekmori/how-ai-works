@@ -1,0 +1,140 @@
+---
+title: "Measuring Closeness of Meaning (Distance & Dot Product)"
+order: 4
+description: How do you compute "cat and dog are close"? Starting from the distance everyone pictures, this chapter runs into its trap with a concrete example, and arrives at "how well the directions line up" — the dot product, the standard ruler of LLMs.
+draft: false
+---
+
+import DistanceTriangle from "../../../components/figures/DistanceTriangle.astro";
+import LengthVsDirection from "../../../components/figures/LengthVsDirection.astro";
+import SimilarityArrows from "../../../components/figures/SimilarityArrows.astro";
+import SimilarityLab from "../../../components/SimilarityLab.svelte";
+
+In the previous chapter, words became rows of numbers (vectors).
+"Cat" is a row of numbers, and so is "dog".
+So how do we get "cat and dog are close" by calculation?
+In this chapter we build that ruler.
+
+## First: the ordinary "distance"
+
+When you hear "closeness", what comes to mind is the straight-line **distance**.
+For two spots on a map, it's the length you'd measure with a ruler.
+Words can be measured the same way: draw each vector as a point, and measure the distance between the points.
+To keep the picture drawable, let's use words with just two sides here (movement and speed).
+
+<DistanceTriangle lang="en" />
+
+You don't need a ruler — distance can be computed.
+As the figure shows, hiding between the two points is a right triangle whose two legs are "the difference across" and "the difference up".
+The distance is the slanted side, and the slanted side of a right triangle comes from the **Pythagorean theorem**:
+
+**distance = √(difference across² + difference up²)**
+
+Two points that are 3 apart across and 4 apart up: distance = √(3² + 4²) = √(9 + 16) = √25 = **5**.
+For "run" (0.6, 0.6) and "walk" (0.7, 0.15) in the figure, the differences are 0.1 across and 0.45 up, so distance = √(0.1² + 0.45²) = √(0.01 + 0.2025) ≈ **0.46**.
+With 3 sides, or 100, the same formula works — you just add more terms.
+This is what we ordinarily call "distance".
+
+## But there's a momentum trap
+
+Distance is a perfectly sensible, respectable ruler.
+But use it to compare word meanings, and something goes wrong.
+
+<LengthVsDirection lang="en" />
+
+Language is full of pairs that mean nearly the same thing at different strengths.
+Take "run" and "sprint".
+Sprinting is just running, turned up.
+So the balance between the sides stays the same while all the numbers grow together.
+In the arrow picture: **the same direction, at twice the length**.
+
+Now measure the distances.
+Run and sprint: the differences are 0.6 across and 0.6 up, so distance = √(0.6² + 0.6²) ≈ **0.85**.
+Run and walk: as computed above, ≈ **0.46**.
+So "walk" gets ruled **closer** to "run" than "sprint" is — its closest relative in meaning, judged the more distant one.
+
+Here is the trick behind the puzzle: a row of numbers carries two kinds of information mixed together.
+One is the overall size of the numbers.
+In the arrow picture that is the **length** — the word's momentum.
+The other is the balance between the sides.
+In the arrow picture that is the **direction**.
+And it is the balance (the direction) that carries the meaning.
+Distance counts both kinds of difference at once, so the gap in momentum masqueraded as a gap in meaning.
+That's why, for "is the meaning close?", measuring **whether the directions line up** fits the purpose better.
+
+<SimilarityArrows lang="en" />
+
+## Measuring how directions line up, with multiplication (the dot product)
+
+So how do we turn "the directions line up" into a single number?
+This time the tool is not subtraction but **multiplication**.
+Take the numbers for the same side from the two words, multiply them, and add it all up.
+
+Why multiplication?
+Because multiplication has the property of "only getting big when both are big".
+When both are big: "big × big = very big".
+When only one is big: "big × small = small".
+When the directions are opposite (one plus, one minus): "minus".
+So multiplication automatically hands a **reward to sides that get along, and a penalty to sides that don't**.
+Adding it all up gives a "total of how well they get along" — a score for how well the directions line up.
+
+For example, with the table from the vectors chapter, if cat = (0.9, 0.2, 0.6) and dog = (0.8, 0.3, 0.7), then
+
+0.9 × 0.8 + 0.2 × 0.3 + 0.6 × 0.7 = 0.72 + 0.06 + 0.42 = **1.20**
+
+The "animal-ness" that is big in both, 0.9 × 0.8 = 0.72, pushes the total way up.
+For cat and car (0.1, 0.7, 0.9), on the other hand, animal-ness shrinks to 0.9 × 0.1 = 0.09, so the total comes out small.
+Just as we wanted: "the more alike the meaning, the bigger the score".
+
+This "multiply matching sides and add it all up" calculation is called the **dot product**.
+It is the one calculation you will meet again most often in this book, so keep the name.
+
+## The finishing touch: cancel the momentum
+
+This score isn't finished yet, though.
+Multiplication, too, is swayed by momentum.
+Two words with big numbers across the board get a big total even when their directions are somewhat off.
+
+The fix is simple.
+**Before comparing, shrink or stretch every arrow to length 1.**
+How?
+Divide each row of numbers by its own arrow's length.
+In the arithmetic, dividing the dot product by "the two lengths multiplied together" gives the same result in one go.
+And an arrow's length is its distance from the origin — so the Pythagorean theorem from earlier computes it.
+
+Let's check with actual numbers.
+Run's length is its distance from the origin (0.6, 0.6), so once again √(0.6² + 0.6²) ≈ 0.85.
+Sprint is twice that, ≈ 1.7.
+Walk is √(0.7² + 0.15²) ≈ 0.72.
+Dot products: run and sprint give 0.6 × 1.2 + 0.6 × 1.2 = **1.44**; run and walk give 0.6 × 0.7 + 0.6 × 0.15 = **0.51**.
+Now divide.
+
+1.44 ÷ (0.85 × 1.7) ≈ **1.0**
+
+0.51 ÷ (0.85 × 0.72) ≈ **0.84**
+
+The moment the momentum is cancelled, the scores match our intuition about meaning: run and sprint point exactly the same way (1.0), and walk is farther off (0.84).
+On this ruler, same direction = 1, completely unrelated = 0, and opposite = −1.
+(All the numbers in this chapter were positive, but real word vectors go negative too, so "opposite" really does happen.)
+This is the ruler for "closeness of meaning" we'll use throughout this book.
+
+Try it yourself in the demo below.
+The "double it" button is the highlight: the distance and the dot product jump around, but the direction score doesn't budge.
+
+<SimilarityLab client:visible lang="en" />
+
+## Rulers are designed to fit a purpose
+
+One last perspective.
+Neither distance nor direction is the single "correct" ruler.
+If you want to know "are they exactly the same?", distance fits; if you want "is the balance of meaning alike?", direction fits.
+**Rulers are something humans get to design, to fit the purpose.**
+
+## Summary
+
+- The "closeness" everyone pictures is **distance**. The Pythagorean theorem — √(the squared differences, added up) — computes it for any number of sides.
+- But distance also counts the meaning-irrelevant gap in **momentum** (arrow length). The meaning lives in the **direction** (the balance).
+- How well directions line up is measured by the **dot product** (multiply matching sides, add it all up). Divide by the lengths to cancel the momentum, and you get a friendly score from 1 (same direction) to −1 (opposite).
+
+The toolbox now holds "vectors" and "a ruler".
+Next up: the true identity of those **shares that add up to 100%** from the chat demo in the very first chapter.

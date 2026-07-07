@@ -1,0 +1,75 @@
+---
+// Hard problems: answering in one shot often fails; working step by step
+// (chain-of-thought, spending more compute at answer time) raises accuracy.
+interface Props {
+  lang?: 'en' | 'ja';
+}
+const { lang = 'ja' } = Astro.props;
+const S = {
+  ja: {
+    aria: '一気に答える場合と順を追って考える場合の対比',
+    title: 'むずかしい問題は、順を追うほうが正解しやすい',
+    oneShot: '一気に答える：',
+    stepwise: '順を追って考える：',
+    problem: '問題',
+    answer: '答え',
+    step1: '考え1',
+    step2: '考え2',
+    note: '途中の考えを書き出し、答えるときに“より多く考える”ほど、むずかしい問題に強くなる。',
+    cap: 'むずかしい問題は、いきなり答えを出すより <strong>順を追って考える</strong> ほうが正解率が上がります。途中の思考を書き出させる（<strong>思考の連鎖・chain-of-thought</strong>）、その考え方を鍛える、答えるときに <strong>より多くの計算を費やして</strong> 複数の答えを比べる。こうした「<strong>考える時間をかける</strong>」工夫が、最近の性能向上の大きな柱になっています。',
+  },
+  en: {
+    aria: 'Answering all at once versus thinking step by step',
+    title: 'For hard problems, step by step lands the answer more often',
+    oneShot: 'All at once:',
+    stepwise: 'Step by step:',
+    problem: 'problem',
+    answer: 'answer',
+    step1: 'step 1',
+    step2: 'step 2',
+    note: 'Writing out the intermediate steps and “thinking more” at answer time makes hard problems easier.',
+    cap: 'For hard problems, <strong>thinking step by step</strong> beats blurting out an answer right away. Have the model write out its intermediate thinking (<strong>chain-of-thought</strong>), train that way of thinking, and at answer time <strong>spend more computation</strong> to compare several candidate answers — these tricks for "<strong>taking time to think</strong>" have become a major pillar of recent gains.',
+  },
+}[lang];
+---
+
+<figure class="figure">
+  <svg viewBox="0 0 600 220" role="img" aria-label={S.aria}>
+    <defs>
+      <marker id="rs-arrow" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto">
+        <path d="M0,0 L6,3 L0,6 Z" style="fill: var(--fg-muted)"></path>
+      </marker>
+    </defs>
+
+    <text class="f-lbl" x="300" y="26" text-anchor="middle">{S.title}</text>
+
+    <!-- one-shot -->
+    <text class="f-mut" x="20" y="64">{S.oneShot}</text>
+    <rect class="f-box" x="150" y="48" width="90" height="34" rx="9"></rect>
+    <text class="f-lbl" x="195" y="71" text-anchor="middle">{S.problem}</text>
+    <line class="f-axis" x1="240" y1="65" x2="290" y2="65" marker-end="url(#rs-arrow)"></line>
+    <rect class="f-box" x="294" y="48" width="90" height="34" rx="9"></rect>
+    <text x="339" y="71" text-anchor="middle" style="fill: #ef4444; font-size: 15px; font-weight: 700"
+      >{S.answer} ✕</text
+    >
+
+    <!-- step by step -->
+    <text class="f-mut" x="20" y="142">{S.stepwise}</text>
+    <rect class="f-box" x="150" y="126" width="70" height="34" rx="9"></rect>
+    <text class="f-lbl" x="185" y="149" text-anchor="middle">{S.problem}</text>
+    <line class="f-axis" x1="220" y1="143" x2="240" y2="143" marker-end="url(#rs-arrow)"></line>
+    <rect class="f-bar-bg" x="244" y="126" width="60" height="34" rx="9"></rect>
+    <text class="f-mut" x="274" y="148" text-anchor="middle">{S.step1}</text>
+    <line class="f-axis" x1="304" y1="143" x2="320" y2="143" marker-end="url(#rs-arrow)"></line>
+    <rect class="f-bar-bg" x="324" y="126" width="60" height="34" rx="9"></rect>
+    <text class="f-mut" x="354" y="148" text-anchor="middle">{S.step2}</text>
+    <line class="f-axis" x1="384" y1="143" x2="400" y2="143" marker-end="url(#rs-arrow)"></line>
+    <rect class="f-box" x="404" y="126" width="90" height="34" rx="9"></rect>
+    <text x="449" y="149" text-anchor="middle" style="fill: #22c55e; font-size: 15px; font-weight: 700"
+      >{S.answer} ✓</text
+    >
+
+    <text class="f-mut" x="300" y="200" text-anchor="middle">{S.note}</text>
+  </svg>
+  <figcaption set:html={S.cap} />
+</figure>

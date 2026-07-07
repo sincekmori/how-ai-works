@@ -1,0 +1,77 @@
+---
+title: "Scaling Laws: Bigger Means Smarter, in a Predictable Way"
+order: 14
+description: Make the model bigger, the data larger, the compute greater — and performance grows in a "predictable shape." That's scaling laws. Why you can estimate smartness before training, why you grow size, data, and compute together in balance, plus emergence and limits — all made clear for a curious beginner with figures and an interactive demo.
+draft: false
+---
+
+import ScalingCurve from "../../../components/figures/ScalingCurve.astro";
+import ThreeIngredients from "../../../components/figures/ThreeIngredients.astro";
+import ScalingBalance from "../../../components/ScalingBalance.svelte";
+
+So far we've walked through how an LLM is built.
+So when you want to "make it smarter," what should you actually do?
+It turns out the answer is surprisingly clear.
+**Make the model bigger, the data larger, the compute greater** — and performance grows, what's more, **in a predictable shape**.
+This regularity is called the **scaling laws**.
+
+## The biggest surprise: smartness is "predictable"
+
+In a world where so much is "you don't know until you try," the amazing thing about scaling laws is that **you can estimate the result before you do it**.
+
+<ScalingCurve lang="en" />
+
+As you turn up the scale, the loss (the "size of the surprise" from the pretraining chapter) goes down — and the way it goes down follows a **fixed pattern**.
+A big drop at first, then less and less effect — this shape is so regular that, by extending the line on the graph, you can **predict in advance**: "at this scale, the loss will be about this much."
+
+Why does this matter?
+Training a giant model costs hundreds of millions and enormous amounts of electricity.
+**Building a giant model by guesswork would be far too risky.**
+So the scaling laws become a compass that tells you, "with this budget, it will get about this smart."
+
+## There are 3 levers. But pull them together.
+
+The knobs for boosting smartness come in three big ones.
+
+<ThreeIngredients lang="en" />
+
+**Model size** (the number of knobs), **amount of data** (how much study material), and **amount of compute** (time and electricity).
+The trick is not to push just one of them way up, but to **grow all three together, in balance**.
+A model that's giant but doesn't have enough text to read is like a huge brain given only a few pages of a textbook — it can't make use of all that capacity.
+The other way around, if there's a mountain of study material but the model is small, there isn't enough container to memorize it all.
+
+Let's get a feel for this "balance" below.
+Move the compute budget (the amount of computer) and how you spend it (data-heavy ↔ model-heavy), and the predicted loss changes.
+
+<ScalingBalance client:visible lang="en" />
+
+The more budget you add, the lower the floor of loss you can reach (though the effect tapers off).
+And for the split, the loss should be **smallest right in the middle (balanced)**.
+"For a fixed budget, you do best by growing the model and the data at roughly the same rate" — this is the idea that became widely known through the research called **Chinchilla**.
+
+## Suddenly able to solve it? Emergence
+
+As you turn up the scale, something that smaller models couldn't do at all can **suddenly become possible** past a certain size (multi-step reasoning, for example).
+This is called an **emergent ability**.
+It's an exciting phenomenon, but it also calls for caution.
+Some argue the "sudden" appearance is an artifact of **how we measure (how we score it)**, and that it was actually improving smoothly all along.
+Take it with a grain of salt, but keep it in mind as a fascinating phenomenon.
+
+## Scale is not all-powerful
+
+A calm warning to close on.
+Scaling laws are, after all, an **empirical rule**, and they have limits.
+
+- **Good data is finite.** However much you say "add more data," high-quality text will eventually run out.
+- **Lower loss does not always mean more useful.** Getting better at guessing the next word and being convenient for people don't necessarily line up.
+- **Don't overextend.** There's no guarantee the straight line on the graph holds far into the future; a new design or new data can change the slope itself.
+
+Scale is a very powerful lever, but it is **not the only lever**.
+In the next chapter, we'll look at the "efficiency" tricks for running cleverly with limited resources.
+
+## Summary
+
+- **Scaling laws** = an empirical rule that performance grows in a **predictable shape (a power law)** as you raise the scale. A compass for estimating smartness before training.
+- The levers for boosting it are three: **model size, amount of data, amount of compute**. You do best by growing them **together, in balance** (**Chinchilla**).
+- **Emergence**: tasks can suddenly become solvable past a certain scale (though how you measure it plays a part too).
+- There are limits: good data is finite, lower loss doesn't always mean useful, and extrapolation is risky. Scale is powerful but not all-powerful.

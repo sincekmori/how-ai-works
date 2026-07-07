@@ -1,0 +1,63 @@
+---
+// To predict the next word well, the model is forced to pick up many different
+// skills — knowledge, arithmetic, grammar, common sense — all as a side effect.
+interface Props {
+  lang?: 'en' | 'ja';
+}
+const { lang = 'ja' } = Astro.props;
+const S = {
+  ja: {
+    aria: '次の単語予測が、知識・計算・文法・常識を同時に育てる例',
+    title: '「次の単語を当てる」には、いろんな力がいる',
+    bottom: '正解を当てようとするだけで、知識も計算も文法も常識も身につく。',
+    rows: [
+      { q: '日本で いちばん 高い 山は ＿', a: '富士山', skill: '知識' },
+      { q: '3 ＋ 4 ＝ ＿', a: '7', skill: '計算' },
+      { q: '「行く」の 過去形は ＿', a: '行った', skill: '文法' },
+      { q: '雨が ふってきたので 傘を ＿', a: 'さした', skill: '常識・推論' },
+    ],
+    cap: '「次の単語を当てる」というたった 1 つの目標が、じつは万能のドリルです。富士山と答えるには <strong>知識</strong>、7 と答えるには <strong>計算</strong>、行ったと答えるには <strong>文法</strong>、傘をさすと答えるには <strong>常識</strong>が要ります。うまく予測しようとするほど、モデルはこうした力を <strong>副産物として</strong> 身につけていくのです。',
+  },
+  en: {
+    aria: 'Examples where next-word prediction grows knowledge, arithmetic, grammar, and common sense at once',
+    title: 'Guessing the next word takes all sorts of abilities',
+    bottom: 'Just trying to guess right builds knowledge, arithmetic, grammar, and common sense.',
+    rows: [
+      { q: 'The tallest mountain in Japan is ___', a: 'Mt. Fuji', skill: 'knowledge' },
+      { q: '3 + 4 = ___', a: '7', skill: 'arithmetic' },
+      { q: "The past tense of 'go' is ___", a: 'went', skill: 'grammar' },
+      { q: "It's raining, so grab an ___", a: 'umbrella', skill: 'common sense' },
+    ],
+    cap: 'One single goal — "guess the next word" — turns out to be an all-purpose workout. Answering Mt. Fuji takes <strong>knowledge</strong>, answering 7 takes <strong>arithmetic</strong>, answering went takes <strong>grammar</strong>, and grabbing an umbrella takes <strong>common sense</strong>. The harder the model tries to predict well, the more it picks up these abilities <strong>as a side effect</strong>.',
+  },
+}[lang];
+const {rows} = S;
+---
+
+<figure class="figure">
+  <svg viewBox="0 0 600 244" role="img" aria-label={S.aria}>
+    <text class="f-lbl" x="300" y="26" text-anchor="middle">{S.title}</text>
+
+    {
+      rows.map((r, i) => {
+        const y = 56 + i * 44;
+        return (
+          <>
+            <rect class="f-box" x="20" y={y - 22} width="350" height="34" rx="8" />
+            <text class="f-lbl" x="34" y={y}>
+              {r.q}
+            </text>
+            <text class="f-num" x="392" y={y}>→ {r.a}</text>
+            <rect class="f-bar-bg" x="470" y={y - 20} width="110" height="30" rx="8" />
+            <text class="f-mut" x="525" y={y} text-anchor="middle">
+              {r.skill}
+            </text>
+          </>
+        );
+      })
+    }
+
+    <text class="f-mut" x="300" y="236" text-anchor="middle">{S.bottom}</text>
+  </svg>
+  <figcaption set:html={S.cap} />
+</figure>

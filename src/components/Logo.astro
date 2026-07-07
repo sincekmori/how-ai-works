@@ -1,0 +1,27 @@
+---
+// The site logo: a chat bubble (talking with an AI) with a spark inside
+// (the model at work). Drawn to the lucide icon rules: 24x24 grid, 2px
+// stroke, round caps and joins, no fill, currentColor.
+// The same shapes are reused (scaled, filled variants) in public/favicon.svg
+// and the OG cards in scripts/og/ — keep them visually in sync.
+interface Props {
+  size?: number;
+}
+const { size = 20 } = Astro.props;
+---
+
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width={size}
+  height={size}
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+>
+  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+  <path d="M12 6.5 13.15 8.85 15.5 10 13.15 11.15 12 13.5 10.85 11.15 8.5 10 10.85 8.85 Z"></path>
+</svg>

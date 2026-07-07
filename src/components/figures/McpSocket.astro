@@ -1,0 +1,85 @@
+---
+// Why MCP: hand-wiring every model to every tool is M×N connections and blows
+// up. Putting a shared MCP hub in the middle means each model and each tool
+// connects only to MCP — M+N connections. A universal-socket (USB-C) analogy.
+interface Props {
+  lang?: 'en' | 'ja';
+}
+const { lang = 'ja' } = Astro.props;
+const S = {
+  ja: {
+    aria: '左は各モデルと各道具を直接つないで線が M×N に増える図、右は MCP ハブを挟んで M＋N で済む図',
+    left: '手配線：M × N 本',
+    right: 'MCP 経由：M ＋ N 本',
+    model: 'モデル',
+    tool: '道具',
+    hub: 'MCP',
+    cap: '左：モデルごと・道具ごとに直接つなぐと、線の数は<strong>かけ算（M × N）</strong>で増え、すぐ配線だらけになります。右：あいだに <strong>MCP</strong> という共通のコンセントを置くと、各モデルも各道具も MCP にだけつなげばよく、線は<strong>足し算（M ＋ N）</strong>で済みます。USB-C のように「つなぎ方を 1 つに決める」発想です。',
+  },
+  en: {
+    aria: 'Left: connecting each model to each tool directly grows to M×N wires. Right: an MCP hub in the middle makes it M+N.',
+    left: 'hand-wired: M × N',
+    right: 'via MCP: M + N',
+    model: 'model',
+    tool: 'tool',
+    hub: 'MCP',
+    cap: 'Left: wire each model to each tool directly and the number of connections grows by <strong>multiplication (M × N)</strong> — a nest of wires fast. Right: put a shared socket, <strong>MCP</strong>, in between, and each model and each tool connects only to MCP, so it grows by <strong>addition (M + N)</strong>. Like USB-C: agree on one way to plug in.',
+  },
+}[lang];
+const my = [70, 130, 190];
+---
+
+<figure class="figure">
+  <svg viewBox="0 0 660 280" role="img" aria-label={S.aria}>
+    <text class="f-lbl" x="150" y="28" text-anchor="middle">{S.left}</text>
+    <text class="f-lbl" x="510" y="28" text-anchor="middle">{S.right}</text>
+
+    <!-- LEFT: M×N tangle -->
+    {
+      my.flatMap((y1) => my.map((y2) => <line class="f-axis" x1="120" y1={y1} x2="220" y2={y2} />))
+    }
+    {
+      my.map((y) => (
+        <>
+          <circle class="f-dot" cx="120" cy={y} r="16" />
+          <text class="f-mut" x="120" y={y + 4} text-anchor="middle">
+            {S.model}
+          </text>
+          <circle class="f-dot" cx="220" cy={y} r="16" />
+          <text class="f-mut" x="220" y={y + 4} text-anchor="middle">
+            {S.tool}
+          </text>
+        </>
+      ))
+    }
+
+    <!-- RIGHT: hub, M+N -->
+    {my.map((y) => <line class="f-vec" x1="450" y1={y} x2="505" y2="130" />)}
+    {my.map((y) => <line class="f-vec2" x1="555" y1="130" x2="600" y2={y} />)}
+    {
+      my.map((y) => (
+        <>
+          <circle class="f-dot" cx="450" cy={y} r="16" />
+          <text class="f-mut" x="450" y={y + 4} text-anchor="middle">
+            {S.model}
+          </text>
+          <circle class="f-dot" cx="600" cy={y} r="16" />
+          <text class="f-mut" x="600" y={y + 4} text-anchor="middle">
+            {S.tool}
+          </text>
+        </>
+      ))
+    }
+    <rect
+      x="505"
+      y="108"
+      width="50"
+      height="44"
+      rx="10"
+      style="fill: var(--accent); opacity: 0.9"></rect>
+    <text x="530" y="135" text-anchor="middle" style="fill: #fff; font-weight: 700; font-size: 15px"
+      >{S.hub}</text
+    >
+  </svg>
+  <figcaption set:html={S.cap} />
+</figure>

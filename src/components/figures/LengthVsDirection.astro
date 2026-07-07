@@ -1,0 +1,100 @@
+---
+// Why subtraction (distance) is the wrong ruler for meaning: "run" and "sprint"
+// point the same way at different lengths, so distance calls "walk" closer.
+// Scaling every arrow to length 1 removes the momentum, leaving only direction.
+interface Props {
+  lang?: 'en' | 'ja';
+}
+const { lang = 'ja' } = Astro.props;
+const S = {
+  ja: {
+    aria: '走るとダッシュするは同じ向きで長さ違い。距離だと歩くが近く見えるが、長さを1にそろえると向きだけで比べられる',
+    t1: '距離で測ると',
+    t2: '長さを 1 にそろえてから比べると',
+    run: '走る',
+    sprint: 'ダッシュする',
+    walk: '歩く',
+    runN: '(0.6, 0.6)',
+    sprintN: '(1.2, 1.2)',
+    walkN: '(0.7, 0.15)',
+    farQ: '距離が遠い',
+    nearQ: '距離が近い!?',
+    overlap: '走る・ダッシュする',
+    overlap2: '（ぴったり重なる！）',
+    note1: '「歩く」のほうが近い判定に…',
+    note2: '向き＝バランスだけが残る',
+    axisX: '移動っぽさ →',
+    axisY: '速さ ↑',
+    cap: '「ダッシュする」は「走る」の強いバージョンなので、矢印は<strong>同じ向きに 2 倍の長さ</strong>になります（数値は説明用の作り物です）。左：点と点の距離（定規でまっすぐ測る、ふつうの距離）で測ると、勢いの差まで「意味の違い」に数えてしまい、「走る」は「ダッシュする」より「歩く」に近い、というおかしな判定になります。右：くらべる前に矢印をぜんぶ<strong>長さ 1 にそろえる</strong>と勢いが消え、意味のバランスを表す<strong>向き</strong>だけで比べられます。',
+  },
+  en: {
+    aria: 'Run and sprint point the same way at different lengths. Distance calls walk closer, but scaling to length 1 leaves only direction.',
+    t1: 'Measured by distance',
+    t2: 'After scaling every arrow to length 1',
+    run: 'run',
+    sprint: 'sprint',
+    walk: 'walk',
+    runN: '(0.6, 0.6)',
+    sprintN: '(1.2, 1.2)',
+    walkN: '(0.7, 0.15)',
+    farQ: 'far apart',
+    nearQ: 'closer!?',
+    overlap: 'run & sprint',
+    overlap2: '(they overlap!)',
+    note1: '"walk" gets ruled closer…',
+    note2: 'only direction (balance) is left',
+    axisX: 'movement →',
+    axisY: 'speed ↑',
+    cap: '"Sprint" is just "run" turned up, so its arrow points <strong>the same way at twice the length</strong> (made-up numbers, for illustration). Left: measuring by the straight-line distance between the points counts the difference in momentum as a difference in meaning, and absurdly rules "run" closer to "walk" than to "sprint". Right: <strong>scale every arrow to length 1</strong> before comparing, and the momentum disappears — only the <strong>direction</strong>, the balance of meaning, is compared.',
+  },
+}[lang];
+---
+
+<figure class="figure">
+  <svg viewBox="0 0 700 320" role="img" aria-label={S.aria}>
+    <defs>
+      <marker id="ah-lvd" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto">
+        <path d="M0,0 L7,3 L0,6 Z" style="fill: var(--accent)"></path>
+      </marker>
+    </defs>
+
+    <!-- left panel: raw arrows + distance comparison -->
+    <text class="f-lbl" x="180" y="34" text-anchor="middle">{S.t1}</text>
+    <path class="f-axis" d="M60,70 L60,260 L310,260"></path>
+    <text class="f-mut" x="255" y="280">{S.axisX}</text>
+    <text class="f-mut" x="60" y="60" text-anchor="middle">{S.axisY}</text>
+
+    <line class="f-vec" x1="60" y1="260" x2="228" y2="92" marker-end="url(#ah-lvd)"></line>
+    <line class="f-vec" x1="60" y1="260" x2="144" y2="176" marker-end="url(#ah-lvd)"></line>
+    <line class="f-vec" x1="60" y1="260" x2="158" y2="239" marker-end="url(#ah-lvd)"></line>
+
+    <text class="f-lbl" x="236" y="88">{S.sprint}</text>
+    <text class="f-mut" x="236" y="106">{S.sprintN}</text>
+    <text class="f-lbl" x="118" y="168" text-anchor="end">{S.run}</text>
+    <text class="f-mut" x="118" y="186" text-anchor="end">{S.runN}</text>
+    <text class="f-lbl" x="168" y="252">{S.walk}</text>
+    <text class="f-mut" x="168" y="270">{S.walkN}</text>
+
+    <line class="f-axis" x1="144" y1="176" x2="228" y2="92" stroke-dasharray="4 4"></line>
+    <text class="f-mut" x="204" y="140">{S.farQ}</text>
+    <line class="f-axis" x1="144" y1="176" x2="158" y2="239" stroke-dasharray="4 4"></line>
+    <text class="f-mut" x="166" y="207">{S.nearQ}</text>
+
+    <text class="f-mut" x="185" y="306" text-anchor="middle">{S.note1}</text>
+
+    <!-- right panel: arrows scaled to length 1 -->
+    <text class="f-lbl" x="530" y="34" text-anchor="middle">{S.t2}</text>
+    <path class="f-axis" d="M420,70 L420,260 L670,260"></path>
+    <path class="f-axis" d="M560,260 A140,140 0 0 0 420,120" stroke-dasharray="4 4"></path>
+
+    <line class="f-vec2" x1="420" y1="260" x2="519" y2="161" marker-end="url(#ah-lvd)"></line>
+    <line class="f-vec" x1="420" y1="260" x2="557" y2="231" marker-end="url(#ah-lvd)"></line>
+
+    <text class="f-lbl" x="545" y="128" text-anchor="middle">{S.overlap}</text>
+    <text class="f-mut" x="545" y="148" text-anchor="middle">{S.overlap2}</text>
+    <text class="f-lbl" x="565" y="224">{S.walk}</text>
+
+    <text class="f-mut" x="530" y="306" text-anchor="middle">{S.note2}</text>
+  </svg>
+  <figcaption set:html={S.cap} />
+</figure>

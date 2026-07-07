@@ -1,0 +1,90 @@
+---
+// Neurons in layers = a network. Forward arrow (input → prediction) and a dashed
+// backward arrow (error flows back = backpropagation).
+interface Props {
+  lang?: 'en' | 'ja';
+}
+const { lang = 'ja' } = Astro.props;
+const S = {
+  ja: {
+    backward: '誤差を逆向きに伝える（誤差逆伝播）',
+    inputLayer: '入力層',
+    hiddenLayer: '中間層',
+    outputLayer: '出力層',
+    forward: '入力 → 予測（順伝播）',
+    cap: 'ニューロンを横に並べて「層」にし、層を重ねたものがニューラルネットワークです。入力から出力へ計算が流れて予測が出る（<strong>順伝播</strong>）。そして、まちがいを出力から入力へ逆向きに配って各重みの直し方を求めます（<strong>誤差逆伝播</strong>）。',
+  },
+  en: {
+    backward: 'send the error backward (backpropagation)',
+    inputLayer: 'input layer',
+    hiddenLayer: 'hidden layer',
+    outputLayer: 'output layer',
+    forward: 'input → prediction (forward pass)',
+    cap: 'Line neurons up side by side into "layers," and stack the layers, and you have a neural network. Computation flows from input to output and a prediction comes out (the <strong>forward pass</strong>). Then the mistake is handed back from output to input to find how to fix each weight (<strong>backpropagation</strong>).',
+  },
+}[lang];
+---
+
+<figure class="figure">
+  <svg viewBox="0 0 620 300" role="img" aria-label="A neural network of stacked layers, with the forward pass and backpropagation flows">
+    <defs>
+      <marker id="ah-fwd" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto">
+        <path d="M0,0 L7,3 L0,6 Z" style="fill: #22c55e"></path>
+      </marker>
+      <marker id="ah-bwd" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto">
+        <path d="M0,0 L7,3 L0,6 Z" style="fill: #f97316"></path>
+      </marker>
+    </defs>
+
+    <!-- backward (error) arrow on top -->
+    <text x="310" y="20" text-anchor="middle" style="fill: #f97316; font-size: 13px"
+      >{S.backward}</text
+    >
+    <line
+      x1="540"
+      y1="34"
+      x2="80"
+      y2="34"
+      style="stroke: #f97316; stroke-width: 2; stroke-dasharray: 6 5"
+      marker-end="url(#ah-bwd)"></line>
+
+    <!-- edges: input(3) -> hidden(4) -> output(2) -->
+    {
+      [95, 150, 205].map((iy) =>
+        [70, 125, 180, 235].map((hy) => (
+          <line class="f-axis" x1="112" y1={iy} x2="298" y2={hy} opacity="0.5" />
+        )),
+      )
+    }
+    {
+      [70, 125, 180, 235].map((hy) =>
+        [120, 185].map((oy) => (
+          <line class="f-axis" x1="322" y1={hy} x2="508" y2={oy} opacity="0.5" />
+        )),
+      )
+    }
+
+    <!-- nodes -->
+    {[95, 150, 205].map((iy) => <circle class="f-dot" cx="100" cy={iy} r="11" />)}
+    {[70, 125, 180, 235].map((hy) => <circle class="f-dot" cx="310" cy={hy} r="11" />)}
+    {[120, 185].map((oy) => <circle class="f-dot" cx="520" cy={oy} r="11" />)}
+
+    <!-- layer labels -->
+    <text class="f-mut" x="100" y="262" text-anchor="middle">{S.inputLayer}</text>
+    <text class="f-mut" x="310" y="262" text-anchor="middle">{S.hiddenLayer}</text>
+    <text class="f-mut" x="520" y="262" text-anchor="middle">{S.outputLayer}</text>
+
+    <!-- forward arrow on bottom -->
+    <line
+      x1="80"
+      y1="282"
+      x2="540"
+      y2="282"
+      style="stroke: #22c55e; stroke-width: 2"
+      marker-end="url(#ah-fwd)"></line>
+    <text x="310" y="298" text-anchor="middle" style="fill: #22c55e; font-size: 13px"
+      >{S.forward}</text
+    >
+  </svg>
+  <figcaption set:html={S.cap} />
+</figure>

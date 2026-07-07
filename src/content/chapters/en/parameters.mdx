@@ -1,0 +1,75 @@
+---
+title: "The Knobs on the Request: Parameters"
+order: 18
+description: A request carries more than the question. It can also carry settings (parameters) that change how the reply comes out — temperature (and top_p) for the boldness of the lottery, and max_tokens and stop to bound the reply's length. With a hands-on demo.
+draft: false
+---
+
+import ParamKnobs from "../../../components/ParamKnobs.svelte";
+
+The previous chapter showed that a model is a "window you call across the network."
+And what you send to the window is a **request**.
+Here's the thing: the request carries more than the question text.
+It can also carry **settings that change how the reply comes out**.
+On a chat screen, those settings were chosen by whoever built the screen — you never touched them.
+Calling from a program, you turn them yourself.
+These settings are called **parameters**.
+
+## Why does the same question get different replies?
+
+First, let's recall what the parameters are adjusting.
+Have you ever asked the same question twice in chat and gotten a slightly different reply?
+
+That's not a malfunction.
+As the inference-and-sampling chapter showed, the model picks each next word by a probability-weighted **lottery**.
+Because it's a lottery, the reply can vary a little every time.
+And here's the important part:
+**how that lottery leans can be specified in the request.**
+
+## temperature: the boldness of the lottery
+
+The most famous parameter is **temperature**.
+The mechanism is the one from the inference-and-sampling chapter.
+Turn it down and the probability hill sharpens — the safest words get picked, again and again.
+Turn it up and the hill flattens — bolder words get their chance.
+
+Calling from a program, you set it **to fit the job**.
+
+- **Near 0**: nearly the same reply every time. For jobs that must not wobble — pulling out a temperature reading, answering in a fixed shape.
+- **Higher**: richer wording, unexpected ideas. For slogans and storytelling. Wrong for checking facts.
+
+The job coming up in the next chapters — pulling data out of a reply — calls for the low end, no question.
+It has a sibling knob, **top-p** (a safety valve that trims doubtful candidates; details in the inference-and-sampling chapter).
+
+## max_tokens and stop: bounding the reply's length
+
+Next, the length knobs.
+**max_tokens** is a **cap**: "the reply may be at most this many tokens."
+Tokens are the "parts of a sentence" from the tokenization chapter.
+
+Why would you want a cap?
+Two reasons.
+One is **money and time** — a model's price and latency grow roughly with the token count.
+The other is a **runaway brake** — if it mistakenly writes on and on, the cap stops it.
+
+One caution, though.
+When the cap is hit, the reply **stops mid-sentence, with a snip**.
+Not "at the nearest tidy break."
+
+There's also a companion called **stop**.
+It names a **signal**: "when this text appears, end there."
+Set it to a newline, say, and you get one-line replies.
+
+## Try the knobs
+
+<ParamKnobs lang="en" client:visible />
+
+## Summary
+
+- A request carries not just the question but **parameters**. The knobs a chat screen's builder chose for you, a program turns for itself.
+- **temperature**: the lottery's boldness. Low for jobs that must not wobble; high for creative work.
+- **max_tokens / stop**: a cap on the reply's length, and a cut-off signal. Hitting the cap snips mid-sentence.
+
+Now that we can turn the knobs, it's time to receive the reply.
+In the next chapter, from "Tokyo tomorrow: up to 28C," a program pulls out just the temperature number.
+Try it, and it's surprisingly hard — and that difficulty is the starting point for everything ahead.

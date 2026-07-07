@@ -1,0 +1,135 @@
+---
+title: "Answers in a Fixed Shape: JSON Schema"
+order: 21
+description: Just asking "reply in JSON" in the prompt breaks down — wrong structure, code fences, a chatty preamble. That's what leads to defining the shape itself, with JSON Schema. What a schema is, and why handing it to the model guarantees the shape (constrained decoding), with a before/after demo.
+draft: false
+---
+
+import StructuredToggle from "../../../components/StructuredToggle.svelte";
+
+By now we have the JSON shape, and the goal of making the model reply in it.
+So how do we make it reply in JSON?
+The most naive way is to ask for it in the prompt.
+
+## Try asking "reply in JSON"
+
+For example:
+
+> Give tomorrow's weather in Tokyo as JSON: `{ "city": ..., "condition": ..., "temperature": ... }`.
+
+For a simple shape, the model usually goes along with it.
+Pick "Answer in a fixed shape (JSON)" in the demo to see it.
+
+<StructuredToggle lang="en" client:visible />
+
+If that always worked, we'd be done — but it isn't so easy.
+As we saw in Part 1, the model picks one word at a time by "what seems likely."
+"Reply in JSON" is a **request**, not a **guarantee**.
+So it breaks down like this.
+
+## Asking alone breaks down
+
+**Break 1: a preamble.**
+The model is helpful, so it tends to add a lead-in.
+
+```text
+Sure! Here's tomorrow's weather in Tokyo:
+{ "city": "Tokyo", "condition": "sunny", "temperature": 28 }
+```
+
+The first line isn't JSON, so a program can't read it as-is.
+
+**Break 2: code fences.**
+Out of the habit of showing code inside prose, you sometimes get this wrapping:
+
+````text
+```json
+{ "city": "Tokyo", "condition": "sunny", "temperature": 28 }
+```
+````
+
+**Break 3: the structure drifts.**
+`temperature` (a number) comes back as `"28C"` (a string), or an unrequested key appears, or a key name is slightly off.
+
+You might think, "then just regex out the contents of the fence."
+But remember the whack-a-mole from the last chapter.
+There's **no guarantee the fence is even there**, and if the structure inside has drifted, you still can't read it.
+On a request basis, you never get past "probably fine."
+
+## Define the shape itself
+
+So we raise our game one more level.
+Showing an example of "return it like this" is like showing a sample of a filled-in form.
+Instead, we hand over **a form whose blanks are fixed from the start**.
+
+Spelled out in words, the form's rules are:
+
+- The keys are exactly three: `city`, `condition`, `temperature`
+- The values of `city` and `condition` are strings
+- The value of `temperature` is a number
+- All three keys must always be present
+
+But here's a snag.
+Hand these rules over as an English memo, and no machine can be made to follow them.
+The rules **themselves** need to be written in a fixed shape.
+
+So — written in what shape?
+Look closely at the rules above: each one, like "the value of the key `city` is of the kind string," is **itself a pair of a key and a value**.
+And we already know the perfect shape for writing keys and values, don't we?
+JSON.
+In other words, **the rules for how a JSON should be written are themselves written in JSON**.
+The world standard for writing rules this way is **JSON Schema**.
+A schema is a "blueprint for the shape."
+Written as a JSON Schema, the weather rules look like this:
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "city": { "type": "string" },
+    "condition": { "type": "string" },
+    "temperature": { "type": "number" }
+  },
+  "required": ["city", "condition", "temperature"]
+}
+```
+
+You read it with "follow the keys" from the last chapter.
+`"type": "object"` means "the whole thing is a `{ }` bundle."
+Inside `"properties"` is "which keys exist, and what kind each value is."
+`temperature` is `"type": "number"` — it **must be a number** (a string like `"28C"` is not allowed).
+`"required"` means "these keys must be present."
+This is not an example; it's a **rule**.
+Not "roughly like this," but "nothing but this shape is accepted."
+
+## Why it's guaranteed
+
+Hand over a schema and the model can **always** obey the shape.
+Asking broke down — so why can this guarantee it?
+The trick lies in "how the next word is chosen," from the inference chapter.
+
+Recall: each step, the model puts a share (a probability) on every candidate, then picks one to append.
+When there's a schema, we put a **filter** on that table of shares.
+We build an allow-list of "the only characters the schema permits next right now," and force every other candidate's share to **zero**.
+
+For example, once `{ "city":` is written, the schema says a string value comes next — so a quote `"` is what belongs.
+Clamp it to "nothing but `"` can be chosen."
+When writing the value of `temperature`, allow only digits (no `"`).
+This way, **the available moves are always limited to ones that fit the shape**.
+The model can't slip in a preamble or a fence, and can't get a key wrong.
+We don't steer with a request; we **carve the path itself into the shape of the schema**.
+That's why it's _guaranteed_.
+This fixed-shape output is called **structured output**, and JSON Schema is what specifies the shape.
+
+## Now it's a component
+
+Look back and it's been a journey.
+We tried pulling from free text with regexes and tired of the whack-a-mole, arrived at returning JSON, learned that asking alone breaks down, and finally reached **defining the shape itself and guaranteeing it**.
+Now the model's reply is unwavering **data in a fixed shape**.
+A fixed shape means a program can read it directly and pass it on.
+Turn the weather JSON into an icon; decide pass or fail from a score; hand an address to a maps API.
+The model has gone from "chat partner" to **a component that plugs into the other components in an app**.
+
+And the next chapter runs this flow in reverse, too.
+We let the model itself **ask, via structured output, "use this tool with these values."**
+Let's give the model tools from the outside world.

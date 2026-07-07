@@ -1,0 +1,68 @@
+---
+// The distance everyone pictures: draw two words as points, and the straight-line
+// distance between them is the hypotenuse of a hidden right triangle whose legs
+// are the differences per aspect — computed by the Pythagorean theorem.
+interface Props {
+  lang?: 'en' | 'ja';
+}
+const { lang = 'ja' } = Astro.props;
+const S = {
+  ja: {
+    aria: '走ると歩くを点として描き、横の差と縦の差から直角三角形を作って、斜辺が距離になる図',
+    run: '走る',
+    walk: '歩く',
+    runN: '(0.6, 0.6)',
+    walkN: '(0.7, 0.15)',
+    dx: '横の差 0.1',
+    dy: '縦の差 0.45',
+    dist: '距離',
+    formula: '距離 ＝ √(0.1² ＋ 0.45²) ≒ 0.46',
+    axisX: '移動っぽさ →',
+    axisY: '速さ ↑',
+    cap: '2 つの単語を「点」として描くと、そのあいだのまっすぐな長さが<strong>距離</strong>です。2 点のあいだには「横の差」「縦の差」を 2 辺とする直角三角形がかくれていて、距離はその斜めの辺。だから<strong>三平方の定理</strong>で、定規なしでも計算できます。側面が増えても、√ の中に足す項が増えるだけです。',
+  },
+  en: {
+    aria: 'Run and walk drawn as points; the differences across and up form a right triangle whose hypotenuse is the distance',
+    run: 'run',
+    walk: 'walk',
+    runN: '(0.6, 0.6)',
+    walkN: '(0.7, 0.15)',
+    dx: 'across: 0.1',
+    dy: 'up: 0.45',
+    dist: 'distance',
+    formula: 'distance = √(0.1² + 0.45²) ≈ 0.46',
+    axisX: 'movement →',
+    axisY: 'speed ↑',
+    cap: 'Draw two words as "points", and the straight length between them is the <strong>distance</strong>. Hiding between the points is a right triangle whose legs are "the difference across" and "the difference up" — the distance is its slanted side. So the <strong>Pythagorean theorem</strong> computes it, no ruler needed. More aspects just mean more terms inside the √.',
+  },
+}[lang];
+---
+
+<figure class="figure">
+  <svg viewBox="0 0 640 340" role="img" aria-label={S.aria}>
+    <path class="f-axis" d="M70,60 L70,270 L560,270"></path>
+    <text class="f-mut" x="500" y="292">{S.axisX}</text>
+    <text class="f-mut" x="70" y="50" text-anchor="middle">{S.axisY}</text>
+
+    <!-- points: run (0.6,0.6) -> (250,90); walk (0.7,0.15) -> (280,225); 1 unit = 300px -->
+    <circle class="f-dot" cx="250" cy="90" r="6"></circle>
+    <circle class="f-dot" cx="280" cy="225" r="6"></circle>
+    <text class="f-lbl" x="238" y="84" text-anchor="end">{S.run}</text>
+    <text class="f-mut" x="238" y="102" text-anchor="end">{S.runN}</text>
+    <text class="f-lbl" x="294" y="234">{S.walk}</text>
+    <text class="f-mut" x="294" y="252">{S.walkN}</text>
+
+    <!-- hidden right triangle: horizontal leg, vertical leg (dashed) -->
+    <line class="f-axis" x1="250" y1="90" x2="280" y2="90" stroke-dasharray="4 4"></line>
+    <line class="f-axis" x1="280" y1="90" x2="280" y2="225" stroke-dasharray="4 4"></line>
+    <text class="f-mut" x="268" y="76" text-anchor="middle">{S.dx}</text>
+    <text class="f-mut" x="292" y="150">{S.dy}</text>
+
+    <!-- hypotenuse = the distance -->
+    <line class="f-vec" x1="250" y1="90" x2="280" y2="225"></line>
+    <text class="f-lbl" x="240" y="170" text-anchor="end">{S.dist}</text>
+
+    <text class="f-eq" x="320" y="325" text-anchor="middle">{S.formula}</text>
+  </svg>
+  <figcaption set:html={S.cap} />
+</figure>

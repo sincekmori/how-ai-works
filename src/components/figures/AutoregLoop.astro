@@ -1,0 +1,78 @@
+---
+// Generation = a loop: take the text so far -> model -> next-word probabilities
+// -> pick one -> append -> repeat. The model eats its own output (autoregression).
+interface Props {
+  lang?: 'en' | 'ja';
+}
+const { lang = 'ja' } = Astro.props;
+const S = {
+  ja: {
+    aria: '1 語ずつ作っては足す、文章生成のくり返し',
+    soFar: 'これまでの文',
+    soFarEx: '「空は」',
+    model: 'モデル',
+    prob: '次の単語の確率',
+    probEx: '青い70% 広い15%…',
+    pick: '1 語えらぶ',
+    pickEx: '→ 青い',
+    loop: '選んだ語をつなげて「空は青い」。これを次の入力にして、また次の 1 語へ。',
+    cap: '文章づくり（<strong>推論</strong>）は、同じ手順のくり返しです。今ある文をモデルに入れ、<strong>次の単語の確率</strong>をもらい、そこから 1 語えらんで末尾にくっつける。そして、できた文をまた入力に戻す。この「自分の出力を食べて続ける」やり方を <strong>自己回帰</strong> と呼びます。だから 1 語ずつ、左から右へ文が伸びていくのです。',
+  },
+  en: {
+    aria: 'Generating text by building and appending one word at a time, on repeat',
+    soFar: 'text so far',
+    soFarEx: '“The sky is”',
+    model: 'model',
+    prob: 'next-word probability',
+    probEx: 'blue 70% wide 15%…',
+    pick: 'pick one word',
+    pickEx: '→ blue',
+    loop: 'Append the chosen word → “The sky is blue.” Feed that back in, then on to the next word.',
+    cap: 'Writing text (<strong>inference</strong>) is the same step on repeat. You feed the current sentence into the model, get back the <strong>next-word probabilities</strong>, pick one word from them, and stick it onto the end. Then you feed the new sentence back in as input — this "keep going by eating your own output" approach is called <strong>autoregression</strong>. That is why text grows one word at a time, from left to right.',
+  },
+}[lang];
+---
+
+<figure class="figure">
+  <svg viewBox="0 0 600 226" role="img" aria-label={S.aria}>
+    <defs>
+      <marker id="ar-arrow" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto">
+        <path d="M0,0 L6,3 L0,6 Z" style="fill: var(--fg-muted)"></path>
+      </marker>
+    </defs>
+
+    <!-- box 1 -->
+    <rect class="f-box" x="16" y="54" width="116" height="56" rx="10"></rect>
+    <text class="f-mut" x="74" y="78" text-anchor="middle">{S.soFar}</text>
+    <text class="f-lbl" x="74" y="98" text-anchor="middle">{S.soFarEx}</text>
+
+    <!-- box 2 -->
+    <rect class="f-bar" x="160" y="54" width="96" height="56" rx="10"></rect>
+    <text x="208" y="88" text-anchor="middle" style="fill: #fff; font-size: 15px; font-weight: 700"
+      >{S.model}</text
+    >
+
+    <!-- box 3 -->
+    <rect class="f-box" x="284" y="54" width="170" height="56" rx="10"></rect>
+    <text class="f-mut" x="369" y="78" text-anchor="middle">{S.prob}</text>
+    <text class="f-mut" x="369" y="98" text-anchor="middle">{S.probEx}</text>
+
+    <!-- box 4 -->
+    <rect class="f-box" x="466" y="54" width="118" height="56" rx="10"></rect>
+    <text class="f-mut" x="525" y="78" text-anchor="middle">{S.pick}</text>
+    <text class="f-lbl" x="525" y="98" text-anchor="middle">{S.pickEx}</text>
+
+    <line class="f-axis" x1="132" y1="82" x2="158" y2="82" marker-end="url(#ar-arrow)"></line>
+    <line class="f-axis" x1="256" y1="82" x2="282" y2="82" marker-end="url(#ar-arrow)"></line>
+    <line class="f-axis" x1="454" y1="82" x2="464" y2="82" marker-end="url(#ar-arrow)"></line>
+
+    <!-- return loop -->
+    <path
+      class="f-axis"
+      d="M525 110 L525 170 L74 170 L74 112"
+      fill="none"
+      marker-end="url(#ar-arrow)"></path>
+    <text class="f-mut" x="300" y="190" text-anchor="middle">{S.loop}</text>
+  </svg>
+  <figcaption set:html={S.cap} />
+</figure>

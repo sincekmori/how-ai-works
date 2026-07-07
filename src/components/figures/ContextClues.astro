@@ -1,0 +1,63 @@
+---
+// The distributional idea: words that fit the same contexts have similar meaning.
+// 猫 and 犬 both fit the pet-ish blanks; 車 does not.
+interface Props {
+  lang?: 'en' | 'ja';
+}
+const { lang = 'ja' } = Astro.props;
+
+const S = {
+  ja: {
+    blank1: '「□ が エサ を 食べた」',
+    blank2: '「□ を なでた」',
+    items: [
+      { x: 150, mx: 186, word: '猫', ok: true },
+      { x: 280, mx: 316, word: '犬', ok: true },
+      { x: 412, mx: 448, word: '車', ok: false },
+    ],
+    note: '猫・犬は同じ空所（＝似た文脈）に入る。だから意味も近い。',
+    cap: '「□」に何が入るかは、<strong>周りの言葉</strong>で決まります。エサ・なでる…の近くに来る語は、猫も犬も似たもの。コンピュータはこの「いっしょに出る仲間」を手がかりに、各単語の数の並びを学びます。',
+  },
+  en: {
+    blank1: '"□ ate the food."',
+    blank2: '"Petted the □."',
+    items: [
+      { x: 140, mx: 188, word: 'cat', ok: true },
+      { x: 280, mx: 322, word: 'dog', ok: true },
+      { x: 420, mx: 466, word: 'car', ok: false },
+    ],
+    note: 'cat and dog fit the same blanks (= similar contexts), so their meanings are close.',
+    cap: 'What can fill the "□" is decided by the <strong>surrounding words</strong>. Words that show up near food, petting… — cat and dog are alike. A computer uses this "who shows up together" as its clue to learn each word\'s row of numbers.',
+  },
+}[lang];
+---
+
+<figure class="figure">
+  <svg viewBox="0 0 600 210" role="img" aria-label="Words that fit the same context are close in meaning">
+    <text class="f-lbl" x="300" y="46" text-anchor="middle">{S.blank1}</text>
+    <text class="f-lbl" x="300" y="84" text-anchor="middle">{S.blank2}</text>
+
+    <line class="f-axis" x1="70" y1="110" x2="530" y2="110"></line>
+
+    {
+      S.items.map((it) => (
+        <>
+          <text class="f-lbl" x={it.x} y="152" text-anchor="middle">
+            {it.word}
+          </text>
+          <text
+            x={it.mx}
+            y="153"
+            text-anchor="middle"
+            style={`fill: ${it.ok ? '#22c55e' : '#ef4444'}; font-size: 19px; font-weight: 700`}
+          >
+            {it.ok ? '✓' : '✕'}
+          </text>
+        </>
+      ))
+    }
+
+    <text class="f-mut" x="300" y="190" text-anchor="middle">{S.note}</text>
+  </svg>
+  <figcaption set:html={S.cap} />
+</figure>

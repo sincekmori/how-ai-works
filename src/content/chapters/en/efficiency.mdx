@@ -1,0 +1,70 @@
+---
+title: "Efficiency: the same smarts, but faster and lighter"
+order: 15
+description: The tricks that make giant models run at a practical speed and memory. Reusing the past with the KV cache, rounding the knobs coarsely with quantization, computing without building a huge table with FlashAttention, plus head sharing and speculative decoding — all through the lens of cutting cost without changing the answer, explained with figures and an interactive demo so a middle-schooler can follow.
+draft: false
+---
+
+import KVCacheDemo from "../../../components/KVCacheDemo.svelte";
+import Quantization from "../../../components/figures/Quantization.astro";
+import AttentionMemory from "../../../components/figures/AttentionMemory.astro";
+
+Even once you have a smart model, if it is **slow and eats too much memory**, it is hard to actually use.
+Every single question costs time and electricity, and only a limited set of machines can run it.
+So in this chapter we look at the tricks that **run the same model faster and lighter, while barely changing the answer**.
+
+## KV cache: remember what you already made
+
+As we saw in the inference chapter, text is made one word at a time.
+Each time, attention looks back over "all the words so far" — but recomputing that whole past **from scratch every single time** is a real waste.
+
+Here is why: the information about the past words (attention's **keys** and **values**) does not change later.
+So we can simply **cache the keys and values we computed once and reuse them**.
+Then we only need to compute the part for the new word.
+
+<KVCacheDemo client:visible lang="en" />
+
+As the slider shows, the longer the sentence, the more explosively heavy "recompute everything every time" becomes, and the bigger the gap from "reuse the cache" grows.
+It is like this: instead of rereading a textbook from page one every time you add a sentence, you glance at a summary note.
+The trade-off is that **the memory you need goes up a little** to hold that note.
+
+## Quantization: hold the knobs "coarsely"
+
+Next is a trick that reduces the memory itself.
+A model's knobs (its **weights**) are normally stored as fine decimal numbers.
+**Quantization** means **rounding them coarsely and storing them with fewer bits**.
+
+<Quantization lang="en" />
+
+Just as you might turn 3.14159… into 3.1, you sacrifice a little precision in exchange for a big drop in the memory needed to store the weights.
+Going from 16 bits to 4 bits cuts the weights down to about **one quarter**.
+Thanks to this, even **small hardware** like a laptop or a phone can run a fairly large model.
+The knack is to choose **where** and **at what granularity** to round, so the loss of precision stays small.
+
+## FlashAttention: compute the huge table without building it
+
+Attention was a calculation that builds a score table of "every word × every word".
+As the sentence grows longer, this table becomes very big — **n×n** — and crowds out memory.
+
+<AttentionMemory lang="en" />
+
+The method called **FlashAttention** does **not build that huge table all at once**.
+Instead it splits it into small blocks and computes them one after another.
+It only keeps one block on hand at a time.
+The **answer it produces is exactly the same**, yet the memory needed drops sharply and it even runs faster (the key is being clever about how memory is read and written).
+
+## There's more: head sharing and speculative decoding
+
+There are plenty of other tricks for cutting cost.
+
+- **MQA / GQA**: several attention heads (the multi-head idea from the attention chapter) **share** their keys and values. That makes the KV cache from earlier smaller.
+- **Speculative decoding**: a small, fast "draft" model proposes the next several words in one go, and the real, large model **checks them all at once**. When the guesses are right, you leap ahead, so you go faster while keeping the quality. Think of it as letting an assistant write the draft first, and the teacher grading it all in one pass.
+
+These are used across many implementations — GPT, Llama, Claude, Gemini, Mistral, Qwen, and more — to lower the **inference cost**.
+
+## Summary
+
+- **KV cache**: reuse the past keys and values to slash the work at each step (memory goes up a little).
+- **Quantization**: hold the knobs coarsely with fewer bits to save memory (a trade-off with precision). It runs even on small hardware.
+- **FlashAttention**: compute the n×n table in blocks instead of building it whole. Same answer, less memory, faster.
+- **MQA/GQA, speculative decoding**, and many more tricks cut cost while keeping the answer the same.

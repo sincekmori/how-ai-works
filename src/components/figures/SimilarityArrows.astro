@@ -1,0 +1,53 @@
+---
+// "Closeness of meaning = closeness of direction." Two arrows with a small angle
+// (similar) vs a wide angle (dissimilar). Motivates the dot product as a closeness measure.
+interface Props {
+  lang?: 'en' | 'ja';
+}
+const { lang = 'ja' } = Astro.props;
+const S = {
+  ja: {
+    aria: '向きが近いほど意味が近い',
+    cat: '猫',
+    dog: '犬',
+    car: '車',
+    near: '向きが近い → 意味が近い',
+    far: '向きが違う → 意味が遠い',
+    cap: '意味の「近さ」は、矢印の<strong>向きの近さ</strong>で表せます。「猫」と「犬」はほぼ同じ向きで、「猫」と「車」は大きく開きます。この「向きのそろい具合」を 1 つの数にする道具が、このあと出てくる<strong>内積</strong>です。',
+  },
+  en: {
+    aria: 'The closer the direction, the closer the meaning',
+    cat: 'cat',
+    dog: 'dog',
+    car: 'car',
+    near: 'same direction → close meaning',
+    far: 'different direction → far meaning',
+    cap: 'Closeness of "meaning" can be read off as closeness of the arrows’ <strong>direction</strong>. "Cat" and "dog" point almost the same way; "cat" and "car" open up wide. The number that captures how well two directions line up is the <strong>dot product</strong>.',
+  },
+}[lang];
+---
+
+<figure class="figure">
+  <svg viewBox="0 0 640 280" role="img" aria-label={S.aria}>
+    <defs>
+      <marker id="ah-sa" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto">
+        <path d="M0,0 L7,3 L0,6 Z" style="fill: var(--accent)"></path>
+      </marker>
+    </defs>
+
+    <!-- left: small angle -->
+    <line class="f-vec" x1="130" y1="215" x2="250" y2="105" marker-end="url(#ah-sa)"></line>
+    <line class="f-vec" x1="130" y1="215" x2="235" y2="80" marker-end="url(#ah-sa)"></line>
+    <text class="f-lbl" x="258" y="102">{S.cat}</text>
+    <text class="f-lbl" x="240" y="74">{S.dog}</text>
+    <text class="f-mut" x="170" y="250" text-anchor="middle">{S.near}</text>
+
+    <!-- right: wide angle -->
+    <line class="f-vec" x1="470" y1="215" x2="585" y2="150" marker-end="url(#ah-sa)"></line>
+    <line class="f-vec" x1="470" y1="215" x2="455" y2="80" marker-end="url(#ah-sa)"></line>
+    <text class="f-lbl" x="592" y="150">{S.cat}</text>
+    <text class="f-lbl" x="450" y="72" text-anchor="end">{S.car}</text>
+    <text class="f-mut" x="500" y="250" text-anchor="middle">{S.far}</text>
+  </svg>
+  <figcaption set:html={S.cap} />
+</figure>

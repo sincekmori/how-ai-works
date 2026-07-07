@@ -1,0 +1,61 @@
+---
+// Performance improves with scale in a regular, predictable way (a power law):
+// diminishing returns, but you can forecast it before training.
+interface Props {
+  lang?: 'en' | 'ja';
+}
+const { lang = 'ja' } = Astro.props;
+const S = {
+  ja: {
+    aria: '規模を上げると損失が予測どおりに下がる曲線',
+    small: '小',
+    large: '大',
+    xAxis: '規模（モデルの大きさ・データ・計算）→',
+    yAxis: '損失（小さいほど賢い）',
+    floor: 'これ以上は下がりにくい（下限）',
+    here: '今ここ',
+    predict: 'この先も予測できる',
+    cap: '規模（大きさ・データ・計算）を上げると、損失はやみくもにではなく <strong>決まったパターン</strong> で下がります。最初はぐっと、だんだん効きにくくなる。この規則性のおかげで、<strong>実際に学習する前から「どれくらい賢くなるか」を予測できる</strong>のです。これが <strong>スケーリング則</strong>。巨大モデル開発の羅針盤になっています（専用のグラフ＝両対数では、ほぼ直線になります）。',
+  },
+  en: {
+    aria: 'A curve where loss drops predictably as scale increases',
+    small: 'small',
+    large: 'large',
+    xAxis: 'scale (model size · data · compute) →',
+    yAxis: 'loss (smaller is smarter)',
+    floor: 'hard to push below this (a floor)',
+    here: 'you are here',
+    predict: 'predictable from here on',
+    cap: 'As you raise the scale (size, data, compute), loss drops not at random but in a <strong>fixed pattern</strong>. A big drop at first, then less and less effect — and thanks to this regularity, you can <strong>predict "how smart it will get" before you actually train it</strong>. This is the <strong>scaling laws</strong>, a compass for building giant models (on the right kind of graph — log-log — it becomes nearly a straight line).',
+  },
+}[lang];
+---
+
+<figure class="figure">
+  <svg viewBox="0 0 600 250" role="img" aria-label={S.aria}>
+    <!-- axes -->
+    <line class="f-axis" x1="60" y1="30" x2="60" y2="200"></line>
+    <line class="f-axis" x1="60" y1="200" x2="560" y2="200"></line>
+    <text class="f-mut" x="60" y="222" text-anchor="middle">{S.small}</text>
+    <text class="f-mut" x="560" y="222" text-anchor="middle">{S.large}</text>
+    <text class="f-mut" x="310" y="240" text-anchor="middle">{S.xAxis}</text>
+    <text class="f-mut" x="24" y="115" text-anchor="middle" transform="rotate(-90 24 115)"
+      >{S.yAxis}</text
+    >
+
+    <!-- curve: high loss at small scale, dropping and flattening -->
+    <path class="f-curve" d="M70 56 C 170 120, 250 158, 360 174 S 520 186, 540 188" fill="none"
+    ></path>
+
+    <!-- floor -->
+    <line class="f-axis" x1="60" y1="192" x2="560" y2="192" style="stroke-dasharray: 5 4"></line>
+    <text class="f-mut" x="540" y="184" text-anchor="end">{S.floor}</text>
+
+    <!-- "you are here" + prediction -->
+    <circle class="f-dot" cx="300" cy="166" r="6"></circle>
+    <text class="f-lbl" x="300" y="150" text-anchor="middle">{S.here}</text>
+    <line class="f-axis" x1="300" y1="166" x2="460" y2="180" style="stroke-dasharray: 4 4"></line>
+    <text class="f-mut" x="470" y="166">{S.predict}</text>
+  </svg>
+  <figcaption set:html={S.cap} />
+</figure>
