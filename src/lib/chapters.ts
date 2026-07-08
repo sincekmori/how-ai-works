@@ -124,6 +124,8 @@ const FIGURE_DESC: Record<Locale, Record<string, string>> = {
       "ツール（関数呼び出し）の一周の図。モデルが「get_weather(東京) を呼んで」という構造化された依頼を出す→プログラムが実際にツールを実行→結果（28度）をモデルに戻す→モデルが最終的な返事を作る。",
     McpSocket:
       "左：モデルとツールを一つずつ手配線でつなぐと本数が M×N に増えて破綻。右：MCP という共通コンセントを挟むと、各モデル・各ツールは MCP にだけつなげばよく、線が M＋N で済む。USB-C のたとえ。",
+    SkillFolder:
+      "スキル（手順書）の棚の図。ふだんエージェントに見えるのは各スキルの背表紙（名前と一言説明）だけ。「旅のしおりを作って」という依頼が来ると、合う 1 冊（SKILL.md）だけを開き、中の手順（①表紙に行き先と日付 ②1 日ごとに予定の表 ③最後に持ち物リスト）を読む。",
   },
   en: {
     TokenChips:
@@ -196,6 +198,8 @@ const FIGURE_DESC: Record<Locale, Record<string, string>> = {
       "One turn of tool use (function calling): the model emits a structured request ('call get_weather(Tokyo)') → the program actually runs the tool → the result (28°C) is fed back to the model → the model writes the final reply.",
     McpSocket:
       "Left: wiring each model to each tool by hand makes the number of connections blow up to M×N. Right: putting an MCP hub in between means each model and each tool only connects to MCP, so it's M+N. A USB-C analogy.",
+    SkillFolder:
+      'A shelf of skills (playbooks): the agent normally sees only each skill\'s spine — its name and one-line description. When the request "make a trip booklet" arrives, only the matching book (SKILL.md) is opened, revealing its steps (① cover: place & dates ② one table per day ③ packing list at the end).',
   },
 };
 
@@ -217,7 +221,7 @@ export function toCleanMarkdown(entry: Chapter, lang: Locale): string {
 
   // Replace interactive island components (self-closing or paired) with a note.
   const islands =
-    "(ChatPeek|ChatScreen|ParamKnobs|AspectMixer|SimilarityLab|ShareLottery|JsonEye|RegexTrap|StructuredToggle|ToolLoop|McpPlug|AgentTrace|SamplingPlayground|EmbeddingCloud|BpeDemo|LearningLoop|RecurrentReader|AttentionDemo|CausalMaskDemo|NextWordTrainer|PreferencePicker|ScalingBalance|KVCacheDemo|MoERouter|Tokenizer|CopyForLLM)";
+    "(ChatPeek|ChatScreen|ParamKnobs|AspectMixer|SimilarityLab|ShareLottery|JsonEye|RegexTrap|StructuredToggle|ToolLoop|McpPlug|AgentTrace|SkillShelf|JourneyMap|SamplingPlayground|EmbeddingCloud|BpeDemo|LearningLoop|RecurrentReader|AttentionDemo|CausalMaskDemo|NextWordTrainer|PreferencePicker|ScalingBalance|KVCacheDemo|MoERouter|Tokenizer|CopyForLLM)";
   body = body.replaceAll(new RegExp(`<${islands}\\b[^>]*\\/>`, "g"), ISLAND_NOTE[lang]);
   body = body.replaceAll(
     new RegExp(`<${islands}\\b[^>]*>[\\s\\S]*?<\\/\\1>`, "g"),

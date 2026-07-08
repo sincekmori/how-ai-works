@@ -408,4 +408,17 @@ export const references: Record<string, Reference[]> = {
       url: "https://lilianweng.github.io/posts/2023-06-23-agent/",
     },
   ],
+  "agent-skills": [
+    {
+      title: "Equipping agents for the real world with Agent Skills",
+      by: "Anthropic",
+      year: 2025,
+      url: "https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills",
+    },
+    {
+      title: "Agent Skills — example skills and the folder format",
+      by: "Anthropic (GitHub)",
+      url: "https://github.com/anthropics/skills",
+    },
+  ],
 };

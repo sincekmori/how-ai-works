@@ -73,7 +73,7 @@ Keep every dependency on its latest version: Dependabot (`.github/dependabot.yml
 
 ## What it is
 
-Astro 7 static site with 24 chapters, each a beginner-first primer with SVG figures and one Svelte island.
+Astro 7 static site with 26 chapters, each a beginner-first primer with SVG figures and one Svelte island.
 The site name is localized — "How AI Works and How to Use It" (en) / 「AI のしくみと使い方」 (ja), via `siteName(lang)` in `src/lib/urls.ts`.
 Part II ("how LLMs are put to work") is planned to grow implementation-level chapters (calling the model from real code) — the "how to use it" in the name anticipates this.
 The repo is `how-ai-works`, and the base path is `/how-ai-works/`.

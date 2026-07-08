@@ -66,9 +66,15 @@ export const divisions: Division[] = [
       },
       {
         title: { ja: "自分で動く", en: "Acting on its own" },
-        slugs: ["agents"],
+        slugs: ["agents", "agent-skills"],
       },
     ],
+  },
+  // The closing chapter sits outside both parts, like an afterword in a book's
+  // table of contents, so its division and group carry no title.
+  {
+    title: { ja: "", en: "" },
+    groups: [{ title: { ja: "", en: "" }, slugs: ["epilogue"] }],
   },
 ];
 

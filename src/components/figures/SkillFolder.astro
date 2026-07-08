@@ -1,0 +1,108 @@
+---
+// A shelf of skills: the agent normally sees only each playbook's spine
+// (name + one-line description); only the one matching the job is opened,
+// loading its steps (SKILL.md) into context.
+interface Props {
+  lang?: 'en' | 'ja';
+}
+const { lang = 'ja' } = Astro.props;
+const S = {
+  ja: {
+    aria: 'スキルの棚。ふだんは背表紙だけ見え、仕事に合う 1 冊だけ開く',
+    title: '手順書の棚：ふだんは背表紙だけ',
+    request: '依頼：「旅のしおりを作って」',
+    s1: '旅のしおり',
+    s1d: '家族旅行のしおりの形',
+    s2: '学級新聞',
+    s2d: 'クラス新聞のレイアウト',
+    s3: 'レシート精算',
+    s3d: 'レシートの精算のルール',
+    shelfNote: '背表紙＝名前と一言説明',
+    docTitle: 'SKILL.md（旅のしおり）',
+    docDesc: '説明：家族旅行のしおりの形',
+    step1: '① 表紙に行き先と日付',
+    step2: '② 1 日ごとに予定の表',
+    step3: '③ 最後に持ち物リスト',
+    docNote: '開いたときだけ中身を読む',
+    arrow1: '合う 1 冊',
+    arrow2: 'だけ開く',
+    cap: '<strong>スキル</strong> は手順書のフォルダで、中心は SKILL.md という文章ファイル 1 枚。エージェントにふだん見えるのは各スキルの <strong>背表紙（名前と一言説明）</strong> だけで、仕事に合う 1 冊だけを開いて手順を読みます。読む量が減り、関係ない手順に迷わされることもなくなります。',
+  },
+  en: {
+    aria: 'A shelf of skills: only spines are visible; just the matching one is opened',
+    title: 'A shelf of playbooks: spines only, usually',
+    request: 'Request: "Make a trip booklet"',
+    s1: 'Trip booklet',
+    s1d: "our family's format",
+    s2: 'Class newsletter',
+    s2d: 'the page layout',
+    s3: 'Receipt filing',
+    s3d: 'how to total them up',
+    shelfNote: 'spine = name + one line',
+    docTitle: 'SKILL.md (Trip booklet)',
+    docDesc: 'What: our trip booklet format',
+    step1: '① Cover: place & dates',
+    step2: '② One table per day',
+    step3: '③ Packing list at the end',
+    docNote: 'read only when opened',
+    arrow1: 'open just',
+    arrow2: 'the match',
+    cap: 'A <strong>skill</strong> is a folder of instructions, centred on one text file, SKILL.md. Normally the agent sees only each skill\'s <strong>spine — its name and one-line description</strong> — and opens just the one that matches the job to read its steps. Less to read, and no unrelated instructions to get lost in.',
+  },
+}[lang];
+---
+
+<figure class="figure">
+  <svg viewBox="0 0 600 280" role="img" aria-label={S.aria}>
+    <defs>
+      <marker id="sk-arrow" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto">
+        <path d="M0,0 L6,3 L0,6 Z" style="fill: var(--fg-muted)"></path>
+      </marker>
+    </defs>
+
+    <text class="f-lbl" x="300" y="24" text-anchor="middle">{S.title}</text>
+    <text class="f-mut" x="40" y="52">{S.request}</text>
+
+    <!-- shelf: three spines; the matching one is highlighted -->
+    <rect class="f-bar" x="40" y="66" width="210" height="42" rx="8"></rect>
+    <text x="52" y="83" style="fill: var(--accent-fg); font-size: 13px; font-weight: 700"
+      >{S.s1}</text
+    >
+    <text x="52" y="100" style="fill: var(--accent-fg); font-size: 10.5px; opacity: 0.85"
+      >{S.s1d}</text
+    >
+
+    <rect class="f-box" x="40" y="118" width="210" height="42" rx="8"></rect>
+    <text class="f-lbl" x="52" y="135" text-anchor="start" style="font-size: 13px">{S.s2}</text>
+    <text class="f-mut" x="52" y="152" style="font-size: 10.5px">{S.s2d}</text>
+
+    <rect class="f-box" x="40" y="170" width="210" height="42" rx="8"></rect>
+    <text class="f-lbl" x="52" y="187" text-anchor="start" style="font-size: 13px">{S.s3}</text>
+    <text class="f-mut" x="52" y="204" style="font-size: 10.5px">{S.s3d}</text>
+
+    <text class="f-mut" x="145" y="234" text-anchor="middle">{S.shelfNote}</text>
+
+    <!-- opened SKILL.md -->
+    <rect class="f-box" x="330" y="66" width="230" height="146" rx="10"></rect>
+    <text class="f-lbl" x="345" y="90" text-anchor="start" style="font-size: 12.5px"
+      >{S.docTitle}</text
+    >
+    <text class="f-mut" x="345" y="112" style="font-size: 11px">{S.docDesc}</text>
+    <text class="f-lbl" x="345" y="140" text-anchor="start" style="font-size: 12px"
+      >{S.step1}</text
+    >
+    <text class="f-lbl" x="345" y="164" text-anchor="start" style="font-size: 12px"
+      >{S.step2}</text
+    >
+    <text class="f-lbl" x="345" y="188" text-anchor="start" style="font-size: 12px"
+      >{S.step3}</text
+    >
+    <text class="f-mut" x="445" y="234" text-anchor="middle">{S.docNote}</text>
+
+    <!-- open the matching one -->
+    <line class="f-axis" x1="254" y1="87" x2="324" y2="110" marker-end="url(#sk-arrow)"></line>
+    <text class="f-mut" x="290" y="134" text-anchor="middle">{S.arrow1}</text>
+    <text class="f-mut" x="290" y="149" text-anchor="middle">{S.arrow2}</text>
+  </svg>
+  <figcaption set:html={S.cap} />
+</figure>

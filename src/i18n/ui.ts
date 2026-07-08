@@ -52,7 +52,7 @@ const ui: Record<Locale, Strings> = {
       "How large language models work inside, and how they are put to work in real apps — explained from zero background with figures and interactive demos.",
     homeLead:
       "Why can an AI talk at all? From zero background to the frontier, just by reading top to bottom.",
-    homePoints: ['Starts from the "why?"', "24 short chapters", "Figures & hands-on demos"],
+    homePoints: ['Starts from the "why?"', "26 short chapters", "Figures & hands-on demos"],
     startReading: "Start with Chapter 1 →",
     homeNeutral:
       "The explanations are vendor-neutral. We mention GPT, Llama, Claude, Gemini, Mistral and Qwen evenly as examples, but the concepts are explained in general terms.",
@@ -90,7 +90,7 @@ const ui: Record<Locale, Strings> = {
       "AI はなぜ話せるのか、そしてどう使うのか。LLM（大規模言語モデル）の内部のしくみから活用のしかたまで、予備知識ゼロから、図とインタラクティブなデモでやさしく学ぶ学習サイト。",
     homeLead:
       "AI はなぜ、言葉を話せるのか。予備知識ゼロから最先端まで、順番に読むだけで分かります。",
-    homePoints: ["「なぜ？」から説明", "全 24 章の短い読みもの", "図と、さわれるデモつき"],
+    homePoints: ["「なぜ？」から説明", "全 26 章の短い読みもの", "図と、さわれるデモつき"],
     startReading: "第 1 章から読みはじめる →",
     homeNeutral:
       "解説は特定のモデルや組織に偏りません。具体例として GPT・Llama・Claude・Gemini・Mistral・Qwen などを必要に応じてバランスよく挙げますが、概念は一般論として説明します。",

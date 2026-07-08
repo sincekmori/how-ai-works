@@ -27,13 +27,13 @@ If a sentence would lose them, the sentence is wrong — not the reader.
 
 ## What you’ll learn
 
-The 24 chapters are one continuous arc, in two parts.
+The 26 chapters are one continuous arc — an opening chapter, two parts, and a closing chapter.
 
 **Part I — How an LLM works inside.**
 Words become numbers → tokens → embeddings → neural nets → why a plain network hits a wall → attention → the Transformer → pretraining → fine-tuning → how it writes one word at a time → scaling laws → efficiency → the frontier.
 
 **Part II — How LLMs are put to work.**
-Calling a model over the web → the knobs on a request (temperature and friends) → pulling data out of replies → JSON → guaranteeing the shape → giving the model tools → connecting tools with MCP → agents that think, act, and repeat.
+Calling a model over the web → the knobs on a request (temperature and friends) → pulling data out of replies → JSON → guaranteeing the shape → giving the model tools → connecting tools with MCP → agents that think, act, and repeat → skills that teach an agent your procedures.
 
 ## Built to be checked
 

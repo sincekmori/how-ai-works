@@ -1,14 +1,13 @@
 ---
 title: "Agents: Think, Act, Observe, Repeat"
 order: 24
-description: Combine structured output, tools, and MCP, and the model goes beyond a single reply. An agent loops — think → use a tool → read the result → think again — to carry out a multi-step job. We follow one through a step demo, face the real-world struggles (wandering, going in circles, cost, irreversible moves) and the guardrails that answer them, and close the whole book.
+description: Combine structured output, tools, and MCP, and the model goes beyond a single reply. An agent loops — think → use a tool → read the result → think again — to carry out a multi-step job. We follow one through a step demo, and face the real-world struggles (wandering, going in circles, cost, irreversible moves) and the guardrails that answer them.
 draft: false
 ---
 
 import AgentLoop from "../../../components/figures/AgentLoop.astro";
 import AgentTrace from "../../../components/AgentTrace.svelte";
 
-The final chapter at last.
 By now the parts for "using" a model are on the table.
 **Structured output** to answer in a fixed shape, **tools** to call the outside world, **MCP** to connect tools in a common shape.
 This chapter combines them to have the model do a **job that goes beyond a single reply**.
@@ -83,21 +82,13 @@ A wrong move now changes the real world.
 So before the moves that matter, the design makes it **stop and ask a human first**.
 The craft of building agents shows less in making the loop run than in **making the loop safe to stop**.
 
-## The end: back to that screen
+## Next: after the loop, the teaching
 
-Thank you for the long journey.
-Remember how it began.
-This book started at **that familiar screen on your phone** — the chat where you ask and an answer comes back.
-
-From there we dove deep into the box.
-We turned words into numbers (vectors), measured closeness (the dot product), held hesitation as shares (probability), learned from mistakes (the gradient), looked at faraway words (attention), stacked the parts (the Transformer), raised it on mountains of text, tuned it to taste, and generated one word at a time.
-Then, in this final part, we stepped outside the box.
-The model is a window you call across the net; you make it answer in a fixed shape, hand it tools, connect them in a common shape, and loop it through multi-step jobs.
-
-What looked like magic was, all of it, built from the **humble parts** we've seen in this book.
-New words will keep arriving.
-But you're fine now.
-"That's an application of that part" — you can trace it yourself.
+The agent runs now.
+But use one every day, and you soon notice something.
+It is smart, yet it doesn't know "how we do things here" — your way of working.
+And every new conversation resets your careful explanation to square one.
+The final chapter looks at **Agent Skills**, the mechanism for teaching an agent your procedures — and closes the book.
 
 ## Summary
 

@@ -1,0 +1,235 @@
+---
+title: "Agent Skills: Teaching the Agent How You Work"
+order: 25
+description: The agent is smart, yet it doesn't know "your way of doing things" — and every new conversation resets the explanation to square one. Handing it your entire manual every time crowds the limited context window (the model's desk) and gets slow, costly, and confusing. Instead, write each procedure as its own playbook (a skill), put them on a shelf, show only the name and one-line description, and let the agent open just the one that matches the job. That is Agent Skills. Inside are plain text plus templates and small programs, so it needs no training and works the moment you write it. Who can use it, where it runs, and what a sandbox is — all seen through a shelf demo.
+draft: false
+---
+
+import SkillFolder from "../../../components/figures/SkillFolder.astro";
+import SkillShelf from "../../../components/SkillShelf.svelte";
+
+In the previous chapter, the agent learned to run the loop — think → use a tool → read the result → think again — and carry a multi-step job through.
+But use an agent every day, and a new complaint appears.
+It's smart, yet it doesn't know **your way of doing things**.
+
+## Capable, but new to "how we do it here"
+
+Say your family makes a "trip booklet" before every trip.
+Your booklets have a fixed shape.
+The place and dates on the cover, one table of plans per day, a packing list at the end.
+Ask the agent, and it will happily make a booklet.
+But say nothing more, and you get a generic booklet in whatever shape the agent picks.
+So you explain — "cover like this, plans as tables, packing list last" — and get exactly the booklet you wanted.
+
+The problem is the next trip.
+Start a new conversation, and the agent doesn't remember last time's explanation.
+As we saw, the model reads **only the text handed to it this time** and builds its reply from that.
+So it's the same explanation again, from the top.
+Every trip, every time.
+The agent is, in effect, **a very capable new hire**.
+It handles almost anything gracefully — but "how we do it here" stays unknown until someone teaches it.
+
+## Then just hand over everything?
+
+"Fine — write one manual with all my procedures and paste it in at the start of every conversation."
+Good thinking.
+And while your procedures are few, it genuinely works.
+
+But the things you want to teach keep growing.
+How to make the booklet, the newsletter layout, the receipt-filing rules, how to sort the photos…
+What happens when the manual reaches 50 pages?
+
+Here's the thing to remember: **there is a limit to how much the model can read at once**.
+The size of the "desk" where everything you hand the model gets spread out is called the **context window**.
+When a model's spec sheet says "context window: 200K tokens," this desk is exactly what it's describing.
+The tokenization chapter's point — that how much it can read at once is counted in tokens — was measuring this same desk.
+The long-context race from the frontier chapter is the race to widen the context window.
+Desks grow year by year — but they remain **a finite surface** all the same.
+
+And a wide desk alone doesn't save you.
+The model reads whatever is on the desk, **all of it, every time**.
+The more you pile on, the slower the reply and the bigger the bill (the "time and money" problem from the agents chapter).
+Besides, nobody spreads every cookbook in the house across the table just to make curry tonight.
+There's no room left to work, and heaps of unrelated instructions in view become one more way to get lost.
+You want the desk to hold only what the job needs, right now.
+That is where this chapter starts.
+
+## Put them on a shelf, show only the spines
+
+There's a neat trick.
+Write each procedure as its own **separate playbook**, and line them up on a bookshelf.
+What the agent normally sees is **only the spines** — each playbook's **name and a one-line description**.
+
+When a job arrives, the agent first scans the spines.
+Asked to "make a trip booklet," the "Trip booklet" spine catches its eye.
+It takes **that one book only** off the shelf, opens it, and follows the steps.
+The rest stay on the shelf.
+Read what you need, when you need it, one book at a time.
+All the desk (the context window) ever holds is a few lines of spines plus the one open book.
+The rest of the surface stays clear for the job itself.
+This "spines by default, open only the match" arrangement is **Agent Skills**.
+Each playbook on the shelf is called a **skill**.
+
+<SkillFolder lang="en" />
+
+## What a skill really is: just a folder
+
+The answer may be a letdown — it's that simple.
+One skill is one **folder**.
+At its heart sits a single **text file** named SKILL.md.
+Near the top go the name and the one-line description. That's the spine.
+Below that, you write the steps.
+You write them the way you'd teach a person.
+"First, place and dates on the cover. Then each day's plans as a table. Packing list at the end."
+
+But SKILL.md is not the only thing the folder holds.
+A booklet **template**, **reference material** like a phrasebook of good wording, **small programs** that do a fixed calculation or conversion.
+Anything you want used along the way goes in the same folder, and the text points at it: "use this."
+
+There is an order to how all this gets read.
+① The spine (name and one-line description) sits on the desk at all times.
+② The body (the steps) is opened only when a job matches.
+③ Templates and materials are read only **at the moment** a step needs them.
+And the small programs are never read at all.
+Instead of spreading their contents on the desk, the agent **runs them, like tools, and takes back only the result**.
+That's why a skill can carry hundreds of lines of program without cluttering the desk.
+
+The important thing: **there is no new magic here at all**.
+The model "reads the text it's given and follows it" — exactly what this whole book has shown.
+A skill is a **filing system**: a tidy way to split up the text you hand over and keep it until needed.
+
+Now think back to Part I.
+We met one way to teach a model something: **fine-tuning** (collect examples and train, changing the weights).
+Skills are a different, far lighter road.
+
+- No training. It works **the moment you write it**.
+- Got it wrong? **Rewrite the text** and it's fixed.
+- No programming needed. **Anyone who can write can make one.**
+- Hand the folder over, and your family's or teammates' agents work **the same way**.
+
+## Let's peek at a real one
+
+So this doesn't stay abstract, let's look at one real skill.
+Anthropic (the maker of Claude) publishes the skills it actually uses [on GitHub](https://github.com/anthropics/skills).
+Among them, the [**pdf skill**](https://github.com/anthropics/skills/tree/main/skills/pdf) is the playbook for PDF paperwork — reading, merging, filling in forms.
+Here is what the folder holds:
+
+```text
+pdf/
+├── SKILL.md        ← the playbook itself
+├── forms.md        ← material: detailed steps for filling forms
+├── reference.md    ← material: a catalog of advanced operations
+└── scripts/        ← the small programs
+    ├── fill_fillable_fields.py   (fill in a form)
+    ├── extract_form_field_info.py (inspect the fields)
+    └── …
+```
+
+And here is how [the real SKILL.md](https://github.com/anthropics/skills/blob/main/skills/pdf/SKILL.md) opens (abridged):
+
+```text
+---
+name: pdf
+description: Use this skill whenever the user wants to do anything with PDF files. This includes reading or extracting text/tables, merging PDFs, splitting, rotating pages, adding watermarks, creating new PDFs, filling PDF forms, and more. If the user mentions a .pdf file or asks to produce one, use this skill.
+---
+
+# PDF Processing Guide
+
+This guide covers essential PDF processing operations. For advanced features, see reference.md. If you need to fill out a PDF form, read forms.md and follow its instructions.
+
+(the concrete steps follow…)
+```
+
+Three things to notice.
+First, the name and description at the top: that is the **spine**, introducing itself — "PDF job? Open me."
+Second, the body **points at material in the same folder** — "see reference.md," "read forms.md and follow it."
+Only when a form-filling job arrives does forms.md land on the desk.
+The reading order from earlier is realized exactly this way.
+Third, the **small programs** in scripts/.
+Fixed work like "fill in the form" is run, not read — the agent takes back only the result.
+
+So when you ask "fill in this PDF application form," the agent picks the pdf skill by its spine, opens SKILL.md, follows it to forms.md, and runs the scripts to do the filling.
+Everything this chapter has described happens inside this one folder.
+
+## If tools are hands, skills are playbooks
+
+So how is this different from the **tools** and **MCP** of the earlier chapters?
+The roles differ.
+Tools grow what the agent **can do**.
+Search, calculate, send an email. They are its **hands**.
+Skills teach the agent **how to do things**.
+In what order, in what shape, minding what. They are its **playbooks**.
+No weather tool, however good, will ever produce "our family's booklet format."
+And a playbook alone gets nothing done without tools to look things up.
+Hands and playbooks.
+Only together do they make a worker you can rely on.
+
+## Try picking from the shelf
+
+<SkillShelf lang="en" client:visible />
+
+Watch the amount of reading.
+Hand everything over, and every job means reading every playbook.
+The shelf way reads a few lines of spines plus the one opened book.
+The more procedures you teach, the wider that gap grows.
+
+## So where can you use them?
+
+By now you may be asking: "can I start using these today?"
+The answer splits between **writing** and **using**.
+
+**Writing** one — anyone can, starting today.
+A skill is just a folder and a text file; no special equipment required.
+
+**Using** one takes support on the agent's side.
+First, the agent must be able to **read folders**: gather the spines into a shelf, open the matching book — that whole move.
+For instructions-only skills, that is all it takes.
+At the extreme, you could even paste the contents of a SKILL.md by hand into a chat that doesn't support skills, and the meaning would get through.
+The skills mechanism is what does that for you — automatically, and in an organized way.
+
+Skills that carry small programs add one more requirement.
+The agent needs **a workspace where it can run programs**.
+Most supporting apps put that workspace inside a fence called a **sandbox**.
+Just like a playground sandbox: inside the fence you can dig and build freely, but you can't reach outside it — your whole computer, the rest of the network — without permission.
+The fence exists so that if a program is wrong (or malicious), the damage stops inside the sand.
+
+So skills are not "any screen, any time."
+They run **inside apps and agent environments that support them**.
+That support is spreading — document-creation features in chat apps, agent tools for developers, and more.
+
+## A word of caution
+
+A skill _is_ instructions the agent will follow.
+So if the playbook is wrong, the agent will be **confidently wrong**.
+There are also places that share skills made by other people.
+Convenient — but just as you wouldn't cook an important dinner from a stranger's unchecked recipe, **read a skill before you use it**.
+A skill's small programs run just like tools do.
+Don't outsource all your caution to the sandbox fence, either.
+Even inside it, a program can reach the files you handed the agent and the tools you connected.
+Everything the agents chapter said about irreversible moves and guardrails applies to skills as-is.
+
+## Becoming a common shape
+
+In the MCP chapter we saw that a shared standard pays off for everyone.
+The same thing is happening with skills.
+Agent Skills started at one company (Anthropic, the maker of Claude), but the folder layout and the way of writing are now **a published, open format**, and models and apps that support it are spreading.
+Since it's just a folder, it travels well.
+Write a playbook once, and different agents can use it.
+Structured output standardized "the shape of the reply," MCP standardized "how tools connect" — and skills are on their way to standardizing "how procedures are taught."
+
+## The parts are all here
+
+With this, every part this book set out to hand you is on the table.
+You know the machinery inside, call it from outside, get replies in a fixed shape, hand it tools, run it in a loop, and teach it your procedures.
+The closing chapter, next, wraps up the long journey.
+
+## Summary
+
+- The agent is smart, but **your way of doing things** stays unknown until taught — and it doesn't remember across conversations.
+- The model's desk (the **context window**) is a finite surface. Spreading the whole manual on it every time is slow, costly, and confusing.
+- A **skill** is a folder holding one playbook. Normally only the **name and one-line description (the spine)** sits on the desk; the agent opens just the book that matches the job.
+- Besides SKILL.md (plain text), the folder can hold templates, reference material, and small programs. Only what's needed gets read — and programs aren't read at all, just **run for their result**.
+- No training — it works the moment it's written, it's easy to fix and share, and anyone who can write can make one.
+- Using one takes a supporting environment; skills with programs run inside a **sandbox** (a fenced workspace).
+- Tools grow what it **can do** (hands); skills teach **how** (playbooks). Different roles, one team.
+- A skill _is_ instructions: beware wrong or shady playbooks, and check where one came from before using it.
