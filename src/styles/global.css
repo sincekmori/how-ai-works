@@ -1063,6 +1063,9 @@ button.rr-w {
 
 .icon-btn {
   padding: 0.35rem 0.5rem;
+  /* Emoji glyphs inherit the topbar's tall line-height and inflate the button
+     (the theme toggle stood ~11px taller than its neighbours); pin it. */
+  line-height: 1;
 }
 
 /* language switcher (EN | 日本語) */

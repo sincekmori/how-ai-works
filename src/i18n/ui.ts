@@ -11,6 +11,7 @@ export interface Strings {
   openFull: string;
   openIndex: string;
   navToggle: string;
+  githubRepo: string;
   prev: string;
   next: string;
   toc: string;
@@ -42,6 +43,7 @@ const ui: Record<Locale, Strings> = {
     openFull: "Open /llms-full.txt",
     openIndex: "Open /llms.txt (index)",
     navToggle: "Toggle navigation",
+    githubRepo: "View the source on GitHub",
     prev: "← Previous",
     next: "Next →",
     toc: "On this page",
@@ -79,6 +81,7 @@ const ui: Record<Locale, Strings> = {
     openFull: "/llms-full.txt を開く",
     openIndex: "/llms.txt（索引）を開く",
     navToggle: "ナビゲーションを開閉",
+    githubRepo: "GitHub でソースを見る",
     prev: "← 前の章",
     next: "次の章 →",
     toc: "この章の目次",
