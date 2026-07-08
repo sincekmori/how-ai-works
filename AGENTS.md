@@ -67,7 +67,7 @@ Community corrections are welcomed via the issue forms in `.github/ISSUE_TEMPLAT
 Always commit completed, gate-passing work automatically.
 Never `git push` (and never push via `gh`) — the maintainer reviews and pushes.
 Run `bun run check` and `bun run build` before every commit; both must pass.
-End commit messages with `Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>`.
+Do not add a `Co-Authored-By` trailer (or any other AI credit) to commit messages.
 Credit the work to its author, **Shinsuke Mori**, under the **CC BY 4.0** license.
 Keep every dependency on its latest version: Dependabot (`.github/dependabot.yml`) opens weekly PRs for npm/Bun packages and GitHub Actions, and a build breakage from a bump is fixed forward, not reverted. Pin an older version only when a newer one is genuinely incompatible, and always with a written reason.
 
