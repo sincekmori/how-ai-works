@@ -1,8 +1,5 @@
 version: 2
 updates:
-  # Runtime stack (npm ecosystem covers the Bun project via bun.lock). Policy is
-  # to chase the latest versions even at the cost of breakage — a bump that breaks
-  # the build is fixed forward, not reverted (see AGENTS.md).
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
