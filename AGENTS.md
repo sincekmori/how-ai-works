@@ -62,15 +62,6 @@ The per-chapter Ask AI buttons (`AskAI.astro`) hand the page's `.md` to ChatGPT 
 A site-wide disclaimer (`t(lang).disclaimer`, shown on the landing page and under every chapter) states that the content is not expert-reviewed and links to GitHub Issues.
 Community corrections are welcomed via the issue forms in `.github/ISSUE_TEMPLATE/` and the guidelines in `CONTRIBUTING.md`.
 
-## Working agreement
-
-Always commit completed, gate-passing work automatically.
-Never `git push` (and never push via `gh`) — the maintainer reviews and pushes.
-Run `bun run check` and `bun run build` before every commit; both must pass.
-Do not add a `Co-Authored-By` trailer (or any other AI credit) to commit messages.
-Credit the work to its author, **Shinsuke Mori**, under the **CC BY 4.0** license.
-Keep every dependency on its latest version: Dependabot (`.github/dependabot.yml`) opens weekly PRs for npm/Bun packages and GitHub Actions, and a build breakage from a bump is fixed forward, not reverted. Pin an older version only when a newer one is genuinely incompatible, and always with a written reason.
-
 ## What it is
 
 Astro 7 static site with 26 chapters, each a beginner-first primer with SVG figures and one Svelte island.
