@@ -8,10 +8,6 @@ updates:
     schedule:
       interval: "weekly"
     versioning-strategy: increase
-    # Match bunfig.toml's minimumReleaseAge (7 days): without this cooldown,
-    # Dependabot proposes versions younger than the gate, Bun refuses to
-    # resolve them while regenerating bun.lock, and the PR ships a
-    # package.json/bun.lock mismatch that fails `bun install --frozen-lockfile`.
     cooldown:
       default-days: 7
     groups:
