@@ -1,46 +1,46 @@
 ---
-title: "Answers in a Fixed Shape: JSON Schema"
+title: "Answering in a Fixed Shape: JSON Schema"
 order: 21
-description: Just asking "reply in JSON" in the prompt breaks down — wrong structure, code fences, a chatty preamble. That's what leads to defining the shape itself, with JSON Schema. What a schema is, and why handing it to the model guarantees the shape (constrained decoding), with a before/after demo.
+description: Asking "reply in JSON" is not enough — preambles and fences sneak in and the structure drifts. Enter JSON Schema, which defines the shape itself. What a schema is, and why handing one over makes the shape hold without fail, shown with a comparison demo.
 draft: false
 ---
 
 import StructuredToggle from "../../../components/StructuredToggle.svelte";
 
-By now we have the JSON shape, and the goal of making the model reply in it.
-So how do we make it reply in JSON?
-The most naive way is to ask for it in the prompt.
+The JSON shape is in hand.
+All that remains is getting the model to reply in it.
+The most naive way: just ask, in the prompt (the instruction text handed to the model).
 
-## Try asking "reply in JSON"
+## Asking "reply in JSON"
 
-For example:
+For instance:
 
-> Give tomorrow's weather in Tokyo as JSON: `{ "city": ..., "condition": ..., "temperature": ... }`.
+> Answer tomorrow's Tokyo weather as JSON shaped like `{ "city": ..., "condition": ..., "temperature": ... }`.
 
-For a simple shape, the model usually goes along with it.
-Pick "Answer in a fixed shape (JSON)" in the demo to see it.
+For simple shapes, the model usually plays along.
+Choose "answer in a fixed shape (JSON)" in the demo below to watch.
 
 <StructuredToggle lang="en" client:visible />
 
-If that always worked, we'd be done — but it isn't so easy.
-As we saw in Part 1, the model picks one word at a time by "what seems likely."
-"Reply in JSON" is a **request**, not a **guarantee**.
-So it breaks down like this.
+Problem solved, one would like to say — but it is not that easy.
+As Part I showed, the model picks word after word by plausibility.
+"Reply in JSON" is a request, not a guarantee.
+And indeed, it frays in the following ways.
 
-## Asking alone breaks down
+## Requests alone fray
 
-**Break 1: a preamble.**
-The model is helpful, so it tends to add a lead-in.
+Fray number one: preambles.
+The model, being helpful, tends to add one.
 
 ```text
-Sure! Here's tomorrow's weather in Tokyo:
+Certainly! Here is tomorrow's weather for Tokyo:
 { "city": "Tokyo", "condition": "sunny", "temperature": 28 }
 ```
 
-The first line isn't JSON, so a program can't read it as-is.
+The opening sentence is not JSON, so the program cannot read the reply as-is.
 
-**Break 2: code fences.**
-Out of the habit of showing code inside prose, you sometimes get this wrapping:
+Number two: fences.
+Out of the habit of displaying code inside prose, wrappers like this appear:
 
 ````text
 ```json
@@ -48,39 +48,39 @@ Out of the habit of showing code inside prose, you sometimes get this wrapping:
 ```
 ````
 
-**Break 3: the structure drifts.**
-`temperature` (a number) comes back as `"28C"` (a string), or an unrequested key appears, or a key name is slightly off.
+Number three: structural drift.
+`temperature` meant as a number comes back as the string `"28 degrees"`, keys nobody asked for appear, or a key's name is subtly off.
 
-You might think, "then just regex out the contents of the fence."
-But remember the whack-a-mole from the last chapter.
-There's **no guarantee the fence is even there**, and if the structure inside has drifted, you still can't read it.
-On a request basis, you never get past "probably fine."
+You might think: extract the fenced part with a regex, then.
+But remember the whack-a-mole of two chapters ago.
+There is no guarantee a fence is present — and even with one, if the structure inside has drifted, it still cannot be read.
+On a request basis, you never get past "probably fine".
 
-## Define the shape itself
+## Defining the shape itself
 
-So we raise our game one more level.
-Showing an example of "return it like this" is like showing a sample of a filled-in form.
-Instead, we hand over **a form whose blanks are fixed from the start**.
+So the idea moves up one more level.
+Showing an example — "reply something like this" — is like showing a filled-in sample.
+Instead, hand over a form whose blanks are fixed in advance.
 
-Spelled out in words, the form's rules are:
+Spell out that form's rules in words, and they read:
 
-- The keys are exactly three: `city`, `condition`, `temperature`
+- The keys are exactly `city`, `condition`, and `temperature`
 - The values of `city` and `condition` are strings
 - The value of `temperature` is a number
 - All three keys must always be present
 
-But here's a snag.
-Hand these rules over as an English memo, and no machine can be made to follow them.
-The rules **themselves** need to be written in a fixed shape.
+One problem, though.
+Handing these rules over as an English memo won't let machinery read them.
+The rules themselves must be written in a fixed shape.
 
-So — written in what shape?
-Look closely at the rules above: each one, like "the value of the key `city` is of the kind string," is **itself a pair of a key and a value**.
-And we already know the perfect shape for writing keys and values, don't we?
+In what shape, then?
+Look closely at the rules above: each is itself a key-and-value pair, like "the key `city` holds the kind: string".
+And we already know the perfect shape for writing keys and values.
 JSON.
-In other words, **the rules for how a JSON should be written are themselves written in JSON**.
-The world standard for writing rules this way is **JSON Schema**.
-A schema is a "blueprint for the shape."
-Written as a JSON Schema, the weather rules look like this:
+So: write the rules for how JSON should be written — in JSON itself.
+The world standard for writing such rules is **JSON Schema**.
+A schema is a blueprint of a type.
+The weather rules above, written as a JSON Schema:
 
 ```json
 {
@@ -94,42 +94,44 @@ Written as a JSON Schema, the weather rules look like this:
 }
 ```
 
-You read it with "follow the keys" from the last chapter.
-`"type": "object"` means "the whole thing is a `{ }` bundle."
-Inside `"properties"` is "which keys exist, and what kind each value is."
-`temperature` is `"type": "number"` — it **must be a number** (a string like `"28C"` is not allowed).
-`"required"` means "these keys must be present."
-This is not an example; it's a **rule**.
-Not "roughly like this," but "nothing but this shape is accepted."
+Reading it works by the previous chapter's key-following.
+`"type": "object"` says the whole is one `{ }` bundle.
+Inside `"properties"` is which keys exist and what kind each value is.
+`temperature` is `"type": "number"` — it must be a number (a string like `"28 degrees"` is not accepted).
+`"required"` says these keys must be present.
+This is not an example; it is a rule.
+Not "roughly like this" but "no shape other than this is admitted".
 
-## Why it's guaranteed
+## Why it holds, without fail
 
-Hand over a schema and the model can **always** obey the shape.
-Asking broke down — so why can this guarantee it?
-The trick lies in "how the next word is chosen," from the inference chapter.
+Hand over a schema through a call that actually enforces it, and the model keeps the shape — always.
+Requests frayed; why can this be guaranteed?
+The trick lies in "how the next word gets picked", from the inference chapter.
 
-Recall: each step, the model puts a share (a probability) on every candidate, then picks one to append.
-When there's a schema, we put a **filter** on that table of shares.
-We build an allow-list of "the only characters the schema permits next right now," and force every other candidate's share to **zero**.
+Each round, the model assigns probabilities to all candidates and picks one to append.
+When a schema is present, a filter drops over that allocation table.
+An allow-list is computed — "per the schema, only these pieces (tokens) may come next" — and every other candidate's probability is set to zero.
 
-For example, once `{ "city":` is written, the schema says a string value comes next — so a quote `"` is what belongs.
-Clamp it to "nothing but `"` can be chosen."
-When writing the value of `temperature`, allow only digits (no `"`).
-This way, **the available moves are always limited to ones that fit the shape**.
-The model can't slip in a preamble or a fence, and can't get a key wrong.
-We don't steer with a request; we **carve the path itself into the shape of the schema**.
-That's why it's _guaranteed_.
-This fixed-shape output is called **structured output**, and JSON Schema is what specifies the shape.
+Say the model has written as far as `{ "city":`.
+Per the schema, a string value must come next — an opening quote `"`.
+So the choice is clamped: nothing but `"` can be picked.
+When writing the value of `temperature`, only digits are selectable.
+The model cannot insert a preamble, cannot add a fence, cannot misname a key.
+Not guiding by request — carving the very corridor into the schema's shape.
+That is why it holds without fail.
+Output in a fixed shape like this is called **Structured Output**, with JSON Schema serving as the shape specification.
+Two footnotes to "without fail".
+The guarantee holds when the call uses the mode that actually applies this clamp (Structured Output).
+And if the reply hits the max_tokens ceiling from the parameters chapter, even a correct shape can still be cut off midway.
 
 ## Now it's a component
 
-Look back and it's been a journey.
-We tried pulling from free text with regexes and tired of the whack-a-mole, arrived at returning JSON, learned that asking alone breaks down, and finally reached **defining the shape itself and guaranteeing it**.
-Now the model's reply is unwavering **data in a fixed shape**.
-A fixed shape means a program can read it directly and pass it on.
-Turn the weather JSON into an icon; decide pass or fail from a score; hand an address to a maps API.
-The model has gone from "chat partner" to **a component that plugs into the other components in an app**.
+It has been quite a road.
+Trying to regex numbers out of free text, tiring of whack-a-mole, arriving at "have it reply in JSON", learning that asking is not enough — and finally defining and guaranteeing the shape itself.
+The model's reply is now fixed-shape data that does not wobble.
+Fixed-shape data can be read directly by a program and passed to the next step.
+Chart the weather JSON, pass or fail by the score, hand the address to a maps service.
+The model has gone from conversation partner to a component that connects with other components inside an app.
 
-And the next chapter runs this flow in reverse, too.
-We let the model itself **ask, via structured output, "use this tool with these values."**
-Let's give the model tools from the outside world.
+There is, by the way, a reverse use for this fixed-shape exchange.
+What if the model were the one asking — "I'd like to use this tool, with these values" — in a fixed shape of its own?

@@ -1,7 +1,7 @@
 ---
-title: "Transformer: Assemble Attention, Then Stack It Up"
+title: "The Transformer: Assembling Attention, then Stacking It"
 order: 10
-description: The Transformer is the blueprint that packs attention into a "block" and stacks it deep. Self-attention and feed-forward, the residual connections and normalization that make depth trainable, the position tags that bring word order back, and the causal mask that hides the future — all shown with figures and an interactive demo, in a way a middle-schooler can follow. It is the shared foundation under every modern LLM.
+description: The Transformer is the blueprint that packages attention into a block and stacks it deep. Self-attention plus feed-forward, the shortcut and smoothing that make depth trainable, position tags that restore word order, the causal mask that hides the future, and the exit that produces the allocation table.
 draft: false
 ---
 
@@ -9,86 +9,87 @@ import TransformerBlock from "../../../components/figures/TransformerBlock.astro
 import PositionTag from "../../../components/figures/PositionTag.astro";
 import CausalMaskDemo from "../../../components/CausalMaskDemo.svelte";
 
-In the previous chapter we got hold of attention — a way to "look at the related words directly and all at once."
-But attention is a powerful **part**, not a finished machine that reads and writes text on its own.
-Assemble that part well, stack it many layers deep, and turn it into one big mechanism — that is the **Transformer**.
-Every major LLM today (GPT, Llama, Claude, Gemini, Mistral, Qwen, and more) is built on this blueprint.
+Attention lets words look directly and simultaneously at the words that matter to them.
+By itself, though, it is not a finished machine that reads and writes text.
+The blueprint that assembles this part and stacks it many layers deep into one big contraption is the **Transformer**.
+Every major LLM today — GPT, Llama, Claude, Gemini, Mistral, Qwen — is built on this blueprint.
 
-## Inside one block: mix sideways, then think on your own
+## Inside one block: mix sideways, then digest alone
 
-A Transformer is made by stacking many copies of the same kind of **block**.
-Let's start by looking inside a single block.
+A Transformer is a stack of identical blocks.
+Start with what is inside one block.
 
 <TransformerBlock lang="en" />
 
-The inside has two main stages.
+There are two stages.
 
-1. **Self-attention** (the mechanism from the previous chapter). It mixes information **sideways** between words, so each word pulls in "the other words that matter to it."
-2. **Feed-forward** (the small neural network from the neural networks chapter). Each word then chews on the gathered information and transforms it **on its own**.
+1. **Self-attention** (the previous chapter's mechanism). Words mix information sideways, each word pulling in the other words that relate to it.
+2. **Feed-forward** — the small neural network from the neural-networks chapter. Each word digests and transforms what it pulled in, on its own.
 
-**Why split it into two stages?**
-Self-attention is good at "**gathering information**," but gathering alone isn't a finished dish.
-Taking those gathered ingredients and "**cooking them**" (reshaping them into something meaningful) is the feed-forward's job.
-Gather sideways, then chew it over individually — that combination is the basic move of a Transformer.
+The two stages exist because the jobs differ.
+Self-attention is good at gathering information, but gathered ingredients are not yet a meal.
+The cook that works the ingredients into something meaningful is the feed-forward stage.
+Gather sideways, digest individually.
+That combination is the Transformer's basic move.
 
-## Two tricks for stacking deep: a shortcut, and a leveling
+## Two tricks that make depth possible: a shortcut and a smoothing
 
-We stack this block not once but dozens of layers high.
-The trouble is, just stacking doesn't train well.
-Information and the "how-to-fix-it signal" (remember backpropagation from the neural networks chapter) get distorted or vanish as they pass through so many layers.
-Two tricks prevent that.
+These blocks get stacked dozens of layers deep.
+Just stacking them, however, breaks training.
+Both the information and the "how to fix it" signal from backpropagation get warped or vanish while passing through so many layers.
+Two built-in tricks prevent this.
 
-- **Residual connection = a shortcut.** Take the value going **into** each stage and add it straight back to the value coming **out**. This builds a **shortcut that lets the original information and the learning signal pass straight through**, across layers. Think of it as "keeping the original draft attached to your edited draft." Nothing important gets lost along the way.
-- **Layer normalization = a leveling.** After each stage, **re-scale the numbers back into a reasonable range**. Left alone, the numbers can swell too big or shrink too small and make training unstable, so each time we tidy them up — like "adjusting the volume so it's easy to listen to."
+- **Residual connections**: the value from before each stage is added straight back onto the value after it. This creates a shortcut where the original information and the learning signal travel straight across layers. It is like handing over an edited manuscript with the original attached — nothing important gets lost along the way.
+- **Layer normalization**: after each stage, the sizes of the numbers are rescaled into a comfortable range. Left alone, values balloon or shrink until training destabilizes, so each stage re-adjusts the volume to a listenable level.
 
-Thanks to these two, a Transformer can be stacked very deep and still train.
+Thanks to these two, a Transformer can be stacked very deep and still learn.
 
-## Bringing word order back: position tags
+## Restoring order: position tags
 
-Here is an important problem that's easy to miss.
-Attention was a "**weighted sum**."
-A sum gives the same answer no matter what order you add things in (3 + 5 and 5 + 3 are both 8).
-In other words, **attention, as is, can't see word order**.
-After the word-order chapter made such a point that "order decides meaning," this is a real problem.
+Here hides an easy-to-miss problem.
+The heart of attention is a weighted sum — an addition.
+Addition gives the same answer no matter the order of what you add (3 + 5 and 5 + 3 are both 8).
+Which means attention, as is, cannot see word order.
+We just spent a chapter establishing that order decides meaning — this will not do.
 
-So we add a **position tag** to each word's vector to tell it "which word in line this is."
+So each word's vector gets a tag added to it saying "I am the n-th word".
 
 <PositionTag lang="en" />
 
 This is called **positional encoding**.
-There are a few schools of thought for how to make the tags: using a fixed wave pattern, letting the model learn them during training, or representing position with rotation — known as **RoPE** (many modern models choose RoPE because it handles long text well).
-What they all do is the same thing: "**give each word information about its order**."
+There are several schools of tag-making: fixed wave patterns, and tags learned during training.
+RoPE, the current favorite, works a little differently: instead of adding a tag, it rotates queries and keys by an amount depending on position at attention's matching step (many current models choose it for its strength on long text).
+Whatever the school, the goal is the same: making sure word order reliably reaches the computation.
 
-## Don't look at the future: the causal mask
+## Never look at the future: the causal mask
 
-Most LLMs that write text predict **the next word one at a time, from left to right** (this kind of setup is called **decoder-only**).
-And there's one rule here.
-**When processing a given word, you must not look at the words behind it (the future).**
-You're practicing how to guess the next word, so peeking at the future — which is the answer — would be cheating.
+Most text-generating LLMs predict the next word left to right, one at a time (this arrangement is called **decoder-only**).
+One rule comes with it.
+While processing a word, the model must not look at the words after it — the future.
+It is practicing guessing the next word; peeking at the future means peeking at the answer key.
 
-This "screen that hides the future" is called the **causal mask**.
-Try it below.
-Click a word (or use back/next) to move "the position being processed right now," and the visible range changes.
+The screen that hides the future is called the **causal mask**.
+In the demo below, click a word (or use the Back and Next buttons) to move the "currently processing" position.
 
 <CausalMaskDemo client:visible lang="en" />
 
-From the word being processed, what's visible is always **only itself and what came before**.
-The future is hidden with an ✕.
-Thanks to this promise, the model can properly practice "guessing what's next without looking at the answer."
-(Note: for jobs like translation, where you want to read the **whole** input sentence first, a setup is also used that combines an **encoder** — which is allowed to see everything — with a causal-masked **decoder**.)
+From the word being processed, only itself and everything before it are visible.
+The future stays hidden.
+This rule is what lets the model practice "guess the next word without seeing the answer" honestly.
+(For tasks like translation, where reading the whole input first is fair, an encoder that sees everything is combined with a causally masked decoder.)
 
-## What happens when you stack it up?
+## What the stack adds up to
 
-Finally, the big picture.
-The words, each with a position tag added, get a little richer every time they pass through one block — "mix sideways, then chew it over individually" — and we repeat that for dozens of layers.
-The same thing we saw in the neural networks chapter happens here too: "**shallow layers catch simple cues, deep layers catch complex meaning**."
-Shallow blocks pick up word links and turns of phrase; deep blocks capture the meaning of the whole sentence and the flow of the story.
-In this way the final layer builds a "representation of meaning" that can predict the next word well.
+Now the whole picture.
+Words with position tags pass through block after block — mixing sideways, digesting individually — growing a little richer each time, dozens of layers over.
+The pattern from the neural-networks chapter, "shallow layers find simple clues, deep layers find complex ones", plays out here too.
+Early blocks catch word links and turns of phrase; deep blocks catch the meaning of the sentence and the drift of the conversation.
 
-## Summary
+Then, the exit.
+The vector at the position being predicted, as it leaves the last layer, is scored against every candidate in the vocabulary, and softmax converts that row of scores into shares that add up to 1.
+What comes out is the allocation table from the very first chapter's demo.
+The "converter that turns scores into shares at the end", promised in the probability chapter, is this softmax at the exit.
 
-- **Transformer** = a blueprint that stacks the same block many layers deep. The shared foundation under modern LLMs.
-- One block = **self-attention (gather sideways) + feed-forward (chew it over individually)**.
-- **Residual connections (the shortcut)** and **layer normalization (the leveling)** keep training stable even when stacked deep.
-- Attention can't see order, so a **position tag (positional encoding)** gives each word its place in line.
-- The **causal mask** hides the future, enabling generation that "guesses the next word without looking at the answer."
+The blueprint of the guess-the-next-word machine is now connected, entrance to exit.
+What remains is how a freshly built one actually gets trained.
+What should it read, and how much, to reach that fluency?

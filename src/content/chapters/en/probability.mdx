@@ -1,76 +1,73 @@
 ---
-title: "Turning Hesitation into Numbers (Probability)"
+title: "Turning Hesitation into Numbers: Probability"
 order: 5
-description: Why does an AI give slightly different replies to the same question? Starting from the fact that the next word simply isn't determined, this chapter arrives at keeping hesitation as "shares that add up to 1" (a probability distribution), with a lottery demo to spin.
+description: Ask an AI the same question twice and the replies often differ slightly. Starting from the fact that the next word cannot be pinned down to one choice, this chapter arrives at the probability distribution — holding hesitation as shares that add up to 1 — via a lottery you can spin yourself.
 draft: false
 ---
 
 import ProbabilityBars from "../../../components/figures/ProbabilityBars.astro";
 import ShareLottery from "../../../components/ShareLottery.svelte";
 
-Has this ever happened while you chat with an AI?
-You ask the same question, and the reply comes back slightly different each time.
-By the end of this chapter, that little mystery will be solved.
+Chat with an AI for a while and you'll notice something: ask the same question twice, and the replies come out slightly different.
+That is neither a coincidence nor a glitch — it follows necessarily from the mechanism.
+And the seed of it was already visible in the first chapter's demo.
 
-## Why remember all the candidates, not just the winner?
+## Why keep anything besides the top candidate?
 
-Think back to the demo in the first chapter.
-Even right before writing "Mount Fuji", the model still kept 5% of a chance on "Everest".
-**Why remember all the candidates, instead of just the winner?**
+Even right before writing "Mount Fuji", the demo's model still kept 5% of its possibility on "Everest".
+If first place is settled, why not throw the rest away?
 
-Because **the rest can't honestly be thrown away**.
+Because it can't be thrown away — that is the answer.
 Nobody can pin down the one word that follows "My favorite food is".
 For some people it's curry; for others it's ramen.
-Since the next word genuinely isn't determined, the most honest representation is to keep all of "which candidates, and how likely each one is".
-It's the same reason a weather forecast says "70% chance of rain" instead of flatly declaring "sunny tomorrow!".
+Since the next word cannot, even in principle, be pinned down to one choice, the most honest representation is to keep the whole picture: which candidates are how likely.
+It is the same idea as a weather forecast that says "70% chance of rain" instead of flatly declaring "sunny tomorrow".
 
 <ProbabilityBars lang="en" />
 
-## Why scale the shares to add up to 1?
+## Why make the shares add up to 1
 
-At this point we add one important rule.
-**Scale the shares so that, across all candidates, they add up to exactly 1 (= 100%).**
-Why bother with such a rule?
-If someone just told you "Fuji scores 8 points", you couldn't tell whether that's confident or timid.
-Only once every candidate's share is scaled so the whole adds up to 100% can you read it at a glance: "93% on Fuji — it is betting nearly its whole allowance on Fuji."
-We turn loose scores into shares of one whole — tickets in a lottery.
+At this point we add one important promise:
+scale all the candidates' shares so that together they add up to exactly 1 — that is, 100%.
 
-This add-up-to-1 way of handing out shares is called a **probability distribution**.
-And because it expresses "how likely, given the text so far", it goes by the name **conditional probability**.
-Every time an LLM writes one more word, it rebuilds this entire table of shares from scratch.
+The reason is that free-floating scores are unreadable.
+Told only "8 points on Mount Fuji", you cannot judge whether that is a bold 8 or a timid 8.
+Only when the whole is scaled to 100% can you read it at a glance: "91% on Mount Fuji — it is betting nearly its whole allowance on Mount Fuji."
+Loose scores get converted into shares of a lottery.
 
-(Inside the model, by the way, things are first computed as free-form "scores", and a converter turns them into add-up-to-1 shares at the very end. We'll meet that converter in the chapter that needs it.)
+An allocation that adds up to 1 like this is called a **probability distribution**.
+Here it specifically expresses "how likely each word is, given the text so far", so it carries the name **conditional probability**.
+An LLM rebuilds this entire allocation table every single time it adds one word.
 
-## Spin the lottery
+Inside the model, by the way, the numbers are first computed as free-form scores, and a dedicated final step converts them into "adds up to 1" form.
+That converter appears in [the Transformer chapter](../transformer/).
 
-We said the shares are "tickets in a lottery".
-So we should be able to actually draw.
-In the demo below, draw the same question's lottery again and again.
+## Spinning the lottery
+
+If the shares are lottery allowances, we should be able to actually draw.
+In the demo below, draw the same question's lottery over and over.
 
 <ShareLottery client:visible lang="en" />
 
-Did you notice?
-**The same question does not always produce the same word.**
-Yet as the draws pile up, the share of times each word came out creeps closer and closer to the share it was handed.
+The same question does not always produce the same word.
+Yet as the draws pile up, the fraction of times each word appears creeps closer and closer to its allotted share.
 
-And that is the answer to the mystery at the top.
-Chat replies differ a little each time because the model doesn't always take the top candidate — sometimes it **draws lots according to the shares**, letting second place win now and then.
-Only a model that keeps its hesitation as shares can do this trick; how the lottery's dial gets tuned is a later chapter's treat.
+This resolves the observation we started with.
+Chat replies differ from run to run because the model does not always pick first place: a share-weighted lottery sometimes selects a lower-ranked candidate.
+Holding its hesitation as shares is precisely what makes this way of choosing possible.
+How the lottery's dial is tuned is the business of [the inference and sampling chapter](../inference-sampling/).
 
-## One more payoff: the size of a miss becomes measurable
+## Shares make the size of a miss measurable
 
-Keeping hesitation as shares has an even more important payoff.
-**It lets you measure how badly a guess missed.**
-If the correct word was "Fuji", a model that had said "93% on Fuji" and one that had put only "3% on Fuji" both "had it among the candidates" — yet one clearly did far better.
-A mistake can be given a size.
-This one fact is what powers the next chapter's theme: how the machine gets better.
+Holding hesitation as shares has one more important payoff.
+It makes the size of a miss measurable.
 
-## Summary
+Suppose the correct word turned out to be "Mount Fuji".
+A model that had said "91% on Mount Fuji" and a model that had put only "3% on Mount Fuji" both technically "had it among the candidates".
+But it is obvious that one did far better than the other.
+With shares in hand, that difference can be extracted as a number.
+This single fact is the key to the next question.
 
-- The next word genuinely isn't determined, so **keep the hesitation: one share per candidate**.
-- Scale the shares to **add up to 1** — that's what makes confidence readable at a glance. This handing-out is a **probability distribution** (a **conditional** one, since it depends on the text so far).
-- Shares are also lottery tickets, which is why the same question can get different replies.
-- Shares make **the size of a miss** measurable — the bridge to learning.
-
-So on what kind of machine does "measure the miss and fix it" actually run?
-Time to open up the "model" itself: enter the neural network.
+And that question has been waiting since the first chapter.
+A freshly built model's allocation table should be nonsense.
+What kind of machine computes that table — and how does it ever become accurate?

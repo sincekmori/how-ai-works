@@ -1,82 +1,94 @@
 ---
-title: 'Tokenization (Splitting a Sentence into "Pieces")'
+title: "Tokenization: Splitting Text into Pieces"
 order: 2
-description: How a computer chops text into the units it actually reads. Why neither whole words nor single characters work, and how it finds "just-right pieces" instead — shown with figures and concrete examples.
+description: A machine cuts text into "just-right pieces" — neither whole words nor single characters — before it reads anything. This chapter walks through why the obvious cutting schemes fail, then lets you run the piece-building procedure one step at a time.
 draft: false
 ---
 
 import TokenChips from "../../../components/figures/TokenChips.astro";
 import BpeDemo from "../../../components/BpeDemo.svelte";
 
-In the previous chapter we learned that an LLM's job is to "guess the next word from the text so far."
-But what even counts as "one word"?
-When a computer reads text, it first has to decide **where to cut**.
-Take "I really love cats" — into what units should it be split?
-This cutting job is called **tokenization**, and each piece you cut out is called a **token**.
+Suppose we hand the sentence "I really love cats" to a machine.
+Before it can do anything else, the machine has to decide where to cut the text.
+This cutting job is called **tokenization**, and each piece it produces is called a **token**.
 
-## Split into whole words? — It doesn't work
+Having a name for the job doesn't solve it.
+Where should the cuts go?
 
-The most naive idea is to cut "by word."
-But this hits a wall fast.
-The words out in the world — new slang, typos, emoji, technical jargon — **keep multiplying without limit**.
-We'd like to keep our cutting "dictionary" at a finite size, but that can never be enough.
-Worse, if a word shows up that isn't in the dictionary, the model is simply stuck.
+## The parts list has to be fixed in advance
 
-## Split into single characters? — This has problems too
+Before comparing cutting schemes, one thing is worth pinning down.
+The previous chapter said there are tens to hundreds of thousands of candidates for the next word.
+Every round, the model picks one word from that candidate list.
+That candidate list is decided when the model is built, and then it is frozen.
+The model can only read and write pieces that appear on the list.
+This list is called the **vocabulary**.
 
-So what about the opposite — "one character at a time"?
-The number of possible characters is limited, so the dictionary won't overflow.
-But now a single sentence turns into a very long string of pieces, which gets heavy to handle.
-And one character on its own carries almost no meaning (the letter "c" by itself tells you nothing about whether the word is "cat" or "cup").
+So "where do we cut?" is really another question in disguise: "what pieces should go on a finite list?"
 
-## The sweet spot: "frequently used pieces"
+## What happens if we cut by words
 
+The most natural idea is to cut at word boundaries.
+But the world's supply of words never stops growing.
+New slang, typos, emoji, technical jargon — there is no end to what the list would need to hold.
+We want the vocabulary to be finite, yet no size is ever enough.
+Worse, the moment a word outside the list shows up, the model simply cannot read that part.
+
+## What happens if we cut into single characters
+
+Then how about the opposite — one character per piece?
+The number of characters is limited, so the list will never overflow.
+
+A different problem appears instead.
+The model writes one piece per prediction, so the finer the pieces, the more rounds it takes to produce the same sentence.
+Running hundreds of predictions for a short reply is wasteful.
+And a single character carries almost no meaning on its own.
+Seeing just the letter "c" tells you nothing about whether the word is "cat" or "cup".
+
+## Making pieces out of frequent chunks
+
+Cutting by words breaks the list; cutting by characters makes the sequence too long.
 So we take the middle ground.
-**Bundle the chunks that show up often into single pieces, and represent rare words as combinations of small pieces** — this is the mainstream approach today.
+Chunks that appear often become single pieces, and rare words are spelled out as combinations of smaller pieces.
+This is the mainstream approach today.
 
 <TokenChips lang="en" />
 
-Why is this good?
-Common words can be written **short and cheap** as a single piece, and rare words can **always** be represented by combining pieces.
-In other words, "stuck on an unknown word" never happens.
-The size of the dictionary (which we call the **vocabulary**) also stays nicely under control.
+With this scheme, common words are written short, as one piece each.
+Rare words can always be assembled from smaller pieces, so "stuck on an unknown word" never happens.
+And the vocabulary stays at a manageable size.
 
-## How are the pieces decided?
+## How the pieces are chosen: BPE
 
-The classic method is one called **BPE** (short for **byte-pair encoding**).
-The name sounds intimidating, but the idea is simple: just repeat "**take the two pieces that sit next to each other most often, and glue them into one piece**."
+Who decides which chunks count as "frequent", and how?
+The classic method is **BPE** (Byte Pair Encoding).
+It has exactly one move:
+take the two pieces that sit next to each other most often, and glue them into one — then repeat.
 
-For example, suppose the word "low" appears many times in your text.
-Then the sequence "l" followed by "o" shows up over and over.
-So you glue "l" + "o" into a new piece "lo" and register it in the vocabulary.
-Then you do the same with the next-most-common pair, and the next... repeating until the vocabulary reaches the size you want.
+Suppose the word "low" appears many times in your text.
+With everything split into single characters, the sequence "l" followed by "o" shows up again and again.
+So you glue "l" and "o" into a new piece, "lo", and add it to the vocabulary.
+Then you glue the next most frequent pair, and the next.
+This continues until the vocabulary reaches the size you want.
 
-Why glue the "frequently adjacent" pairs?
-Because if you turn things that often appear together into a single piece, **you can represent a sentence with a shorter string of pieces, which is efficient**.
-The more common a turn of phrase, the more there is to gain by bundling it.
+The reason to glue frequent pairs first is that it lets sentences be written as shorter strings of pieces.
+The more common a chunk, the bigger the saving from bundling it into one piece.
 
-Seeing is believing.
-In the demo below, try the actual procedure one step at a time.
-At the start, everything is split into single characters.
-Each time you press "Next step," the computer **finds the most frequently adjacent pair and glues it together**.
-The first thing to get glued should be the most common pair, "l + o."
+The demo below runs this procedure one step at a time.
+Everything starts split into single characters.
+Each press of "Next step" glues the most frequently adjacent pair.
+Before you press, try to predict which pair will merge first.
 
 <BpeDemo client:visible lang="en" />
 
 ## Good things to know
 
-- **Even unknown characters are fine**: many recent models first build everything up from an even finer shared unit called the **byte**. This way, any rare character or symbol can, in the worst case, be represented as byte-level pieces — so an "unreadable character" can't happen in principle.
-- **Token count is cost**: how heavy the processing is, how much it costs, and how long a stretch can be read at once are all decided by the number of tokens. Sentences with lots of symbols (or written in languages like Japanese) tend to use more tokens than English.
-- **Special pieces**: there are also dedicated tokens to mark the start and end of a sentence, or the role in a conversation (whose turn it is to speak).
+- **Unknown characters are covered**: many recent models first build characters out of an even finer shared unit, the **byte**. Any rare character or symbol can be expressed as byte pieces in the worst case, so an "unreadable character" cannot occur in principle.
+- **Token count is cost**: processing time, price, and how much text fits in one reading are all measured in tokens. Text heavy with symbols, or in languages like Japanese, tends to use more tokens than plain English.
+- **Special pieces**: the vocabulary also reserves dedicated tokens that mark where text begins and ends, and which speaker a message in a conversation belongs to.
 
-This kind of subword approach is the common entry point shared by today's major models — GPT, Llama, Claude, Gemini, Mistral, Qwen, and more.
+This "cut into frequent chunks" entrance is shared by today's major models — GPT, Llama, Claude, Gemini, Mistral, Qwen, and more.
 
-## Summary
-
-- Text is first cut into pieces called **tokens**.
-- The standard is to split not into whole words, nor single characters, but into **frequently used chunks (subwords)**.
-- **BPE** builds pieces by repeatedly "gluing the two that sit next to each other most often." Build up from **bytes**, and even unknown characters can be represented.
-
-Text is now a line of parts.
-But the parts are still made of letters.
-In the next chapter, we turn them into something a computer can calculate with: numbers.
+Text is now a sequence of tokens.
+But each token is still made of letters, like "cat".
+How is a machine that can only do arithmetic supposed to handle a piece made of letters?

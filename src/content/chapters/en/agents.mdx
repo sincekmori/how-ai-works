@@ -1,99 +1,89 @@
 ---
-title: "Agents: Think, Act, Observe, Repeat"
+title: "Agents: Think, Use, Think Again"
 order: 24
-description: Combine structured output, tools, and MCP, and the model goes beyond a single reply. An agent loops — think → use a tool → read the result → think again — to carry out a multi-step job. We follow one through a step demo, and face the real-world struggles (wandering, going in circles, cost, irreversible moves) and the guardrails that answer them.
+description: Combine structured output, tools, and MCP, and the model outgrows the single reply. An agent runs the "think → use a tool → read the result → think again" loop to finish multi-step work. This chapter traces that loop in a step demo, along with the real troubles — losing the way, going in circles, irreversible moves — and the safety devices that answer them.
 draft: false
 ---
 
 import AgentLoop from "../../../components/figures/AgentLoop.astro";
 import AgentTrace from "../../../components/AgentTrace.svelte";
 
-By now the parts for "using" a model are on the table.
-**Structured output** to answer in a fixed shape, **tools** to call the outside world, **MCP** to connect tools in a common shape.
-This chapter combines them to have the model do a **job that goes beyond a single reply**.
+The parts for putting the model to work are assembled:
+structured output for fixed-shape answers, tools for reaching the outside world, MCP for connecting tools in a common shape.
+This chapter combines them, and gives the model work that outgrows a single reply.
 
-## A job that isn't done in one turn
+## Work that doesn't finish in one round
 
-Tool use so far was, in effect, "one round trip."
-The model calls a tool once, reads the result, and answers.
-But real jobs aren't that simple.
+Tool use so far was, in effect, one round trip.
+The model calls a tool once, reads the result, answers.
+Real-world tasks are rarely that simple.
 
-Take "I want to walk at the warmest hour in Tokyo tomorrow — when?"
-Answering that means first getting the temperature by hour, finding the warmest one, then checking it won't rain at that hour, and so on — **several stages**.
-And what you learn along the way (15:00 is warm) decides what to check next (rain at 15:00).
-It's not a straight line; you **read the result and decide the next move**.
+Take: "I want to walk at the warmest hour in Tokyo tomorrow. When?"
+Answering requires stages — look up the temperature by hour, find the warmest hour, then check whether it will rain at that hour.
+Moreover, what is learned along the way (3 p.m. is warmest) determines what to check next (rain at 3 p.m.).
+Not a straight road: read the result, then choose the next move.
 
 ## Run the loop
 
-So we turn the tool's "one round trip" into a **repeat**.
-That's all it is:
+So the single round trip becomes a repeat.
+The whole recipe:
 
 **Think → use a tool → read the result → think again.**
 
-Keep looping until the goal is met.
+Keep the loop running until the goal is reached.
 That is an **agent**.
 
 <AgentLoop lang="en" />
 
-The difference from an ordinary model isn't "how many times" but "**deciding the next step itself**."
-What to look up, which tool to use next, whether it has enough — the model judges as it goes, reading the results in between.
-It plans, remembers the progress, uses different tools, and heads for the goal.
+What separates this from an ordinary model is not the number of rounds but deciding the next move itself.
+What to look up, which tool comes next, whether enough is known —
+the model judges these as it goes, looking at intermediate results.
+It plans, keeps track of progress, switches between tools, and heads for the goal.
 
-## Walk through the work
+## Walking through a job
 
-Words alone are hard to picture, so let's follow a real agent one step at a time.
+Words alone make this hard to see, so follow an agent's actual moves step by step.
 
 <AgentTrace lang="en" client:visible />
 
-As you can see, what it does is the same as the tools chapter.
-The difference is doing it **again and again, with a goal in mind**.
-Both "think" and "use a tool" (emit a request via structured output) are the very parts we already have.
-No new magic was added.
-It's **the same parts, put in a loop**.
-When an assistant you use looks things up, follows steps, and gets a longer task done, this loop is usually turning behind the scenes.
+As you can see, each individual action is the same tool use as the previous chapters; the only difference is that it repeats, with a purpose.
+The same parts, arranged into a loop.
+When your everyday assistant researches something, works through steps, and finishes a longer task for you, this loop is usually what's spinning underneath.
 
-## It isn't all smooth sailing, though
+## Not all smooth sailing, though
 
-Hearing all this, it sounds like the loop can do anything.
-But actually build an agent, and new struggles arrive one after another.
-Problems that were small in a single turn **snowball** inside a loop.
+Up to here, it sounds as if a spinning loop could do anything.
+Build an agent for real, and new troubles line up quickly.
+Problems that stayed small in a single round snowball inside a repeat.
 
-First, it **wanders off the path**.
-As Part I showed, a model picks words by probability, so now and then it picks a strange move.
-In ordinary chat, a strange reply costs little — you just ask again.
-Inside a loop, though, the next move is stacked **on top of** the wrong one.
-A small early stumble is a big miss ten moves later.
+First, agents lose their way.
+As Part I showed, the model picks words probabilistically, so now and then it picks a strange move.
+In ordinary chat, a strange reply just meant you asked again.
+Inside a loop, the next move gets stacked on top of the mistaken one.
+A small early stumble is a major detour ten moves later.
 
-Second, it **goes in circles**.
-It can fall into the loop of "look it up → still unclear → look up the same thing again."
-That's why real agents almost always carry a **cap on the number of moves** — "at most N steps."
-Hit the cap, show a person the progress so far, and ask for directions.
-Never letting it run forever is the most basic guardrail.
+Second, they go in circles.
+Look it up, fail to understand, look up the same thing again — agents do fall into that ring.
+This is why real agents almost always carry a cap: "at most N moves."
+When it hits the cap, it shows a human its progress so far and asks for direction.
+Never letting it run forever is the most basic safety device.
 
-Then there's **time and money**.
-The loop calls the model once per turn.
-Run dozens of turns and replies get slow, and the bill grows.
-How far it should dig on its own, and where it should cut its losses — that line, too, is for the builder to draw.
+Third, time and money.
+The loop calls the model every turn; dozens of turns make replies slow and bills fat.
+How far it may investigate alone, where it must wrap up —
+that line, too, is for the builder to draw in advance.
 
-Scariest of all is the **irreversible move**.
-With look-things-up tools, a failure just means retrying.
-But hand it tools that "send an email," "buy something," "delete a file"?
+And the scariest: the irreversible move.
+With look-things-up tools, failure costs a redo.
+But hand over "send an email", "buy something", "delete a file"?
 A wrong move now changes the real world.
-So before the moves that matter, the design makes it **stop and ask a human first**.
-The craft of building agents shows less in making the loop run than in **making the loop safe to stop**.
+So the design pauses before important operations and checks with a human.
+Skill in agent building shows less in making the loop spin than in making it stoppable, safely.
 
-## Next: after the loop, the teaching
+## After the loop: teaching
 
-The agent runs now.
-But use one every day, and you soon notice something.
-It is smart, yet it doesn't know "how we do things here" — your way of working.
-And every new conversation resets your careful explanation to square one.
-The final chapter looks at **Agent Skills**, the mechanism for teaching an agent your procedures — and closes the book.
-
-## Summary
-
-- An **agent** is the loop "think → use a tool → read the result → think again," run until the goal is met.
-- No new part was added; it's structured output and tools, simply **repeated**.
-- The difference isn't the count but "**deciding the next move yourself, from the results so far**."
-- Loops come with struggles — wandering, circles, time and money, irreversible moves. So they ship with **guardrails**: step caps and asking a human.
-- With it, the model can take on multi-step jobs that go beyond a single reply.
+The agent now works.
+Use one daily, though, and something becomes obvious fast.
+The agent is smart, yet it knows nothing of how things are done at your job.
+And every new conversation resets whatever you had explained.
+This "what I taught doesn't survive to the next conversation" problem — how does it get solved?

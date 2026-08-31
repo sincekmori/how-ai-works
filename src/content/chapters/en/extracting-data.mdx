@@ -1,71 +1,71 @@
 ---
-title: "Pulling Data Out of Text"
+title: Pulling Information out of a String
 order: 19
-description: From a model's reply like "Tokyo will go up to 28C tomorrow," we want a program to pull out just the temperature. We feel a regex fall apart, one wording after another, and arrive at the idea of asking for the answer in a fixed shape from the start — JSON.
+description: Try to extract just the temperature from the reply "Tokyo tomorrow, up to 28C" with a program. Watch the first idea — regular expressions — crumble wording by wording, and arrive at the shift in thinking — have the reply come back in a fixed shape to begin with.
 draft: false
 ---
 
 import RegexTrap from "../../../components/RegexTrap.svelte";
 
-The opening chapter of this part showed that inside an app, the thing receiving the model's reply is a **program**.
-And that a program is worst at free-form text.
-But how bad is it, really?
-Let's find out by getting our hands dirty.
-That difficulty is the starting point for an important idea coming up.
+Inside an app, the model's reply is received by a program, and a program is worst at free-form text.
+How bad is it, exactly?
+Let's find out hands-on.
 
-## First, the naive attempt
+## The naive first attempt
 
 Say the model replies:
 
 > Tokyo tomorrow: up to 28C.
 
-Why would we want to dig a number out at all?
-Say we're building an app like this: if tomorrow looks like it will top 30°C, it sends a morning notification — "heat warning, drink plenty of water."
-To decide whether to send it, the program has to make a **numeric comparison**: is tomorrow's temperature greater than 30?
-The sentence "up to 28C" can't be compared with 30.
+Why dig a number out at all?
+Suppose we are building this app: if tomorrow looks like it will top 30°C, it sends a morning notification — "heat warning, drink plenty of water."
+To decide whether to send it, the program must make a numeric comparison: is tomorrow's temperature greater than 30?
+The sentence "up to 28C" cannot be compared with 30.
 Only a number can.
-That's why we want to pull just the **temperature number (28)** out of this reply.
-A program doesn't understand the sentence, but it can hunt through the characters for a pattern.
-That kind of pattern search is done with a **regular expression** (regex).
-A regex is a little notation for saying "find a string shaped like this."
-For example, `\d` means "one digit," and `\d+` means "a run of one or more digits."
-You don't need to learn to read or write these symbols here — not at all.
-Knowing "there's a tool like this that searches for a character pattern" is all this chapter asks.
+That is why we want just the temperature number (28) out of this reply.
 
-For that sentence, `\d+` grabs "28."
+A program does not understand the sentence, but it can hunt through the characters for a pattern.
+Pattern searches like "find a run of digits" are done with a **regular expression** (regex) — a small notation for saying "find a string shaped like this."
+For example, `\d` means one digit, and `\d+` means a run of one or more digits.
+There is no need to learn to read or write these symbols here.
+Knowing that a tool exists for searching by character pattern is all this chapter asks.
+
+For that sentence, `\d+` grabs "28".
 It worked.
-…Did it, though?
+Did it, though?
 
 ## As the wording changes, it crumbles
 
-The trouble is that the model's reply **isn't worded the same way every time**.
+The trouble is that the model's reply is not worded the same way every time.
 In the demo below, pick a regex and see what it grabs from each of the three sentences.
 
 <RegexTrap lang="en" client:visible />
 
-Try it, and here's what happens.
+Try it, and this is what happens.
 
-- `\d+` (the first number) grabs the **date, 3**, in "On the 3rd, Tokyo goes up to 28C."
-- So you try `up to \d\dC`, which dodges the date. But "the temperature is 28C" is worded without "up to," so it **doesn't match**.
-- So you add `temperature is \d\dC`, and now the "up to 28C" sentences slip through.
+- `\d+` (the first number) grabs the date, 3, in "On the 3rd, Tokyo goes up to 28C."
+- So you try `up to \d\dC`, which dodges the date. But "the temperature is 28C" is worded without "up to", so it doesn't match.
+- So you add `temperature is \d\dC` — and now the "up to 28C" sentences slip through.
 
-**Whichever pattern you pick, none gets all three sentences right.**
+Whichever pattern you pick, none gets all three sentences right.
 Every new wording you think of means bolting on another regex.
-What about "15C in the morning, 28C at noon"? What if it's "28°C" with a different unit? What if it's spelled "twenty-eight"?
-There's no end to it.
-This is endless **whack-a-mole**.
+What about "15C in the morning, 28C at noon"?
+What if it is written "28°C", with the degree sign?
+What if it is spelled out, "twenty-eight"?
+There is no end.
+It is whack-a-mole, forever.
 
 ## Flip it around
 
-Here's the key realization.
-All along, we were trying to pull data out of a free-form sentence **that was already written**.
-That's why we got stuck chasing an infinity of wordings.
+Here is the thing worth noticing.
+All along, we have been trying to extract information after the fact, from free text that was already written.
+That is why we ended up chasing an infinity of wordings.
 
-So what if we flip it?
-**Have it written, from the start, in a shape that's easy to pull from.**
-Instead of "answer in a sentence," ask the model to "answer in this shape."
-As it happens, such an easy-to-pull-from shape is already used the world over.
-It's called **JSON**.
+What if we flipped it?
+Have the reply written in an easy-to-extract shape from the very start.
+Change the request from "answer in prose" to "answer in this shape."
+Such easy-to-extract shapes already exist, in use all over the world.
+The name of one is **JSON**.
 
 If the reply were
 
@@ -73,9 +73,8 @@ If the reply were
 { "temperature": 28 }
 ```
 
-then whack-a-mole is over.
-You just take the value at the key `temperature`, and you reliably get 28, every time.
-The wordings are infinite, but the **shape can be pinned to one**.
+the whack-a-mole would be over.
+Read the value under the key `temperature`, and 28 arrives reliably, every time.
+Wordings are infinite, but the shape can be fixed to one.
 
-So what does this JSON actually look like?
-The next chapter looks at it properly.
+So what kind of shape is this JSON, exactly?

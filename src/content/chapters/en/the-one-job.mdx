@@ -1,78 +1,75 @@
 ---
-title: "To Begin: Opening Up the Chat (It Has Exactly One Job)"
+title: "To Begin: Lifting the Lid on the Chat"
 order: 1
-description: Starting from the chat screen everyone has seen, this introduction uncovers what an LLM really does — "guess the next word from the text so far". A lid-open demo lets you run the mechanism yourself, and you leave with a map of the "why?"s the rest of the book answers.
+description: Starting from the familiar chat screen, this introduction shows that an LLM's job comes down to one thing — "read the text so far and guess the next word" — with a demo that runs with its insides visible. You also pick up a map of the "why?"s the rest of the site answers.
 draft: false
 ---
 
 import ChatPeek from "../../../components/ChatPeek.svelte";
 
-You've seen a screen like this, haven't you?
-You type a question on your phone or laptop, and an AI answers — that chat.
+You type a question on your phone or laptop, and an AI writes back, fluently.
+You have almost certainly seen that chat screen.
 
-Watch closely and you'll notice something.
-The reply doesn't appear all at once: it **shows up from the front, a little at a time, as if it were being written live**.
-That is not a loading animation put there to keep you busy.
-Behind the screen, the reply really is **being made up on the spot, one word at a time**.
+Look closely, and you'll notice the reply does not appear all at once.
+It appears from the front, a little at a time, as if it were being written live.
+That is not a loading animation.
+Behind the screen, the reply really is being made up on the spot, one word at a time.
 
-Of course, there is no tiny person living behind the screen.
-There is only a computer — and, deep down, the only thing a computer can do is **arithmetic on numbers**.
-How can a machine that can only crunch numbers hold up its end of a conversation?
-That is the question running through this whole site.
+The only thing behind that screen is a computer.
+And at bottom, the only thing a computer can do is arithmetic on numbers.
+How does a machine that can only do arithmetic hold up its end of a conversation?
+That single question is what this whole book chases.
 
-## The big reveal: it has exactly one job
+## Exactly one job
 
-Let's give away the outermost secret right at the start.
-The job of an LLM (a "large language model"), boiled all the way down, is just this:
+Let me show you the entrance to the answer right away.
+The job of an **LLM (large language model)**, boiled all the way down, is just one thing:
 
 **"Read the text so far, and guess the next word."**
 
 That's it.
-Once it guesses a word, it writes it at the end of the text and returns to the very same question: "read the text so far (now one word longer), and guess the next word."
-Loop this, and a reply sprouts out, word by word.
-The chat below is a demo of exactly that — with the lid open.
-Go ahead and press the buttons.
+Write the guessed word at the end of the text, and "the text so far" grows by one word.
+Solve the very same problem for the longer text.
+Repeat, and the reply grows from the front, one word at a time.
+
+The chat below is a demo of that loop with its insides left visible.
+Press the buttons and watch a reply get built.
 
 <ChatPeek client:visible lang="en" />
 
-That table of candidates and shares in the bottom half — that is everything going on inside this machine's head.
-What looked like "an answer" was really the result of running "compare the shares, take the top one" six times in a row.
+In the bottom half of the demo, you saw a table of candidate words and their shares.
+That table is everything the model has in its head.
+What looked like "an answer" was the result of running "compare the shares, take the top one" six times in a row.
 
 ## Why one word at a time?
 
-And here is where I'd like you to ask: **why one word at a time?
-Why not produce the whole reply in one go?**
+Why not produce the whole reply in one go, instead of one word at a time?
 
-The reason is the size of the problem.
-Suppose we tried to build a machine that guesses a whole sentence at once.
-Say there are roughly tens of thousands of words.
-Then the number of possible 10-word sentences is "tens of thousands × tens of thousands × ..." multiplied ten times over — far more than the number of stars in the universe.
-"Pick the one right sentence out of all of these" is far too big a problem.
-"Guess the next word", on the other hand, has tens of thousands of candidates: a lot, but small enough to actually compare.
-**When a problem is too big, split it into repeats of the same small problem.**
-That is one of the oldest tricks in computing, and it is the foundation LLMs stand on.
+Imagine a machine that guesses the entire reply in a single shot.
+Take the vocabulary to be, roughly, tens of thousands of words.
+Then the number of possible 10-word sentences is tens of thousands multiplied by itself ten times over — far more than the number of stars in the universe.
+"Pick the one right sentence out of all of these" is simply too big a problem.
+"Guess the next word", on the other hand, has tens to hundreds of thousands of candidates: a lot, but few enough to actually compare.
 
-And this "one word at a time" is exactly why the reply trickles onto your screen from the front.
-It was never a special effect — the mechanism itself was showing through.
+Split a problem that is too big into repeats of the same small problem.
+That is one of the oldest tricks in computing, and LLMs stand on top of it.
+The reason a reply trickles onto your screen from the front is that this "one word at a time" shows through the glass.
 
 ## Your map from here
 
-So the mystery has moved down one level.
-"It can hold a conversation" turns out to mean "it is astonishingly good at guessing the next word."
-But now new "why?"s pop up, one after another.
-This book is a journey that chases them down, one "why?" per chapter.
+Once "it can hold a conversation" turns out to mean "it is very good at guessing the next word", new questions start lining up.
 
-- What even counts as "one word"? Where does a machine cut text? → [the tokenization chapter](../tokenization/)
-- A machine that only handles numbers — how does it turn **words** into numbers? → [the vectors chapter](../vectors/)
-- How do you compute **closeness of meaning**, like "Mount Fuji" and "Everest" being related? → [the distance & dot product chapter](../similarity/)
-- What exactly are those **shares** in the demo that add up to 100%? → [the probability chapter](../probability/)
-- A freshly built machine should guess nonsense. How does it get **better**? → [the neural networks & learning chapter](../neural-networks/)
-- How does a machine actually "read" a long text? → the [attention](../attention/) and [Transformer](../transformer/) chapters
+- Where does a machine cut text to count "one word"? → [the tokenization chapter](../tokenization/)
+- A machine that only handles numbers — how does it turn words into numbers? → [the vectors chapter](../vectors/)
+- How do you compute closeness of meaning, like "Mount Fuji" being near "Everest"? → [the distance and dot product chapter](../similarity/)
+- Those shares in the demo that add up to 100% — what are they, really? → [the probability chapter](../probability/)
+- A freshly built machine should guess nonsense. How does it get good? → [the neural networks and learning chapter](../neural-networks/)
+- How does a machine "read" a long text at all? → the [attention](../attention/) and [Transformer](../transformer/) chapters
 
-No chapter asks you to memorize answers.
-Each one starts from "why do it this way — and would another way work?"
-Dig through the mysteries one chapter at a time, and by the end you should be able to see all the way through to the other side of that chat screen.
+Rather than handing you conclusions to memorize, every chapter starts from "why do it this way — and would another way work?"
+Dig through the mysteries one at a time, and by the end you should be able to see all the way through that chat screen.
 
-So, on to the first "why?".
-We've been casually saying "one word at a time" — but what even counts as "one word" to a machine?
-That, it turns out, is a surprisingly tricky question.
+So, the first question.
+We have been saying "one word at a time" as if it were obvious.
+English at least separates words with spaces — yet the machine, it turns out, draws its cut lines somewhere else entirely.
+Where?

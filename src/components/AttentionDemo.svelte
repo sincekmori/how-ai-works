@@ -15,28 +15,30 @@
       } as Record<number, number[]>,
       labels: { 6: "「それ」が見る", 8: "「追いかけた」が見る" } as Record<number, string>,
       takeaways: {
-        6: "「それ」がいちばん見ているのは『ボール』（62%）。6 語も前にあるのに、距離に関係なく直接つながれる。これが昔のやり方にできなかったこと。",
+        6: "「それ」がいちばん見ているのは『ボール』（62%）。4 語も前にあるのに、距離に関係なく直接つながれる。これが昔のやり方にできなかったこと。",
         8: "「追いかけた」は、主語の『犬』（40%）と目的語の『それ』（30%）に強く注目。「誰が・何を」を、離れた単語から直接集めている。",
       } as Record<number, string>,
+      order: [6, 8],
     },
     en: {
       title: 'Which word is it "paying attention" to?',
       tokens: ["The", "dog", "threw", "the", "ball", "so", "it", "chased", "it"],
       // attention weights for each query word (index -> weights over all tokens, sum 1)
       W: {
-        6: [0.01, 0.05, 0.15, 0.04, 0.62, 0.02, 0.03, 0.03, 0.05],
+        8: [0.01, 0.05, 0.15, 0.04, 0.62, 0.02, 0.03, 0.03, 0.05],
         7: [0.02, 0.4, 0.06, 0.02, 0.05, 0.03, 0.3, 0.05, 0.07],
       } as Record<number, number[]>,
-      labels: { 6: "“it” looks", 7: "“chased” looks" } as Record<number, string>,
+      labels: { 8: "the last “it” looks", 7: "“chased” looks" } as Record<number, string>,
       takeaways: {
-        6: "What “it” looks at most is “ball” (62%). Even though it’s six words back, they connect directly regardless of distance — exactly what the old way couldn’t do.",
-        7: "“chased” pays strong attention to the subject “dog” (40%) and the object “it” (30%). It gathers “who did what” directly from far-apart words.",
+        8: "What the last “it” looks at most is “ball” (62%). Even though it’s four words back, they connect directly regardless of distance — exactly what the old way couldn’t do.",
+        7: "“chased” pays strong attention to “dog” (40%) and to its subject “it” (30%), which stands for the dog. It gathers “who did what” directly from far-apart words.",
       } as Record<number, string>,
+      order: [8, 7],
     },
   }[lang];
 
   const { tokens } = T;
-  const queries = Object.keys(T.W).map(Number);
+  const queries = T.order;
 
   let qi = $state(queries[0]);
   const w = $derived(T.W[qi]);

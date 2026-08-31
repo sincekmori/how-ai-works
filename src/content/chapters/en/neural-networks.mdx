@@ -1,7 +1,7 @@
 ---
-title: "Neural Networks and Learning (getting smarter from mistakes)"
+title: "Neural Networks and Learning: Getting Smarter from Mistakes"
 order: 6
-description: What is the "model", really? It is a neural network. How neurons, layers, and the switch (activation) work, and what learning really is — the gradient (small steps against the slope) and backpropagation — explained with figures and everyday examples.
+description: This chapter opens up the machine that computes the allocation table — the neural network. From neurons and layers to what learning really is (gradient descent and backpropagation, small steps against the slope), traced with figures and everyday pictures.
 draft: false
 ---
 
@@ -10,121 +10,130 @@ import NeuralNetFlow from "../../../components/figures/NeuralNetFlow.astro";
 import GradientDescent from "../../../components/figures/GradientDescent.astro";
 import LearningLoop from "../../../components/LearningLoop.svelte";
 
-At the end of the previous chapter we said that once a miss has a size, a bridge to learning opens up.
-In this chapter we cross that bridge.
-First, the stage where learning happens: the "model" itself.
-It is a **neural network** — a contraption built from huge piles of simple arithmetic, with lots of "knobs."
-In this chapter we will see **how it computes and how it learns**.
+The machine that computes the allocation table is a **neural network**:
+a contraption made of vast numbers of simple calculations stacked together, covered in adjustable "knobs".
+It is the inside of the thing we have been calling "the model".
+This chapter looks at how it computes, and how it learns.
 
 ## The smallest part: the neuron
 
 A network is a collection of small parts called **neurons**.
-What a single neuron does is just this much.
+Here is everything one neuron does.
 
 <Neuron lang="en" />
 
-Each incoming number is multiplied by its own **weight**, and the results are added up.
+Multiply each incoming number by its own **weight**, then add everything up.
 For example, with inputs (0.5, 0.9, 0.2) and weights (0.8, −0.5, 0.3):
 
-0.5 × 0.8 ＋ 0.9 × (−0.5) ＋ 0.2 × 0.3 ＝ 0.4 − 0.45 ＋ 0.06 ＝ **0.01**
+0.5 × 0.8 + 0.9 × (−0.5) + 0.2 × 0.3 = 0.4 − 0.45 + 0.06 = 0.01
 
-Then the result is passed through a **switch** (an activation).
-Here, hold on to two "whys."
-**Why do we need weights?**
-To express "which input matters, and how much" (a big weight means important; a negative weight means it pushes the other way).
-**Why do we need the switch?**
-Because if there were no switch and we only added things up, then no matter how many layers we stack, it all collapses back into a single addition and can't express anything complicated.
-By adding a bend — like "react strongly only under certain conditions" — the switch is what finally gives the network rich expressive power.
+Finally, the result passes through a **switch** (the activation).
 
-## Line them up for a "layer," stack them to go "deep"
+What are the weights for?
+They express how much attention to pay to each input.
+A large weight means important; a negative weight means it works in reverse.
+The model's entire character is decided by the values of these weights (the "parameter count" you'll meet in later chapters is simply how many weights there are — billions and more, for an LLM).
 
-A bunch of neurons placed side by side makes one **layer**.
-Stack those layers many levels high and you have a neural network.
+And what is the switch for?
+Without it — with additions alone — any number of stacked layers would collapse into one big addition.
+The switch adds a bend, a "react strongly only under this condition", and that bend is what makes complex behavior expressible at all.
+
+## Side by side into layers, stacked to go deep
+
+A row of neurons side by side makes a **layer**.
+Layers stacked several deep make a neural network.
 
 <NeuralNetFlow lang="en" />
 
-**Why stack them (go deep)?**
-Because the next layer can use the clues the previous layer found as raw material to build up more complex clues.
-For text, for instance, the first layer might catch "features of individual words," the next "turns of phrase," the next "the meaning of the whole sentence" — building up step by step, from the simple to the complex.
+The point of stacking is that each layer can assemble more complex clues out of the clues the previous layer found.
+For text: the first layer picks up features of words, the next layer turns of phrase, the next the meaning of the whole sentence — building from simple to complex, stage by stage.
 
-Computation flows from input to output and an answer (a prediction) comes out — this forward direction of flow is called the **forward pass**.
+Computation flows from input to output, and a prediction comes out.
+This forward flow is called the **forward pass**.
 
-## How does it learn?
+## Why make it learn at all?
 
-In a freshly made network the "knobs" (the weights) are random, so the predictions are way off.
-Before fixing that, let's start one "why?" deeper.
-**Why make the machine "learn" at all?
-Wouldn't it be more reliable for humans to write down all the rules of language and hand them over?**
+A freshly built network has random weights, so its predictions are way off.
+We are about to fix the weights — but first, one natural question deserves an answer.
+Wouldn't it be more reliable for humans to write down all the rules of language and hand them over?
 
-Researchers actually tried exactly that.
-And, after decades, they got stuck.
-Language is a **pile of exceptions**.
-Take "a dog" and "the dog": you use them correctly without thinking, but nobody — not even the experts — can write down a rule for the choice that covers every case without exceptions.
-What we can't articulate, we can't write down as rules.
-The hard-won lesson was this: "**instead of humans writing the rules, show the machine mountains of text and let it tune itself to match.**"
+Researchers tried exactly that.
+And they got stuck.
+Language is a pile of exceptions.
+Take "a dog" and "the dog".
+You choose between them correctly without thinking, yet nobody — not even the experts — can state the rule behind the choice so that it covers every case.
+What we cannot articulate, we cannot write down as rules.
+The lesson left standing after decades of effort was this:
+stop writing rules, show the machine mountains of text, and let the machine tune itself to match.
 
-So what does "tune" mean?
-The recipe is a three-beat loop.
-**Make it guess → compare with the right answer and, using the shares from the previous chapter, measure the size of the miss → turn the knobs a little in the direction that shrinks the miss.**
+"Tuning" is a three-step loop.
+Make a prediction.
+Compare it with the correct answer, using the previous chapter's shares to measure the size of the miss.
+Turn the weights a little, in the direction that shrinks the miss.
 
-The problem: there are **millions** of knobs.
-Which ones, which way, and by how much?
-How about turning them at random, and keeping whatever helps?
-In principle that does inch forward.
-But with this many knobs, luck alone wouldn't finish before the universe ends.
-What randomness lacks is **direction**: a hint that says "turn this knob this way, and the miss shrinks."
+The trouble is that last step.
+There are millions of weights.
+Which way, and by how much, should each one turn?
+Couldn't we turn them at random and keep whatever helps?
+In principle that inches forward, but with this many knobs, luck alone would outlast the universe.
+What randomness lacks is directional information —
+a clue that says "turn this knob this way, and the miss will shrink."
 
-## Finding the way downhill: the gradient
+## Finding the downhill: the gradient
 
-That hint comes from the **way things change**.
-In math this is called the "slope", and the slopes of all the knobs together are called the **gradient**.
-Picture coming down a mountain in thick fog.
-You can't see far at all, but by checking the slope under your feet you can always tell "the steepest downhill direction".
+That clue comes from how things change.
+Mathematics calls it a slope, and the slopes of all the weights taken together are called the **gradient**.
+
+Picture climbing down a mountain in thick fog.
+You cannot see far at all, but by feeling the ground at your feet, you can tell one thing: which direction is steepest downhill.
 Take one step that way.
-Check again, step again.
-Repeat, and eventually you reach the bottom of the valley — the place where the misses are smallest.
-This is what learning really is.
+Feel the ground again; take another step.
+Repeat, and eventually you reach the valley floor — the place where the miss is smallest.
+That is what learning is.
 
 <GradientDescent lang="en" />
 
-Put into a word-formula, one step of learning is just this:
+Written as a phrase, one step of learning is just this:
 
 **new value = current value − (step size) × (slope)**
 
-The "− (minus)" out front is the sign for "move against the increasing direction — move toward less."
-The steeper the slope (= the more this knob affects the miss), the bigger the move.
-**But why small steps?
-Why not one giant leap?**
-Because in fog, you only know the slope right under your feet.
-A slope is strictly local information; it tells you nothing about the terrain far away.
-Leap too far and you might sail clear over the valley and land on the far hillside.
+The minus sign at the front means "move against the direction that increases the miss".
+The steeper the slope — the more that weight matters to the miss — the bigger the move.
+
+Why single steps, though?
+Why not one giant stride?
+Because in fog, the only slope you know is the one under your feet.
+A slope is local information; it says nothing about terrain farther away.
+A giant stride might vault over the valley floor and land you on the opposite face.
 So: a little at a time, as many times as it takes.
-In LLM training, this one step is repeated trillions of times.
+In LLM training, this step is repeated billions of times.
 
-## Hand the mistake backward: backpropagation
+## Handing mistakes backwards: backpropagation
 
-One problem remains: how do we find this "slope" for **millions of knobs at once**?
-Trying them one at a time, the day would be over before we finished.
-There is a clever trick: **hand the mistake backward, from the output toward the input**.
-The "gap" at the output is assigned, one layer at a time, toward the front, in the form of "how much is this knob in this layer responsible for that gap?"
-This is called **backpropagation** (it's the upward orange arrow in the figure earlier).
+One problem remains: how do you get the slope for millions of weights at once?
+Testing each weight by nudging it would take forever.
 
-Why does going "backward" work?
-Because the place where we can see the size of the mistake is the very last output.
-If we pass that responsibility backward, starting from the layers near the output and working toward the front, then for every single knob we get "how it should be fixed" — all in **one single sweep back**.
+There is a clever trick.
+Hand the mistake backwards, from output toward input.
+The gap at the output is assigned, one stage at a time, to the weights before it — in the form "how much of the blame for that gap belongs to this weight in this layer?"
+This is called **backpropagation** (the upward orange arrows in the figure above).
 
-At the heart of how it hands the blame around is a rule called the **chain rule**.
-"An influence gets multiplied by some factor every time it passes through a layer" — if it counts double at the first stage and triple at the next, then overall it's 2 × 3 ＝ 6 times.
-So by multiplying together each stage's "by what factor" in the backward direction, we find out how much a deep knob affects the final mistake.
+The reason to go backwards is that the size of the mistake is only known at one place: the final output.
+Passing the blame back from there, stage by stage, computes "how to fix it" for every weight in a single backward sweep.
 
-Use the button below to run one round of learning and watch it happen.
-**A green pulse flows forward to make a prediction (the forward pass), then an orange pulse flows back to hand out the mistake (backpropagation).**
-Each press, the "mistake (loss)" bar below shrinks a little — and that is "learning."
+At the core of the blame-passing sits a rule called the **chain rule**:
+influence gets multiplied as it passes through each stage.
+If the first stage amplifies by 2 and the next by 3, the total effect is 2 × 3 = 6.
+So multiplying each stage's factor backwards tells you exactly how much a deep weight affects the final mistake.
+
+Use the button below to run one round of learning.
+A green pulse flows forward and produces a prediction (the forward pass); an orange pulse then travels backwards, distributing the mistake (backpropagation).
+With each press, the "mistake (loss)" bar at the bottom shrinks a little.
+That shrinking is learning.
 
 <LearningLoop client:visible lang="en" />
 
-## Summary
-
-- A **neuron** is a part that multiplies its inputs by weights, adds them up, and passes the result through a switch (activation). The weights are "how much to value each input," the switch is "expressive power."
-- Line up neurons into a layer, stack the layers, and you get a **neural network**. The deeper it is, the more it can build complex clues up from simple ones.
-- Learning is the repeated loop of "predict with the **forward pass** → measure the size of the miss → use **backpropagation** to find each knob's slope, and step a little against the **gradient**." This is the foundation of every LLM.
+The inside of the model and the mechanism for getting smarter are now connected.
+And notice: this story quietly answers another question we left open.
+The vectors chapter said no human chooses the numbers in a word's vector.
+So where do those numbers come from?
