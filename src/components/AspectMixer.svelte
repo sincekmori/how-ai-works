@@ -26,7 +26,7 @@
       next: "次のお題",
       matched: (w: string, v: string) =>
         `正解！ 「${w}」＝ (${v})。この並びが「${w}」の“プロフィール”です。`,
-      hint: "その単語らしさを想像しながら、3 つとも ✓ になるまで動かしてみましょう。",
+      hint: "その単語らしさを想像しながら、三つとも ✓ になるまで動かしてみましょう。",
     },
     en: {
       title: "Build a row of numbers with your own hands",

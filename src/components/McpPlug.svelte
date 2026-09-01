@@ -6,14 +6,14 @@
 
   const T = {
     ja: {
-      title: "本数をくらべる：手配線 vs MCP",
+      title: "本数を比べる：手配線 vs MCP",
       models: (n: number) => `モデルの数: ${n}`,
       tools: (n: number) => `道具の数: ${n}`,
-      hand: "手配線（直接つなぐ）",
+      hand: "手配線（直接繋ぐ）",
       mcp: "MCP 経由",
       wires: (n: number) => `${n} 本`,
       note: (v: { m: number; n: number; mul: number; add: number }) =>
-        `モデル ${v.m} × 道具 ${v.n} だと、手配線は ${v.mul} 本、MCP なら ${v.add} 本。数が増えるほど差は開きます（かけ算 対 足し算）。`,
+        `モデル ${v.m} × 道具 ${v.n} だと、手配線は ${v.mul} 本、MCP なら ${v.add} 本。数が増えるほど差は開きます（掛け算 対 足し算）。`,
     },
     en: {
       title: "Compare the wire count: hand-wired vs MCP",

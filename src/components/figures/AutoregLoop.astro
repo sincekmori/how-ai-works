@@ -7,16 +7,16 @@ interface Props {
 const { lang = 'ja' } = Astro.props;
 const S = {
   ja: {
-    aria: '1 語ずつ作っては足す、文章生成のくり返し',
+    aria: '1 語ずつ作っては足す、文章生成の繰り返し',
     soFar: 'これまでの文',
     soFarEx: '「空は」',
     model: 'モデル',
     prob: '次の単語の確率',
     probEx: '青い70% 広い15%…',
-    pick: '1 語えらぶ',
+    pick: '1 語選ぶ',
     pickEx: '→ 青い',
-    loop: '選んだ語をつなげて「空は青い」。これを次の入力にして、また次の 1 語へ。',
-    cap: '文章づくり（<strong>推論</strong>）は、同じ手順のくり返しです。今ある文をモデルに入れ、<strong>次の単語の確率</strong>をもらい、そこから 1 語えらんで末尾にくっつける。そして、できた文をまた入力に戻す。この「自分の出力を食べて続ける」やり方を <strong>自己回帰</strong> と呼びます。だから 1 語ずつ、左から右へ文が伸びていくのです。',
+    loop: '選んだ語を繋げて「空は青い」。これを次の入力にして、また次の 1 語へ。',
+    cap: '文章づくり（<strong>推論</strong>）は、同じ手順の繰り返しです。今ある文をモデルに入れ、<strong>次の単語の確率</strong>をもらい、そこから 1 語選んで末尾にくっつける。そして、できた文をまた入力に戻す。この「自分の出力を食べて続ける」やり方を <strong>自己回帰</strong> と呼びます。だから 1 語ずつ、左から右へ文が伸びていくのです。',
   },
   en: {
     aria: 'Generating text by building and appending one word at a time, on repeat',

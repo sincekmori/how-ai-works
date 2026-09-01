@@ -25,7 +25,7 @@ export const divisions: Division[] = [
         slugs: ["the-one-job"],
       },
       {
-        title: { ja: "ぜんぶ「数」にする", en: "Turning everything into numbers" },
+        title: { ja: "全部「数」にする", en: "Turning everything into numbers" },
         slugs: ["tokenization", "vectors", "similarity", "probability"],
       },
       {

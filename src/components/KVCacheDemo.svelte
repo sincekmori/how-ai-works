@@ -8,7 +8,7 @@
     ja: {
       title: "KV キャッシュ：作った分を覚えておくと、どれだけ速い？",
       slider: (n: number) => `生成した単語の数: ${n}`,
-      noCacheLabel: "毎回ぜんぶ計算",
+      noCacheLabel: "毎回全部計算",
       cacheLabel: "キャッシュ再利用",
       status: (v: { n: number; noCache: number; cache: number; ratio: string }) =>
         `${v.n} 語めまで作る計算量は、キャッシュなしで約 ${v.noCache}、ありで約 ${v.cache}。その差は <strong>約 ${v.ratio} 倍</strong>です。長い文ほど差がぐんぐん開きます（その代わり、覚えておくメモリは少し増えます）。`,
