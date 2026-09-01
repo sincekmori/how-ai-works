@@ -32,6 +32,10 @@
     "func-names": "off",
     "max-statements": "off",
     "vars-on-top": "off",
+    // Merging consecutive consts into one comma statement (oxlint 1.78 started
+    // applying this to .astro frontmatter) hurts readability and diffs; one
+    // declaration per line is the idiom this codebase keeps.
+    "one-var": "off",
     "no-continue": "off",
     "require-unicode-regexp": "off"
   },
