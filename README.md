@@ -54,10 +54,13 @@ First-time visitors are sent to their browser’s language automatically; a swit
 
 ## License
 
-Everything here — the code and the writing — is **[CC BY 4.0](LICENSE)**.
-Reuse it freely, including commercially, with attribution.
+The code — everything that builds and runs the site — is licensed under **[Apache-2.0](LICENSE)**.
+The writing — the chapter prose, the words in the figures and islands, and the generated `llms.txt` / `llms-full.txt` / per-chapter `.md` exports — is licensed under **[CC BY 4.0](LICENSE-CONTENT)**.
+Reuse either freely, including commercially, with attribution.
 
 > “How AI Works and How to Use It” by Shinsuke Mori, CC BY 4.0 — https://sincekmori.github.io/how-ai-works/
+
+Third-party assets (KaTeX, icon data, fonts, npm dependencies) remain under their own licenses.
 
 © 2026 Shinsuke Mori.
 

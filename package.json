@@ -2,7 +2,7 @@
   "name": "how-ai-works",
   "version": "0.1.0",
   "private": true,
-  "license": "CC-BY-4.0",
+  "license": "Apache-2.0",
   "author": "Shinsuke Mori",
   "type": "module",
   "scripts": {

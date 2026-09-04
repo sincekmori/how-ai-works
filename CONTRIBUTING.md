@@ -19,4 +19,4 @@ Even "I got stuck here while reading" is a valuable contribution on its own.
 
 ## License
 
-By contributing you agree that your contribution is released under the project's [CC BY 4.0](LICENSE) license.
+By contributing you agree that your contribution is released under the project's licenses: [Apache-2.0](LICENSE) for code and [CC BY 4.0](LICENSE-CONTENT) for content.
