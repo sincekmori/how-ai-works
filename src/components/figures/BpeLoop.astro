@@ -23,7 +23,8 @@ const S = {
     ],
     pair: ['東', '京'],
     step0: '⓪ 学習データ（本物は何億語もある）。ここでは、この短い文章を丸ごと使う',
-    step12: '① 句読点（。、）のところで区切り、残りを 1 文字ずつに分ける　② 一番多く隣り合っているペアを探す → 東 ＋ 京 が 4 回',
+    step1: '① 句読点（。、）のところで区切り、残りを 1 文字ずつに分ける',
+    step2: '② 区切りの中で一番多く隣り合っているペアを探す → 東 ＋ 京 が 4 回',
     step3: '③ くっつけて、一覧表に登録する → 「東京」を追加',
     repeat: '④ ② と ③ を繰り返す（次は 京 ＋ 都、2 回）。本物は、一覧表が望みの大きさになるまで続ける',
     cap: 'BPE の手順はこれだけです。本物は何億語もの学習データで行いますが、ここでは短い文章を丸ごと使います。句読点のところで区切ったら、残りの文字は全部そのまま部品になります。②では区切りの中で隣り合っているペアを全部数え、「東 ＋ 京」が 4 回で一番多いので、くっつけた「東京」を一覧表に加え、次に多いペア（京 ＋ 都、2 回）へ進みます。',
@@ -35,7 +36,8 @@ const S = {
     rowGroups: [[0, 1, 2, 3, 4, 5]],
     pair: ['a', 't'],
     step0: '0. the training text (billions of words in reality; here, one sentence)',
-    step12: '1. cut it into words at the spaces, then into characters   2. find the pair that sits side by side most often → a + t, 3 times',
+    step1: '1. cut it into words at the spaces, then into characters',
+    step2: '2. find the pair that sits side by side most often inside words → a + t, 3 times',
     step3: '3. glue it and add the result to the list → "at" joins the list',
     repeat: '4. repeat 2 and 3 (next: t + h, 2 times); for real, until the list is as big as you want',
     cap: 'That is the whole procedure. The real training text has billions of words; here it is one sentence, used in full. Step 2 counts every neighbouring pair inside the words (never across a word boundary); "a + t" wins with 3, so "at" joins the list, and the search moves on to the next most frequent pair (t + h, 2 times).',
@@ -57,18 +59,28 @@ interface Cell {
   hot: boolean;
 }
 
-// Row 0: the text itself, with the cut points (punctuation) in a muted style.
+// Row 0: the text itself, drawn as runs (a run is either text or a cut-point
+// punctuation mark) so the browser spaces the letters within a run.
 const TEXT_PX = 14;
 const isPunct = (c: string) => c === '。' || c === '、';
-const textW = (t: string) => [...t].reduce((w, c) => w + (c === ' ' ? 9 : /[　-鿿＀-￯]/.test(c) ? TEXT_PX : 7.5), 0);
+const textW = (t: string) =>
+  [...t].reduce((w, c) => w + (c === ' ' ? 4 : /[\u3000-\u9FFF\uFF00-\uFFEF]/.test(c) ? TEXT_PX : 7.5), 0);
 const passageLines = S.passage.map((line) => {
+  const runs: { t: string; x: number; punct: boolean }[] = [];
+  for (const c of line) {
+    const last = runs.at(-1);
+    if (last && last.punct === isPunct(c)) {
+      last.t += c;
+    } else {
+      runs.push({ t: c, x: 0, punct: isPunct(c) });
+    }
+  }
   let x = X0 + 4;
-  return [...line].map((c) => {
-    const w = textW(c);
-    const glyph = { c, x, punct: isPunct(c) };
-    x += w;
-    return glyph;
-  });
+  for (const run of runs) {
+    run.x = x;
+    x += textW(run.t);
+  }
+  return runs;
 });
 const PASSAGE_Y = S.passage.map((_, i) => 44 + i * 22);
 
@@ -105,7 +117,7 @@ const isPair = (t: string, toks: string[], i: number) =>
 const chars = S.chunks.map((c) => [...c]);
 const merged = chars.map((toks) => merge(toks));
 const pick = (all: string[][], group: number[]) => group.map((i) => all[i]);
-const Y_BLOCK1 = (PASSAGE_Y.at(-1) ?? 44) + 38;
+const Y_BLOCK1 = (PASSAGE_Y.at(-1) ?? 44) + 58;
 const block1 = S.rowGroups.map((g, r) => ({ y: Y_BLOCK1 + r * ROW_PITCH, cells: layoutRow(pick(chars, g), isPair) }));
 const Y_BLOCK2 = Y_BLOCK1 + S.rowGroups.length * ROW_PITCH + 26;
 const block2 = S.rowGroups.map((g, r) => ({ y: Y_BLOCK2 + r * ROW_PITCH, cells: layoutRow(pick(merged, g), (t) => t === A + B) }));
@@ -118,21 +130,22 @@ const HEIGHT = REPEAT_Y + 16;
     <text class="f-mut" x={X0} y="22" text-anchor="start" style="font-weight: 700">{S.step0}</text>
     {
       passageLines.map((line, li) =>
-        line.map((g) => (
+        line.map((run) => (
           <text
-            class={g.punct ? 'f-mut' : 'f-lbl'}
-            x={g.x}
+            class={run.punct ? 'f-mut' : 'f-lbl'}
+            x={run.x}
             y={PASSAGE_Y[li]}
             text-anchor="start"
-            style={`font-size: ${TEXT_PX}px${g.punct ? '; font-weight: 700' : ''}`}
+            style={`font-size: ${TEXT_PX}px${run.punct ? '; font-weight: 700' : ''}`}
           >
-            {g.c}
+            {run.t}
           </text>
         )),
       )
     }
 
-    <text class="f-mut" x={X0} y={Y_BLOCK1 - 8} text-anchor="start" style="font-weight: 700">{S.step12}</text>
+    <text class="f-mut" x={X0} y={Y_BLOCK1 - 28} text-anchor="start" style="font-weight: 700">{S.step1}</text>
+    <text class="f-mut" x={X0} y={Y_BLOCK1 - 8} text-anchor="start" style="font-weight: 700">{S.step2}</text>
     {
       block1.map((row) =>
         row.cells.map((c) => (
