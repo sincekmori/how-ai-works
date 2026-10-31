@@ -1,82 +1,52 @@
 ---
-// The whole BPE procedure on a small, fully visible example. Row 0 shows the
-// training text (a short list; the real one has billions of words), and every
-// word of it is used from then on: split the words into
-// characters, find the pair that sits side by side most often (every
-// occurrence is highlighted, so the count can be checked by eye), glue it and
-// add the result to the list, repeat. Rows 2 and 3 are computed from the
-// words so the figure cannot drift from its own data.
+// The whole BPE procedure on a short, natural text that is used in full. Row 0
+// is the training text (the real one has billions of words). The text is cut
+// at the punctuation marks, every remaining character becomes a piece, the
+// pair that sits side by side most often is highlighted wherever it occurs (so
+// the count can be checked by eye), then glued and added to the list, and the
+// loop repeats. The chip rows are computed from the text, so the figure cannot
+// drift from its own data.
 interface Props {
   lang?: 'en' | 'ja';
 }
 const { lang = 'ja' } = Astro.props;
 
-interface Segment {
-  t: string;
-  hot?: boolean;
-}
-
 const S = {
   ja: {
-    aria: 'BPE の手順：短い文章を読点で語に分け、1 文字ずつに分け、一番多く隣り合うペア（東＋京、4 回）をくっつけて一覧表に登録し、繰り返す',
-    passage: [
-      [
-        { t: '行ってみたい場所：' },
-        { t: '東京', hot: true },
-        { t: '、' },
-        { t: '京都', hot: true },
-        { t: '、' },
-        { t: '東京駅', hot: true },
-        { t: '、' },
-        { t: '京都駅', hot: true },
-        { t: '、' },
-        { t: '東京都庁', hot: true },
-        { t: '、' },
-        { t: '東京湾', hot: true },
-      ],
-    ] as Segment[][],
-    words: ['東京', '京都', '東京駅', '京都駅', '東京都庁', '東京湾'],
+    aria: 'BPE の手順：短い文章を句読点で区切って 1 文字ずつに分け、一番多く隣り合うペア（東＋京、4 回）をくっつけて一覧表に登録し、繰り返す',
+    passage: ['東京に住む。東京駅から京都へ行った。', '京都は古い町だ。東京都には島もある。東京は人が多い。'],
+    chunks: ['東京に住む', '東京駅から京都へ行った', '京都は古い町だ', '東京都には島もある', '東京は人が多い'],
+    rowGroups: [
+      [0, 1],
+      [2, 3],
+      [4],
+    ],
     pair: ['東', '京'],
     step0: '⓪ 学習データ（本物は何億語もある）。ここでは、この短い文章を丸ごと使う',
-    step1: '① 読点（、）で語に分け、さらに 1 文字ずつに分ける',
-    step2: '② 語の中で一番多く隣り合っているペアを探す（語の境目はまたがない）→ 東 ＋ 京 が 4 回',
+    step12: '① 句読点（。、）のところで区切り、残りを 1 文字ずつに分ける　② 一番多く隣り合っているペアを探す → 東 ＋ 京 が 4 回',
     step3: '③ くっつけて、一覧表に登録する → 「東京」を追加',
     repeat: '④ ② と ③ を繰り返す（次は 京 ＋ 都、2 回）。本物は、一覧表が望みの大きさになるまで続ける',
-    cap: 'BPE の手順はこれだけです。本物は何億語もの学習データで行いますが、ここでは短い文章を丸ごと使います。②では語の中で隣り合っているペアを全部数え、「東 ＋ 京」が 4 回で一番多いので、くっつけた「東京」を一覧表に加え、次に多いペア（京 ＋ 都、2 回）へ進みます。',
+    cap: 'BPE の手順はこれだけです。本物は何億語もの学習データで行いますが、ここでは短い文章を丸ごと使います。句読点のところで区切ったら、残りの文字は全部そのまま部品になります。②では区切りの中で隣り合っているペアを全部数え、「東 ＋ 京」が 4 回で一番多いので、くっつけた「東京」を一覧表に加え、次に多いペア（京 ＋ 都、2 回）へ進みます。',
   },
   en: {
-    aria: 'The BPE procedure: take the words of a short training text, split them into characters, glue the most frequent neighbouring pair (a + t, 3 times), add it to the list, repeat',
-    passage: [
-      [
-        { t: 'the', hot: true },
-        { t: ' ' },
-        { t: 'cat', hot: true },
-        { t: ' ' },
-        { t: 'sat', hot: true },
-        { t: ' ' },
-        { t: 'on', hot: true },
-        { t: ' ' },
-        { t: 'the', hot: true },
-        { t: ' ' },
-        { t: 'mat', hot: true },
-        { t: '.' },
-      ],
-    ] as Segment[][],
-    words: ['the', 'cat', 'sat', 'on', 'the', 'mat'],
+    aria: 'The BPE procedure: cut a short text into words, then into characters, glue the most frequent neighbouring pair (a + t, 3 times), add it to the list, repeat',
+    passage: ['the cat sat on the mat'],
+    chunks: ['the', 'cat', 'sat', 'on', 'the', 'mat'],
+    rowGroups: [[0, 1, 2, 3, 4, 5]],
     pair: ['a', 't'],
     step0: '0. the training text (billions of words in reality; here, one sentence)',
-    step1: '1. cut it into words at the spaces, then into characters',
-    step2: '2. find the pair that sits side by side most often inside words (never across a boundary) → a + t, 3 times',
+    step12: '1. cut it into words at the spaces, then into characters   2. find the pair that sits side by side most often → a + t, 3 times',
     step3: '3. glue it and add the result to the list → "at" joins the list',
     repeat: '4. repeat 2 and 3 (next: t + h, 2 times); for real, until the list is as big as you want',
-    cap: 'That is the whole procedure. The real training text has billions of words; here it is one sentence. Step 2 counts every neighbouring pair inside the words; "a + t" wins with 3, so "at" joins the list, and the search moves on to the next most frequent pair (t + h, 2 times).',
+    cap: 'That is the whole procedure. The real training text has billions of words; here it is one sentence, used in full. Step 2 counts every neighbouring pair inside the words (never across a word boundary); "a + t" wins with 3, so "at" joins the list, and the search moves on to the next most frequent pair (t + h, 2 times).',
   },
 }[lang];
 
 const CELL = lang === 'ja' ? 28 : 22;
 const CELL_GAP = 3;
-const WORD_GAP = 12;
+const CHUNK_GAP = 14;
 const CHIP_H = 30;
+const ROW_PITCH = 38;
 const X0 = 16;
 const [A, B] = S.pair;
 
@@ -87,32 +57,33 @@ interface Cell {
   hot: boolean;
 }
 
-// Running text (row 0): estimated glyph widths at 14px.
+// Row 0: the text itself, with the cut points (punctuation) in a muted style.
 const TEXT_PX = 14;
-const textW = (t: string) => [...t].reduce((w, c) => w + (c === ' ' ? 9 : /[\u3000-\u9FFF\uFF00-\uFFEF]/.test(c) ? TEXT_PX : 7.5), 0);
+const isPunct = (c: string) => c === '。' || c === '、';
+const textW = (t: string) => [...t].reduce((w, c) => w + (c === ' ' ? 9 : /[　-鿿＀-￯]/.test(c) ? TEXT_PX : 7.5), 0);
 const passageLines = S.passage.map((line) => {
   let x = X0 + 4;
-  return line.map((seg) => {
-    const w = textW(seg.t);
-    const out = { t: seg.t, hot: seg.hot === true, x, w };
+  return [...line].map((c) => {
+    const w = textW(c);
+    const glyph = { c, x, punct: isPunct(c) };
     x += w;
-    return out;
+    return glyph;
   });
 });
-const PASSAGE_Y = [44];
+const PASSAGE_Y = S.passage.map((_, i) => 44 + i * 22);
 
-// Chip rows (1 to 3); `isHot` decides which cells are highlighted.
+// Chip rows: each display row holds a few chunks; `isHot` marks highlighted cells.
 const cellW = (t: string) => CELL + ([...t].length - 1) * (lang === 'ja' ? 16 : 8.5);
-const layout = (words: string[][], isHot: (t: string, toks: string[], i: number) => boolean): Cell[] => {
+const layoutRow = (chunks: string[][], isHot: (t: string, toks: string[], i: number) => boolean): Cell[] => {
   const cells: Cell[] = [];
   let x = X0;
-  words.forEach((toks, wi) => {
+  chunks.forEach((toks, ci) => {
     toks.forEach((t, i) => {
       const w = cellW(t);
       cells.push({ t, x, w, hot: isHot(t, toks, i) });
       x += w + CELL_GAP;
     });
-    x += wi < words.length - 1 ? WORD_GAP - CELL_GAP : 0;
+    x += ci < chunks.length - 1 ? CHUNK_GAP - CELL_GAP : 0;
   });
   return cells;
 };
@@ -128,17 +99,17 @@ const merge = (toks: string[]): string[] => {
   }
   return out;
 };
-
-const chars = S.words.map((w) => [...w]);
 const isPair = (t: string, toks: string[], i: number) =>
   (t === A && toks[i + 1] === B) || (t === B && toks[i - 1] === A);
-const ROW_Y = [84, 154, 224];
-const rows = [
-  { label: S.step1, cells: layout(chars, () => false), y: ROW_Y[0] },
-  { label: S.step2, cells: layout(chars, isPair), y: ROW_Y[1] },
-  { label: S.step3, cells: layout(chars.map((w) => merge(w)), (t) => t === A + B), y: ROW_Y[2] },
-];
-const REPEAT_Y = ROW_Y[2] + 66;
+
+const chars = S.chunks.map((c) => [...c]);
+const merged = chars.map((toks) => merge(toks));
+const pick = (all: string[][], group: number[]) => group.map((i) => all[i]);
+const Y_BLOCK1 = (PASSAGE_Y.at(-1) ?? 44) + 38;
+const block1 = S.rowGroups.map((g, r) => ({ y: Y_BLOCK1 + r * ROW_PITCH, cells: layoutRow(pick(chars, g), isPair) }));
+const Y_BLOCK2 = Y_BLOCK1 + S.rowGroups.length * ROW_PITCH + 26;
+const block2 = S.rowGroups.map((g, r) => ({ y: Y_BLOCK2 + r * ROW_PITCH, cells: layoutRow(pick(merged, g), (t) => t === A + B) }));
+const REPEAT_Y = Y_BLOCK2 + S.rowGroups.length * ROW_PITCH + 22;
 const HEIGHT = REPEAT_Y + 16;
 ---
 
@@ -146,44 +117,49 @@ const HEIGHT = REPEAT_Y + 16;
   <svg viewBox={`0 0 600 ${HEIGHT}`} role="img" aria-label={S.aria}>
     <text class="f-mut" x={X0} y="22" text-anchor="start" style="font-weight: 700">{S.step0}</text>
     {
-      passageLines.map((line, li) => (
-        <>
-          {line
-            .filter((seg) => seg.hot)
-            .map((seg) => (
-              <rect class="f-bar-bg" x={seg.x - 3} y={PASSAGE_Y[li] - 15} width={seg.w + 6} height="21" rx="5" />
-            ))}
-          {line.map((seg) => (
-            <text
-              class={seg.hot ? 'f-lbl' : 'f-mut'}
-              x={seg.x}
-              y={PASSAGE_Y[li]}
-              text-anchor="start"
-              style={`font-size: ${TEXT_PX}px${seg.hot ? '; font-weight: 700' : ''}`}
-            >
-              {seg.t}
-            </text>
-          ))}
-        </>
-      ))
-    }
-    {
-      rows.map((row) => (
-        <>
-          <text class="f-mut" x={X0} y={row.y - 8} text-anchor="start" style="font-weight: 700">
-            {row.label}
+      passageLines.map((line, li) =>
+        line.map((g) => (
+          <text
+            class={g.punct ? 'f-mut' : 'f-lbl'}
+            x={g.x}
+            y={PASSAGE_Y[li]}
+            text-anchor="start"
+            style={`font-size: ${TEXT_PX}px${g.punct ? '; font-weight: 700' : ''}`}
+          >
+            {g.c}
           </text>
-          {row.cells.map((c) => (
-            <>
-              <rect class={c.hot ? 'f-bar-bg' : 'f-box'} x={c.x} y={row.y} width={c.w} height={CHIP_H} rx="6" />
-              <text class="f-lbl" x={c.x + c.w / 2} y={row.y + 20} text-anchor="middle">
-                {c.t}
-              </text>
-            </>
-          ))}
-        </>
-      ))
+        )),
+      )
     }
+
+    <text class="f-mut" x={X0} y={Y_BLOCK1 - 8} text-anchor="start" style="font-weight: 700">{S.step12}</text>
+    {
+      block1.map((row) =>
+        row.cells.map((c) => (
+          <>
+            <rect class={c.hot ? 'f-bar-bg' : 'f-box'} x={c.x} y={row.y} width={c.w} height={CHIP_H} rx="6" />
+            <text class="f-lbl" x={c.x + c.w / 2} y={row.y + 20} text-anchor="middle">
+              {c.t}
+            </text>
+          </>
+        )),
+      )
+    }
+
+    <text class="f-mut" x={X0} y={Y_BLOCK2 - 8} text-anchor="start" style="font-weight: 700">{S.step3}</text>
+    {
+      block2.map((row) =>
+        row.cells.map((c) => (
+          <>
+            <rect class={c.hot ? 'f-bar-bg' : 'f-box'} x={c.x} y={row.y} width={c.w} height={CHIP_H} rx="6" />
+            <text class="f-lbl" x={c.x + c.w / 2} y={row.y + 20} text-anchor="middle">
+              {c.t}
+            </text>
+          </>
+        )),
+      )
+    }
+
     <text class="f-mut" x={X0} y={REPEAT_Y} text-anchor="start" style="font-weight: 700">{S.repeat}</text>
   </svg>
   <figcaption set:html={S.cap} />

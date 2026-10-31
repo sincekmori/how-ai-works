@@ -1,8 +1,8 @@
 <script lang="ts">
   // Interactive BPE walkthrough (in-memory only; reload resets).
   // Part 1 finds the most frequent adjacent pair across the words and merges
-  // it — the real algorithm, one click at a time. The words are the chapter
-  // figure's short text, listed exactly as they occur (duplicates included), so
+  // it — the real algorithm, one click at a time. The rows are the chapter
+  // figure's short text, cut at the punctuation (ja) or at the spaces (en), so
   // every count shown can be checked by eye. The demo stops once no pair occurs
   // twice (a real tokenizer stops at its target vocabulary size); when several
   // pairs tie, the one seen first wins, and the demo says so. Part 2 replays
@@ -31,7 +31,13 @@
 
   const T = {
     ja: {
-      corpus: ["東京", "京都", "東京駅", "京都駅", "東京都庁", "東京湾"],
+      corpus: [
+        "東京に住む",
+        "東京駅から京都へ行った",
+        "京都は古い町だ",
+        "東京都には島もある",
+        "東京は人が多い",
+      ],
       title: "BPE を 1 ステップずつ体験する",
       next: "次のステップ →",
       reset: "最初から",
@@ -54,7 +60,7 @@
       noneApplied: "当てはまるルールはありませんでした。",
       result: (n: number) => `結果：${n} 部品`,
       unknown: (chars: string[]) =>
-        `${chars.map((c) => `「${c}」`).join("")}は最初の部品（上の語に出てきた文字）にありません。どのルールも当てはまらず、モデルはここを読めません。`,
+        `${chars.map((c) => `「${c}」`).join("")}は最初の部品（上の文章に出てきた文字）にありません。どのルールも当てはまらず、モデルはここを読めません。`,
     },
     en: {
       corpus: ["the", "cat", "sat", "on", "the", "mat"],

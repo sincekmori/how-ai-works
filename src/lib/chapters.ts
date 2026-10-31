@@ -60,7 +60,7 @@ const FIGURE_DESC: Record<Locale, Record<string, string>> = {
     TokenChips:
       "文をトークン（部品）に分ける例。よく使う短い語（東京）は 1 トークン、長い・珍しい語（東京タワー）は部品の組み合わせ（東京＋タワー）で表す。",
     BpeLoop:
-      "BPE の手順の図。⓪ 学習データ（本物は何億語）の代わりに、短い文章「行ってみたい場所：東京、京都、東京駅、京都駅、東京都庁、東京湾」を丸ごと使う → ① 読点で語に分け、1 文字ずつに分ける → ② 語の中で一番多く隣り合うペアを探す（語の境目はまたがない。東＋京が 4 回）→ ③ くっつけて一覧表に登録（東京）→ ④ ② と ③ を繰り返す（次は京＋都、2 回）。本物は一覧表が望みの大きさになるまで続ける。",
+      "BPE の手順の図。⓪ 学習データ（本物は何億語）の代わりに、短い文章「東京に住む。東京駅から京都へ行った。京都は古い町だ。東京都には島もある。東京は人が多い。」を丸ごと使う → ① 句読点で区切り、残りを 1 文字ずつに分ける → ② 区切りの中で一番多く隣り合うペアを探す（東＋京が 4 回）→ ③ くっつけて一覧表に登録（東京）→ ④ ② と ③ を繰り返す（次は京＋都、2 回）。本物は一覧表が望みの大きさになるまで続ける。",
     BpeOutputs:
       "くっつけを繰り返し終わったあとに残る二つのものの図。部品の一覧表（語彙）と、順番つきの結合ルール（1. 東＋京→東京、2. 京＋都→京都）。新しい文章は 1 文字ずつに分け、ルールを 1 番から順に当てはめて区切る。",
     StartPieces:
@@ -145,7 +145,7 @@ const FIGURE_DESC: Record<Locale, Record<string, string>> = {
     TokenChips:
       "Splitting a sentence into tokens (pieces): common short words are one token; long or rare words are built from sub-pieces.",
     BpeLoop:
-      'The BPE procedure: 0. the training text (billions of words in reality; here the sentence "the cat sat on the mat" stands in for all of it); 1. cut it into words at the spaces, then into characters; 2. find the pair that sits side by side most often inside words, never across a boundary (a + t, 3 times); 3. glue it and add the result (at) to the list; 4. repeat 2 and 3 (next: t + h, 2 times), for real until the list is as big as wanted.',
+      'The BPE procedure: 0. the training text (billions of words in reality; here the sentence "the cat sat on the mat", used in full); 1. cut it into words at the spaces, then into characters; 2. find the pair that sits side by side most often inside words (a + t, 3 times); 3. glue it and add the result (at) to the list; 4. repeat 2 and 3 (next: t + h, 2 times), for real until the list is as big as wanted.',
     BpeOutputs:
       "What remains when the gluing is finished: the list of pieces (vocabulary) and the merge rules in order (1. a + t → at, 2. t + h → th, 3. th + e → the). New text is split into characters and the rules are applied in order from rule 1.",
     StartPieces:
