@@ -3,6 +3,8 @@
 // A new word is split by replaying the rules in that order; replaying them in
 // another order can give a different split. The fixed order is what makes every
 // split reproducible, i.e. the same split the model saw during training.
+import { CHIP_H, chipsCentred } from '../../lib/chips';
+
 interface Props {
   lang?: 'en' | 'ja';
 }
@@ -71,20 +73,6 @@ const S = {
   },
 }[lang];
 
-const CHIP_H = 30;
-const CHIP_GAP = 6;
-const chipW = (t: string) => (lang === 'ja' ? 17 * [...t].length + 18 : 9 * t.length + 16);
-// Lay a row of chips out centred on cx; returns each chip's x and width.
-const layout = (toks: string[], cx: number) => {
-  const ws = toks.map((t) => chipW(t));
-  const total = ws.reduce((a, b) => a + b, 0) + CHIP_GAP * (ws.length - 1);
-  let x = cx - total / 2;
-  return toks.map((t, i) => {
-    const chip = { t, x, w: ws[i] };
-    x += ws[i] + CHIP_GAP;
-    return chip;
-  });
-};
 const colX = [150, 450];
 const Y_START = 42;
 const Y_HEAD = 108;
@@ -96,7 +84,7 @@ const Y_RESULT = 268;
   <svg viewBox="0 0 600 320" role="img" aria-label={S.aria}>
     <text class="f-lbl" x="300" y="24" text-anchor="middle">{S.top}</text>
     {
-      layout(S.start, 300).map((c) => (
+      chipsCentred(S.start, 300).map((c) => (
         <>
           <rect class="f-bar-bg" x={c.x} y={Y_START} width={c.w} height={CHIP_H} rx="7" />
           <text class="f-lbl" x={c.x + c.w / 2} y={Y_START + 20} text-anchor="middle">
@@ -119,7 +107,7 @@ const Y_RESULT = 268;
               <text class="f-mut" x={colX[ci]} y={Y_STEP[si]} text-anchor="middle">
                 {s.label}
               </text>
-              {layout(s.toks, colX[ci]).map((c) => (
+              {chipsCentred(s.toks, colX[ci]).map((c) => (
                 <>
                   <rect class="f-box" x={c.x} y={Y_STEP[si] + 10} width={c.w} height={CHIP_H} rx="7" />
                   <text class="f-lbl" x={c.x + c.w / 2} y={Y_STEP[si] + 30} text-anchor="middle">

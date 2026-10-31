@@ -1,0 +1,97 @@
+---
+// Why byte-level BPE: starting from characters makes the starting set depend on
+// the language (about 100 for English, thousands and more for Japanese) and
+// leaves any character unseen in training unreadable; starting from the 256
+// byte values gives every language the same 256 pieces and can express
+// anything.
+interface Props {
+  lang?: 'en' | 'ja';
+}
+const { lang = 'ja' } = Astro.props;
+
+interface Cell {
+  lines: string[];
+  mark?: 'ok' | 'ng';
+}
+
+const S = {
+  ja: {
+    aria: '最初の部品を文字にする場合と 256 種類のバイトにする場合の比較',
+    heads: ['文字から出発', '256 種類のバイトから出発'],
+    rowLabels: [['最初の部品の数'], ['学習で一度も', '見なかった文字']],
+    cells: [
+      [{ lines: ['英語：約 100 種', '日本語：数千〜数万種'] }, { lines: ['どの言語でも 256 種'] }],
+      [{ lines: ['読めない'], mark: 'ng' }, { lines: ['必ず表せる'], mark: 'ok' }],
+    ] as Cell[][],
+    cap: '文字を最初の部品にすると、出発点の大きさが言語で大きく変わり、学習で見なかった文字は読めません。256 種類のバイトから出発すれば、どの言語でも出発点は同じで、どんな文字も、絵文字でさえ、必ず表せます。',
+  },
+  en: {
+    aria: 'Starting from characters versus starting from the 256 byte values',
+    heads: ['Start from characters', 'Start from the 256 bytes'],
+    rowLabels: [['starting pieces'], ['a character never', 'seen in training']],
+    cells: [
+      [{ lines: ['English: about 100', 'Japanese: thousands and more'] }, { lines: ['any language: 256'] }],
+      [{ lines: ['cannot be read'], mark: 'ng' }, { lines: ['always expressible'], mark: 'ok' }],
+    ] as Cell[][],
+    cap: 'Starting from characters makes the starting set depend on the language, and a character unseen in training cannot be read at all. Starting from the 256 byte values gives every language the same starting set, and any character, emoji included, can always be expressed.',
+  },
+}[lang];
+
+const cols = [
+  { x: 128, w: 216 },
+  { x: 362, w: 222 },
+];
+const rowsY = [52, 136];
+const ROW_H = 66;
+const center = (c: { x: number; w: number }) => c.x + c.w / 2;
+---
+
+<figure class="figure">
+  <svg viewBox="0 0 600 226" role="img" aria-label={S.aria}>
+    {
+      S.heads.map((h, i) => (
+        <text class="f-lbl" x={center(cols[i])} y="30" text-anchor="middle" style="font-weight: 700">
+          {h}
+        </text>
+      ))
+    }
+    {
+      S.rowLabels.map((lines, r) => (
+        <>
+          {lines.map((line, k) => (
+            <text class="f-mut" x="16" y={rowsY[r] + ROW_H / 2 + 4 + (k - (lines.length - 1) / 2) * 16} text-anchor="start">
+              {line}
+            </text>
+          ))}
+          {S.cells[r].map((cell, c) => (
+            <>
+              <rect class="f-box" x={cols[c].x} y={rowsY[r]} width={cols[c].w} height={ROW_H} rx="10" />
+              {cell.mark && (
+                <text
+                  x={cols[c].x + 24}
+                  y={rowsY[r] + ROW_H / 2 + 7}
+                  text-anchor="middle"
+                  style={`font-size: 20px; font-weight: 700; fill: ${cell.mark === 'ok' ? 'var(--accent)' : 'var(--fg-muted)'}`}
+                >
+                  {cell.mark === 'ok' ? '✓' : '✗'}
+                </text>
+              )}
+              {cell.lines.map((line, k) => (
+                <text
+                  class="f-lbl"
+                  x={cell.mark ? cols[c].x + 24 + (cols[c].w - 24) / 2 : center(cols[c])}
+                  y={rowsY[r] + ROW_H / 2 + 5 + (k - (cell.lines.length - 1) / 2) * 20}
+                  text-anchor="middle"
+                  style="font-size: 13.5px"
+                >
+                  {line}
+                </text>
+              ))}
+            </>
+          ))}
+        </>
+      ))
+    }
+  </svg>
+  <figcaption set:html={S.cap} />
+</figure>

@@ -1,0 +1,88 @@
+---
+// The whole BPE procedure as one loop, with a concrete instance in each step:
+// split into characters, find the most frequent neighbouring pair, glue it and
+// add the result to the list, repeat until the list is as big as wanted.
+import { CHIP_H, chipsCentred } from '../../lib/chips';
+
+interface Props {
+  lang?: 'en' | 'ja';
+}
+const { lang = 'ja' } = Astro.props;
+
+interface Step {
+  title: string;
+  rows: string[][];
+  note?: string;
+}
+
+const S = {
+  ja: {
+    aria: 'BPE の手順：1 文字ずつに分け、一番多く隣り合うペアをくっつけて登録し、繰り返す',
+    steps: [
+      { title: '① 1 文字ずつに分ける', rows: [['ね', 'こ'], ['こ', 'ね', 'こ']] },
+      { title: '② 一番多いペアを探す', rows: [['ね', 'こ']], note: '7 回' },
+      { title: '③ くっつけて登録', rows: [['ねこ']], note: '一覧表に追加' },
+    ] as Step[],
+    repeat: '④ 一覧表が望みの大きさになるまで、②と③を繰り返す',
+    cap: 'BPE の手順はこれだけです。例では「ね」と「こ」が一番多く隣り合っているので、くっつけた「ねこ」を一覧表に加え、次に多いペアへ進みます。',
+  },
+  en: {
+    aria: 'The BPE procedure: split into characters, glue the most frequent neighbouring pair, add it to the list, repeat',
+    steps: [
+      { title: '1. split into characters', rows: [['l', 'o', 'w'], ['s', 'l', 'o', 'w']] },
+      { title: '2. find the top pair', rows: [['l', 'o']], note: '12 times' },
+      { title: '3. glue, add to the list', rows: [['lo']], note: 'new piece' },
+    ] as Step[],
+    repeat: '4. repeat 2 and 3 until the list is as big as you want',
+    cap: 'That is the whole procedure. In the example "l" and "o" sit next to each other most often, so "lo" joins the list and the search moves on to the next most frequent pair.',
+  },
+}[lang];
+
+const BOX_W = 172;
+const BOX_H = 118;
+const BOX_Y = 38;
+const boxX = [18, 214, 410];
+const cx = (i: number) => boxX[i] + BOX_W / 2;
+const rowY = (r: number) => BOX_Y + 36 + r * 36;
+const loopY = BOX_Y + BOX_H + 18;
+---
+
+<figure class="figure">
+  <svg viewBox="0 0 600 215" role="img" aria-label={S.aria}>
+    {
+      S.steps.map((st, i) => (
+        <>
+          <rect class="f-box" x={boxX[i]} y={BOX_Y} width={BOX_W} height={BOX_H} rx="12" />
+          <text class="f-mut" x={cx(i)} y={BOX_Y + 22} text-anchor="middle" style="font-weight: 700">
+            {st.title}
+          </text>
+          {st.rows.map((row, r) =>
+            chipsCentred(row, cx(i), 4).map((c) => (
+              <>
+                <rect class={i === 0 ? 'f-box' : 'f-bar-bg'} x={c.x} y={rowY(r)} width={c.w} height={CHIP_H} rx="7" />
+                <text class="f-lbl" x={c.x + c.w / 2} y={rowY(r) + 20} text-anchor="middle">
+                  {c.t}
+                </text>
+              </>
+            )),
+          )}
+          {st.note && (
+            <text class="f-num" x={cx(i)} y={BOX_Y + 102} text-anchor="middle" style="font-size: 15px">
+              {st.note}
+            </text>
+          )}
+          {i < 2 && (
+            <text class="f-lbl" x={boxX[i] + BOX_W + 12} y={BOX_Y + BOX_H / 2 + 8} text-anchor="middle" style="font-size: 24px">
+              →
+            </text>
+          )}
+        </>
+      ))
+    }
+    <!-- loop back from step 3 to step 2 -->
+    <path class="f-axis" d={`M ${cx(2)} ${BOX_Y + BOX_H} L ${cx(2)} ${loopY} L ${cx(1)} ${loopY} L ${cx(1)} ${BOX_Y + BOX_H + 4}`}></path>
+    <path class="f-axis" d={`M ${cx(1) - 5} ${BOX_Y + BOX_H + 11} L ${cx(1)} ${BOX_Y + BOX_H + 3} L ${cx(1) + 5} ${BOX_Y + BOX_H + 11}`}></path>
+    <text class="f-mut" x="300" y="202" text-anchor="middle">{S.repeat}</text>
+  </svg>
+  <figcaption set:html={S.cap} />
+</figure>

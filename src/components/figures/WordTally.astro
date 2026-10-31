@@ -1,0 +1,171 @@
+---
+// Pairs are counted inside words, weighted by how often each word occurs: the
+// text is cut into words, each distinct word is tallied, and a pair's count is
+// the sum of the tallies of the words that contain it. The crossed-out pair
+// shows that nothing is counted across a word boundary. The tallies match the
+// chapter's interactive demo.
+import { CHIP_H, CHIP_GAP, chipsFrom, chipWidth } from '../../lib/chips';
+
+interface Props {
+  lang?: 'en' | 'ja';
+}
+const { lang = 'ja' } = Astro.props;
+
+interface Term {
+  word: string;
+  at: number;
+  n: number;
+}
+
+const S = {
+  ja: {
+    aria: '文章を語ごとに切り、語の回数を数え、ペアの回数を語の回数ぶん足す図',
+    step1: '① 文章を語ごとに切る',
+    rows: [
+      ['ねこ', 'こねこ', 'ねこ', 'ねむい', 'こねこ', 'ねこ'],
+      ['こねる', 'ねこ', 'ねむい', 'こねこ', 'こねる'],
+    ],
+    cross: '語の境目のペア（る ＋ ね）は数えない',
+    step2: '② 語ごとに回数を数える',
+    tally: [
+      ['ねこ', 4],
+      ['こねこ', 3],
+      ['ねむい', 2],
+      ['こねる', 2],
+    ] as [string, number][],
+    step3: '③ ペアの回数は、語の回数ぶん足す（例：ね ＋ こ）',
+    terms: [
+      { word: 'ねこ', at: 0, n: 4 },
+      { word: 'こねこ', at: 1, n: 3 },
+    ] as Term[],
+    total: '= 7 回',
+    cap: 'ペアは語の中だけで数え、語の境目はまたぎません。同じ語は何度も出てくるので、語ごとに回数を控えておき、ペアの回数はその分だけ足します。デモの左に並ぶ ×4、×3 がこの回数です。',
+  },
+  en: {
+    aria: 'Cutting the text into words, tallying each word, and adding up a pair over the words that contain it',
+    step1: '1. cut the text into words',
+    rows: [
+      ['low', 'slow', 'low', 'lot', 'lower', 'low'],
+      ['lot', 'slow', 'lot', 'low', 'slow', 'lower'],
+    ],
+    cross: 'not counted: "t + s" straddles a word boundary',
+    step2: '2. tally each word',
+    tally: [
+      ['low', 4],
+      ['slow', 3],
+      ['lot', 3],
+      ['lower', 2],
+    ] as [string, number][],
+    step3: '3. a pair counts once per occurrence of each word (here: l + o)',
+    terms: [
+      { word: 'low', at: 0, n: 4 },
+      { word: 'slow', at: 1, n: 3 },
+      { word: 'lot', at: 0, n: 3 },
+      { word: 'lower', at: 0, n: 2 },
+    ] as Term[],
+    total: '= 12 times',
+    cap: 'Pairs are counted inside words only, never across a boundary. The same word appears many times, so each distinct word is tallied once, and a pair gets that tally added for every word that contains it. The ×4 and ×3 at the left of the demo are these tallies.',
+  },
+}[lang];
+
+const X0 = 16;
+const WORD_Y = [34, 72];
+const CROSS_Y = 122;
+const TALLY_LABEL_Y = 156;
+const TALLY_Y = 166;
+const PAIR_LABEL_Y = 222;
+const PAIR_Y = 232;
+const CELL = lang === 'ja' ? 24 : 16;
+const CELL_GAP = 2;
+
+const rows = S.rows.map((r) => chipsFrom(r, X0));
+// The crossed-out pair sits between the first two words of the second row.
+const boundaryX = rows[1][0].x + rows[1][0].w + CHIP_GAP / 2;
+
+let tx = X0;
+const tally = S.tally.map(([w, n]) => {
+  const cw = chipWidth(w);
+  const entry = { w, n, x: tx, cw };
+  tx += cw + 5 + 24 + 18;
+  return entry;
+});
+
+let px = X0;
+const terms = S.terms.map((t) => {
+  const chars = [...t.word];
+  const w = chars.length * CELL + (chars.length - 1) * CELL_GAP;
+  const term = { word: t.word, at: t.at, n: t.n, chars, x: px, w };
+  px += w + 5 + 22 + 20;
+  return term;
+});
+const totalX = px - 10;
+---
+
+<figure class="figure">
+  <svg viewBox="0 0 600 274" role="img" aria-label={S.aria}>
+    <text class="f-mut" x={X0} y="22" text-anchor="start" style="font-weight: 700">{S.step1}</text>
+    {
+      rows.map((row, r) =>
+        row.map((c) => (
+          <>
+            <rect class="f-box" x={c.x} y={WORD_Y[r]} width={c.w} height={CHIP_H} rx="7" />
+            <text class="f-lbl" x={c.x + c.w / 2} y={WORD_Y[r] + 20} text-anchor="middle">
+              {c.t}
+            </text>
+          </>
+        )),
+      )
+    }
+    <path class="f-axis" d={`M ${boundaryX} ${WORD_Y[1] + CHIP_H + 3} L ${boundaryX} ${CROSS_Y - 11}`}></path>
+    <text class="f-mut" x={boundaryX} y={CROSS_Y + 4} text-anchor="middle" style="font-size: 15px; font-weight: 700">✗</text>
+    <text class="f-mut" x={boundaryX + 12} y={CROSS_Y + 4} text-anchor="start">{S.cross}</text>
+
+    <text class="f-mut" x={X0} y={TALLY_LABEL_Y} text-anchor="start" style="font-weight: 700">{S.step2}</text>
+    {
+      tally.map((e) => (
+        <>
+          <rect class="f-box" x={e.x} y={TALLY_Y} width={e.cw} height={CHIP_H} rx="7" />
+          <text class="f-lbl" x={e.x + e.cw / 2} y={TALLY_Y + 20} text-anchor="middle">
+            {e.w}
+          </text>
+          <text class="f-num" x={e.x + e.cw + 5} y={TALLY_Y + 20} text-anchor="start" style="font-size: 14px">
+            ×{e.n}
+          </text>
+        </>
+      ))
+    }
+
+    <text class="f-mut" x={X0} y={PAIR_LABEL_Y} text-anchor="start" style="font-weight: 700">{S.step3}</text>
+    {
+      terms.map((t, i) => (
+        <>
+          {t.chars.map((ch, j) => (
+            <>
+              <rect
+                class={j === t.at || j === t.at + 1 ? 'f-bar-bg' : 'f-box'}
+                x={t.x + j * (CELL + CELL_GAP)}
+                y={PAIR_Y}
+                width={CELL}
+                height={CHIP_H}
+                rx="5"
+              />
+              <text class="f-lbl" x={t.x + j * (CELL + CELL_GAP) + CELL / 2} y={PAIR_Y + 20} text-anchor="middle">
+                {ch}
+              </text>
+            </>
+          ))}
+          <text class="f-num" x={t.x + t.w + 5} y={PAIR_Y + 20} text-anchor="start" style="font-size: 14px">
+            ×{t.n}
+          </text>
+          {i < terms.length - 1 && (
+            <text class="f-lbl" x={t.x + t.w + 5 + 22 + 8} y={PAIR_Y + 21} text-anchor="middle">
+              +
+            </text>
+          )}
+        </>
+      ))
+    }
+    <text class="f-num" x={totalX} y={PAIR_Y + 21} text-anchor="start" style="font-size: 16px">{S.total}</text>
+  </svg>
+  <figcaption set:html={S.cap} />
+</figure>

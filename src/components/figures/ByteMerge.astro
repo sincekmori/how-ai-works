@@ -1,0 +1,66 @@
+---
+// BPE on bytes, step by step: the word ねこ becomes six bytes, the pair 227+129
+// (shared by every hiragana) is glued first, the glued piece grows into the
+// characters ね and こ, and then into the word. Same procedure as on letters.
+import { CHIP_H, chipsCentred } from '../../lib/chips';
+
+interface Props {
+  lang?: 'en' | 'ja';
+}
+const { lang = 'ja' } = Astro.props;
+
+interface Row {
+  label: string;
+  toks: string[];
+  hot: number[];
+}
+
+const S = {
+  ja: {
+    aria: 'バイトの列に BPE を当てる手順：227＋129 がくっつき、それが ね と こ になり、最後に ねこ になる',
+    rows: [
+      { label: '「ねこ」をバイトに分ける', toks: ['227', '129', '173', '227', '129', '147'], hot: [] },
+      { label: 'ルール：227 ＋ 129 → 227 129', toks: ['227 129', '173', '227 129', '147'], hot: [0, 2] },
+      { label: 'ルール：227 129 ＋ 173 → ね、227 129 ＋ 147 → こ', toks: ['ね', 'こ'], hot: [0, 1] },
+      { label: 'ルール：ね ＋ こ → ねこ', toks: ['ねこ'], hot: [0] },
+    ] as Row[],
+    cap: 'バイトの列から文字が組み立てられ、文字から語が育ちます。くっつける作業は文字の境目を気にしないので、文字の途中で切れた部品ができることもあり、その場合は画面に出す側が文字の完成を待ってから表示します。',
+  },
+  en: {
+    aria: 'BPE applied to bytes: 227+129 is glued first, the glued piece becomes ね and こ, and finally ねこ',
+    rows: [
+      { label: '"ねこ" (cat) as bytes', toks: ['227', '129', '173', '227', '129', '147'], hot: [] },
+      { label: 'rule: 227 + 129 → 227 129', toks: ['227 129', '173', '227 129', '147'], hot: [0, 2] },
+      { label: 'rules: 227 129 + 173 → ね, 227 129 + 147 → こ', toks: ['ね', 'こ'], hot: [0, 1] },
+      { label: 'rule: ね + こ → ねこ', toks: ['ねこ'], hot: [0] },
+    ] as Row[],
+    cap: 'Bytes build characters, and characters grow into words. The gluing ignores character boundaries, so a piece can end mid-character; when that happens, the software showing the text waits until the character is complete before displaying it.',
+  },
+}[lang];
+
+const LABEL_Y = [22, 86, 150, 214];
+const CHIP_Y = [32, 96, 160, 224];
+---
+
+<figure class="figure">
+  <svg viewBox="0 0 600 266" role="img" aria-label={S.aria}>
+    {
+      S.rows.map((row, r) => (
+        <>
+          <text class="f-mut" x="300" y={LABEL_Y[r]} text-anchor="middle">
+            {row.label}
+          </text>
+          {chipsCentred(row.toks, 300).map((c, i) => (
+            <>
+              <rect class={row.hot.includes(i) ? 'f-bar-bg' : 'f-box'} x={c.x} y={CHIP_Y[r]} width={c.w} height={CHIP_H} rx="7" />
+              <text class="f-lbl" x={c.x + c.w / 2} y={CHIP_Y[r] + 20} text-anchor="middle">
+                {c.t}
+              </text>
+            </>
+          ))}
+        </>
+      ))
+    }
+  </svg>
+  <figcaption set:html={S.cap} />
+</figure>

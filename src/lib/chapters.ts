@@ -59,6 +59,18 @@ const FIGURE_DESC: Record<Locale, Record<string, string>> = {
   ja: {
     TokenChips:
       "文をトークン（部品）に分ける例。よく使う短い語は 1 トークン、長い・珍しい語は部品の組み合わせで表す。",
+    BpeLoop:
+      "BPE の手順を一つの輪で表した図。① 1 文字ずつに分ける → ② 一番多く隣り合うペアを探す（例：ね＋こ、7 回）→ ③ くっつけて一覧表に登録（ねこ）→ ④ 一覧表が望みの大きさになるまで ② と ③ を繰り返す。",
+    WordTally:
+      "ペアの数え方の図。① 文章を語ごとに切る（語の境目のペアは数えない）、② 語ごとに回数を数える（ねこ ×4、こねこ ×3、ねむい ×2、こねる ×2）、③ ペアの回数は語の回数ぶん足す（ね＋こ：4 ＋ 3 ＝ 7 回）。",
+    BpeOutputs:
+      "BPE の学習が残す二つのものの図。部品の一覧表（語彙）と、順番つきの結合ルール（1. ね＋こ→ねこ、2. こ＋ねこ→こねこ、…）。新しい文章は 1 文字ずつに分け、ルールを 1 番から順に当てはめて区切る。",
+    StartPieces:
+      "最初の部品を「文字」にする場合と「256 種類のバイト」にする場合の比較表。文字だと最初の部品は英語で約 100 種、日本語で数千〜数万種になり、学習で見なかった文字は読めない。バイトだとどの言語でも 256 種で、どんな文字も必ず表せる。",
+    ByteMerge:
+      "バイトの列に BPE を当てる図。「ねこ」は 227 129 173 227 129 147 の 6 バイト。227＋129 がくっついて「227 129」、それに 173 がくっついて「ね」、147 がくっついて「こ」、最後に ね＋こ で「ねこ」になる。",
+    TokenGap:
+      "同じ意味でも日本語のトークンが多くなる理由の図。英語の cat は 3 バイトから出発し、学習データに多いのでくっつけがよく育って 1 部品になる。日本語の ねこ は 6 バイトから出発し、学習データに少ないと育ちにくく、例えば 2 部品のまま残る。",
     CharBytes:
       "文字をバイト（0 から 255 までの数）の並びにした表。a は 97 の 1 バイト、é は 2 バイト、ね は 227・129・173、こ は 227・129・147 の 3 バイト、絵文字は 4 バイト。ひらがなはどれも 227・129 で始まるので、この並びは日本語の文章で飛び抜けてよく隣り合い、BPE でごく早くくっつく。",
     MergeOrder:
@@ -134,6 +146,18 @@ const FIGURE_DESC: Record<Locale, Record<string, string>> = {
   en: {
     TokenChips:
       "Splitting a sentence into tokens (pieces): common short words are one token; long or rare words are built from sub-pieces.",
+    BpeLoop:
+      "The BPE procedure as one loop: 1. split into characters; 2. find the most frequent neighbouring pair (example: l + o, 12 times); 3. glue it and add the result (lo) to the list; 4. repeat steps 2 and 3 until the list is as big as wanted.",
+    WordTally:
+      "How pairs are counted: 1. cut the text into words (a pair across a word boundary is not counted); 2. tally each distinct word (low ×4, slow ×3, lot ×3, lower ×2); 3. a pair's count is the sum of the tallies of the words containing it (l + o: 4 + 3 + 3 + 2 = 12).",
+    BpeOutputs:
+      "What BPE training leaves behind: the list of pieces (vocabulary) and the merge rules in order (1. l + o → lo, 2. lo + w → low, 3. s + low → slow, …). New text is split into characters and the rules are applied in order from rule 1.",
+    StartPieces:
+      "Starting from characters versus starting from the 256 byte values: with characters the starting set is about 100 for English but thousands and more for Japanese, and a character never seen in training cannot be read; with bytes every language starts from the same 256 and any character can always be expressed.",
+    ByteMerge:
+      "BPE on bytes: ねこ is the six bytes 227 129 173 227 129 147; 227 + 129 is glued first into 227 129, that piece plus 173 becomes ね and plus 147 becomes こ, and finally ね + こ becomes ねこ.",
+    TokenGap:
+      'Why Japanese tends to cost more tokens: English "cat" starts as 3 bytes and, being common in training text, its merges grow into 1 piece; Japanese ねこ starts as 6 bytes and, being rare in the training text, its merges stall, leaving for example 2 pieces.',
     CharBytes:
       "Characters as runs of bytes (numbers from 0 to 255): a is the single byte 97, é is 2 bytes, ね is 227·129·173 and こ is 227·129·147 (3 bytes each), an emoji is 4 bytes. Every hiragana starts with 227·129, so that pair is by far the most frequent neighbouring pair in Japanese text and is glued very early by BPE.",
     MergeOrder:
