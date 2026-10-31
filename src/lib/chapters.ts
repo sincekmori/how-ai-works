@@ -60,9 +60,11 @@ const FIGURE_DESC: Record<Locale, Record<string, string>> = {
     TokenChips:
       "文をトークン（部品）に分ける例。よく使う短い語（東京）は 1 トークン、長い・珍しい語（東京タワー）は部品の組み合わせ（東京＋タワー）で表す。",
     BpeLoop:
-      "BPE の手順の図。⓪ 学習データ（本物は何億語）の代わりに、短い文章「東京に住む。東京駅から京都へ行った。京都は古い町だ。東京都には島もある。東京は人が多い。」を丸ごと使う → ① 句読点で区切り、残りを 1 文字ずつに分ける → ② 区切りの中で一番多く隣り合うペアを探す（東＋京が 4 回）→ ③ くっつけて一覧表に登録（東京）→ ④ ② と ③ を繰り返す（次は京＋都、2 回）。本物は一覧表が望みの大きさになるまで続ける。",
+      'BPE の手順の図。⓪ 学習データ（本物は何億語）の代わりに、英語の 1 文 "the cat sat on the mat" を丸ごと使う → ① 空白で語に分け、1 文字ずつに分ける → ② 語の中で一番多く隣り合うペアを探す（a＋t が 3 回）→ ③ くっつけて一覧表に登録（at）→ ④ ② と ③ を繰り返す（次は t＋h、2 回）。本物は一覧表が望みの大きさになるまで続ける。',
+    CharBpe:
+      "日本語でも文字から出発すれば BPE は同じ、という図。「東 京 都 に 住 む」から、学習データに「東京」が多ければ 東＋京→東京、「東京都」も多ければ 東京＋都→東京都 とくっついていく（例）。",
     BpeOutputs:
-      "くっつけを繰り返し終わったあとに残る二つのものの図。部品の一覧表（語彙）と、順番つきの結合ルール（1. 東＋京→東京、2. 京＋都→京都）。新しい文章は 1 文字ずつに分け、ルールを 1 番から順に当てはめて区切る。",
+      "くっつけを繰り返し終わったあとに残る二つのものの図。部品の一覧表（語彙）と、順番つきの結合ルール（1. a＋t→at、2. t＋h→th、3. th＋e→the）。新しい文章は 1 文字ずつに分け、ルールを 1 番から順に当てはめて区切る。",
     StartPieces:
       "最初の部品を「文字」にする場合と「256 種類のバイト」にする場合の比較表。文字だと最初の部品は英語で約 100 種、日本語で数千〜数万種になり、学習で見なかった文字は読めない。バイトだとどの言語でも 256 種で、どんな文字も必ず表せる。",
     ByteMerge:
@@ -72,7 +74,7 @@ const FIGURE_DESC: Record<Locale, Record<string, string>> = {
     CharBytes:
       "文字をバイト（0 から 255 までの数）の並びにした表。a は 97 の 1 バイト、é は 2 バイト、で は 227・129・167、す は 227・129・153 の 3 バイト、絵文字は 4 バイト。ひらがなはどれも 227・129 で始まるので、この並びは日本語の文章で飛び抜けてよく隣り合い、BPE でごく早くくっつく。",
     MergeOrder:
-      "新しい語「東京都」を覚えたルールで区切る比較図。順番どおり（ルール 1 の 東＋京 が先）なら「東京｜都」（東京の都）、順番を無視してルール 2 の 京＋都 を先に使うと「東｜京都」（東と京都）になり、意味まで変わる。順番が決まっているから、区切り方が毎回一通りに決まる。",
+      "新しい語「math」を覚えたルールで区切る比較図。順番どおり（ルール 1 の a＋t が先）なら「m｜at｜h」、順番を無視してルール 2 の t＋h を先に使うと「m｜a｜th」になり、別の部品の並びになる。順番が決まっているから、区切り方が毎回一通りに決まる。",
     WordAspects:
       "単語を「側面ごとの数の並び」で表す表。猫と犬は並びが似ていて、虎は「動物っぽさ」だけ猫と近く、車は大きく違う。",
     ContextClues:
@@ -146,6 +148,8 @@ const FIGURE_DESC: Record<Locale, Record<string, string>> = {
       "Splitting a sentence into tokens (pieces): common short words are one token; long or rare words are built from sub-pieces.",
     BpeLoop:
       'The BPE procedure: 0. the training text (billions of words in reality; here the sentence "the cat sat on the mat", used in full); 1. cut it into words at the spaces, then into characters; 2. find the pair that sits side by side most often inside words (a + t, 3 times); 3. glue it and add the result (at) to the list; 4. repeat 2 and 3 (next: t + h, 2 times), for real until the list is as big as wanted.',
+    CharBpe:
+      'BPE on Japanese with characters as the starting pieces: 東 京 都 に 住 む ("I live in Tokyo") becomes 東京 都 に 住 む if 東京 is frequent in the training text, then 東京都 に 住 む if 東京都 is frequent too (illustrative).',
     BpeOutputs:
       "What remains when the gluing is finished: the list of pieces (vocabulary) and the merge rules in order (1. a + t → at, 2. t + h → th, 3. th + e → the). New text is split into characters and the rules are applied in order from rule 1.",
     StartPieces:

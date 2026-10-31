@@ -7,6 +7,7 @@ draft: false
 
 import TokenChips from "../../../components/figures/TokenChips.astro";
 import BpeLoop from "../../../components/figures/BpeLoop.astro";
+import CharBpe from "../../../components/figures/CharBpe.astro";
 import BpeOutputs from "../../../components/figures/BpeOutputs.astro";
 import MergeOrder from "../../../components/figures/MergeOrder.astro";
 import CharBytes from "../../../components/figures/CharBytes.astro";
@@ -96,12 +97,18 @@ The rules need an order because the same word can often be split two ways.
 The model reads its training text split this way and learns language from it.
 Text it is given later has to be split the same way.
 
-One more thing: pick "dog" in the lower part of the demo, and "d" and "g" get a dashed outline.
-A character that is not among the starting pieces matches no rule, so the model cannot read it.
-Is a character outside the list a dead end?
-
 ## What about Japanese, accents, and emoji?
 
+English could start from single letters because there are so few of them.
+Japanese can start from its characters in the same way.
+
+<CharBpe lang="en" />
+
+Two things go wrong, though.
+Japanese has thousands of characters.
+And a character that never appeared in the training text can never be read: pick "dog" in the lower part of the demo, and "d" and "g" get a dashed outline, because no rule can apply to a character outside the starting pieces.
+
+The way out is to start from something finer than a character, and shared by the whole world.
 A computer stores every character as a run of numbers from 0 to 255.
 Each of those numbers is called a **byte**.
 

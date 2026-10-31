@@ -2,8 +2,9 @@
   // Interactive BPE walkthrough (in-memory only; reload resets).
   // Part 1 finds the most frequent adjacent pair across the words and merges
   // it — the real algorithm, one click at a time. The rows are the chapter
-  // figure's short text, cut at the punctuation (ja) or at the spaces (en), so
-  // every count shown can be checked by eye. The demo stops once no pair occurs
+  // figure's short English sentence, cut at the spaces, so every count shown
+  // can be checked by eye (both locales use it; the chapter turns to Japanese
+  // right after, when it introduces bytes). The demo stops once no pair occurs
   // twice (a real tokenizer stops at its target vocabulary size); when several
   // pairs tie, the one seen first wins, and the demo says so. Part 2 replays
   // the rules learned so far, in order, on a
@@ -31,13 +32,7 @@
 
   const T = {
     ja: {
-      corpus: [
-        "東京に住む",
-        "東京駅から京都へ行った",
-        "京都は古い町だ",
-        "東京都には島もある",
-        "東京は人が多い",
-      ],
+      corpus: ["the", "cat", "sat", "on", "the", "mat"],
       title: "BPE を 1 ステップずつ体験する",
       next: "次のステップ →",
       reset: "最初から",
@@ -49,7 +44,7 @@
       rulesTitle: "覚えた結合ルール（この順に適用される）",
       rule: (a: string, b: string) => `${a} ＋ ${b} → `,
       tryTitle: "覚えたルールで、新しい語を区切ってみる",
-      tryWords: ["東京都", "京都市", "大阪"],
+      tryWords: ["that", "math", "dog"],
       tryIntro: (n: number) =>
         n === 0
           ? "まだルールを 1 つも覚えていないので、1 文字ずつのままです。上の「次のステップ」を押してから、戻ってきてください。"
@@ -60,7 +55,7 @@
       noneApplied: "当てはまるルールはありませんでした。",
       result: (n: number) => `結果：${n} 部品`,
       unknown: (chars: string[]) =>
-        `${chars.map((c) => `「${c}」`).join("")}は最初の部品（上の文章に出てきた文字）にありません。どのルールも当てはまらず、モデルはここを読めません。`,
+        `${chars.map((c) => `「${c}」`).join("")}は最初の部品（上の文に出てきた文字）にありません。どのルールも当てはまらず、モデルはここを読めません。`,
     },
     en: {
       corpus: ["the", "cat", "sat", "on", "the", "mat"],

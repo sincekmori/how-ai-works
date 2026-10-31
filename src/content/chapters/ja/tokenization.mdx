@@ -7,6 +7,7 @@ draft: false
 
 import TokenChips from "../../../components/figures/TokenChips.astro";
 import BpeLoop from "../../../components/figures/BpeLoop.astro";
+import CharBpe from "../../../components/figures/CharBpe.astro";
 import BpeOutputs from "../../../components/figures/BpeOutputs.astro";
 import MergeOrder from "../../../components/figures/MergeOrder.astro";
 import CharBytes from "../../../components/figures/CharBytes.astro";
@@ -72,6 +73,8 @@ import BpeDemo from "../../../components/BpeDemo.svelte";
 代表的な方法が **BPE**（Byte Pair Encoding）です。
 BPE は、モデルを作るときに読ませる大量の文章（**学習データ**）を調べて、部品を決めます。
 本物の学習データは何億語もありますが、ここでは短い文章ひとつを丸ごと使って、手順を全部見ます。
+手順は言語によらないので、文字の種類が少ない英語の文で見ていきます。
+日本語の話は、このあとすぐ出てきます。
 やることは、一つの繰り返しだけです。
 
 <BpeLoop />
@@ -95,16 +98,24 @@ BPE は、モデルを作るときに読ませる大量の文章（**学習デ�
 
 <MergeOrder />
 
-「東京｜都」と「東｜京都」では、意味まで変わってしまいます。
+「m｜at｜h」と「m｜a｜th」では、別の部品の並びになってしまいます。
 モデルは、学習データをこの区切り方で読んで言葉を覚えます。
 使うときも、同じ区切り方でなければなりません。
 
-ところで、デモの下段で「大阪」を選ぶと、「大」と「阪」が点線になります。
-最初の部品にない文字には、どのルールも当てはまらず、モデルは読めません。
-一覧表にない文字は、どうにもならないのでしょうか。
-
 ## 日本語の文字は、どう扱うのか
 
+英語は文字の種類が少ないので、1 文字から出発できました。
+日本語でも、文字をそのまま最初の部品にすれば、同じ手順が動きます。
+
+<CharBpe />
+
+ただし、困ることが二つあります。
+一つは、日本語は文字の種類が数千もあることです。
+もう一つは、学習データに出てこなかった文字は、どうやっても読めないことです。
+デモの下段で「dog」を選ぶと、「d」と「g」が点線になります。
+最初の部品にない文字には、どのルールも当てはまらないからです。
+
+この問題は、「文字」よりも細かい、世界共通の単位から出発すると解決します。
 コンピュータは、どんな文字も 0 から 255 までの数の並びとして保存しています。
 この数の一つ一つを **バイト** と呼びます。
 
