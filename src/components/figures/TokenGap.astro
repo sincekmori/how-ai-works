@@ -1,0 +1,112 @@
+---
+// Why the same meaning tends to cost more tokens in Japanese: a Japanese
+// character starts as three bytes instead of one, and merges only grow where
+// the training text is plentiful, so with English-heavy training data the
+// Japanese pieces stay small. The resulting piece counts are illustrative.
+import { CHIP_H, chipsFrom, chipsCentred } from '../../lib/chips';
+
+interface Props {
+  lang?: 'en' | 'ja';
+}
+const { lang = 'ja' } = Astro.props;
+
+interface Row {
+  label: string;
+  bytes: string[];
+  note: string[];
+  result: string[];
+  count: string;
+}
+
+const S = {
+  ja: {
+    aria: '英語の cat（3 文字 3 バイト）と日本語の 猫（1 文字 3 バイト）で、くっつけの育ち方が違い、部品の数が変わる図',
+    heads: ['出発点（バイト）', 'くっつけの育ち方', '結果（例）'],
+    rows: [
+      {
+        label: '英語の「cat」：3 文字',
+        bytes: ['99', '97', '116'],
+        note: ['学習データに多い', '→ よく育つ'],
+        result: ['cat'],
+        count: '1 部品',
+      },
+      {
+        label: '日本語の「猫」：1 文字',
+        bytes: ['231', '140', '171'],
+        note: ['学習データに少ない', '→ 育ちにくい'],
+        result: ['231 140', '171'],
+        count: '2 部品',
+      },
+    ] as Row[],
+    cap: '同じ 3 バイトでも、英語なら 3 文字分、日本語なら 1 文字分です。日本語の 1 文字は、英語の 3 倍の長さから始まります。さらに BPE は学習データに多い並びからくっつけるので、英語中心のデータで学習すると日本語のくっつけが育たず、1 文字が 2 つ 3 つの部品に割れたまま残ることもあります。部品の数は一例で、モデルによって変わります。',
+  },
+  en: {
+    aria: 'English "cat" (3 characters, 3 bytes) versus Japanese "猫" (1 character, 3 bytes): different merge growth gives different piece counts',
+    heads: ['start (bytes)', 'how far merges grow', 'result (example)'],
+    rows: [
+      {
+        label: 'English "cat": 3 characters',
+        bytes: ['99', '97', '116'],
+        note: ['common in training text', '→ merges grow'],
+        result: ['cat'],
+        count: '1 piece',
+      },
+      {
+        label: 'Japanese "猫" (cat): 1 character',
+        bytes: ['231', '140', '171'],
+        note: ['rare in training text', '→ merges stall'],
+        result: ['231 140', '171'],
+        count: '2 pieces',
+      },
+    ] as Row[],
+    cap: 'The same 3 bytes hold 3 English letters but a single Japanese character, so each Japanese character starts out three times as long. BPE then glues the sequences that are frequent in the training text, so with English-heavy data the Japanese merges never grow far, and a character can even stay split into two or three byte pieces. The piece counts are one example and differ from model to model.',
+  },
+}[lang];
+
+const X0 = 16;
+const NOTE_X = 405;
+const RESULT_X = 540;
+const ROW_Y = [62, 150];
+---
+
+<figure class="figure">
+  <svg viewBox="0 0 600 218" role="img" aria-label={S.aria}>
+    <text class="f-mut" x="160" y="24" text-anchor="middle" style="font-weight: 700">{S.heads[0]}</text>
+    <text class="f-mut" x={NOTE_X} y="24" text-anchor="middle" style="font-weight: 700">{S.heads[1]}</text>
+    <text class="f-mut" x={RESULT_X} y="24" text-anchor="middle" style="font-weight: 700">{S.heads[2]}</text>
+    {
+      S.rows.map((row, r) => (
+        <>
+          <text class="f-mut" x={X0} y={ROW_Y[r] - 10} text-anchor="start">
+            {row.label}
+          </text>
+          {chipsFrom(row.bytes, X0).map((c) => (
+            <>
+              <rect class="f-box" x={c.x} y={ROW_Y[r]} width={c.w} height={CHIP_H} rx="7" />
+              <text class="f-lbl" x={c.x + c.w / 2} y={ROW_Y[r] + 20} text-anchor="middle">
+                {c.t}
+              </text>
+            </>
+          ))}
+          {row.note.map((line, k) => (
+            <text class="f-mut" x={NOTE_X} y={ROW_Y[r] + 12 + k * 18} text-anchor="middle">
+              {line}
+            </text>
+          ))}
+          {chipsCentred(row.result, RESULT_X).map((c) => (
+            <>
+              <rect class="f-bar-bg" x={c.x} y={ROW_Y[r]} width={c.w} height={CHIP_H} rx="7" />
+              <text class="f-lbl" x={c.x + c.w / 2} y={ROW_Y[r] + 20} text-anchor="middle">
+                {c.t}
+              </text>
+            </>
+          ))}
+          <text class="f-num" x={RESULT_X} y={ROW_Y[r] + 50} text-anchor="middle" style="font-size: 13px">
+            {row.count}
+          </text>
+        </>
+      ))
+    }
+  </svg>
+  <figcaption set:html={S.cap} />
+</figure>

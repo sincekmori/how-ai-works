@@ -58,7 +58,23 @@ const ATTRIBUTION: Record<Locale, (url: string) => string> = {
 const FIGURE_DESC: Record<Locale, Record<string, string>> = {
   ja: {
     TokenChips:
-      "文をトークン（部品）に分ける例。よく使う短い語は 1 トークン、長い・珍しい語は部品の組み合わせで表す。",
+      "文をトークン（部品）に分ける例。よく使う短い語（東京）は 1 トークン、長い・珍しい語（東京タワー）は部品の組み合わせ（東京＋タワー）で表す。",
+    BpeLoop:
+      'BPE の手順の図。⓪ 学習データ（本物は何億語）の代わりに、英語の 1 文 "the cat sat on the mat" を丸ごと使う → ① 空白で語に分け、1 文字ずつに分ける → ② 語の中で一番多く隣り合うペアを探す（a＋t が 3 回）→ ③ くっつけて一覧表に登録（at）→ ④ ② と ③ を繰り返す（次は t＋h、2 回）。本物は一覧表が望みの大きさになるまで続ける。',
+    CharBpe:
+      "日本語でも文字から出発すれば BPE は同じ、という図。「東 京 都 に 住 む」から、学習データに「東京」が多ければ 東＋京→東京、「東京都」も多ければ 東京＋都→東京都 とくっついていく（例）。",
+    BpeOutputs:
+      "くっつけを繰り返し終わったあとに残る二つのものの図。部品の一覧表（語彙）と、順番つきの結合ルール（1. a＋t→at、2. t＋h→th、3. th＋e→the）。新しい文章は 1 文字ずつに分け、ルールを 1 番から順に当てはめて区切る。",
+    StartPieces:
+      "最初の部品を「文字」にする場合と「256 種類のバイト」にする場合の比較表。文字だと最初の部品は英語で約 100 種、日本語で数千〜数万種になり、学習で見なかった文字は読めない。バイトだとどの言語でも 256 種で、どんな文字も必ず表せる。",
+    ByteMerge:
+      "バイトの列に BPE を当てる図。「です」は 227 129 167 227 129 153 の 6 バイト。227＋129 がくっついて「227 129」、それに 167 がくっついて「で」、153 がくっついて「す」、最後に で＋す で「です」になる。",
+    TokenGap:
+      "同じ意味でも日本語のトークンが多くなる理由の図。英語の cat は 3 文字で 3 バイト、学習データに多いのでくっつけがよく育って 1 部品になる。日本語の 猫 は 1 文字で 3 バイト、学習データに少ないと育ちにくく、例えば 1 文字が 2 部品に割れたまま残る。",
+    CharBytes:
+      "文字をバイト（0 から 255 までの数）の並びにした表。a は 97 の 1 バイト、é は 2 バイト、で は 227・129・167、す は 227・129・153 の 3 バイト、絵文字は 4 バイト。ひらがなはどれも 227・129 で始まるので、この並びは日本語の文章で飛び抜けてよく隣り合い、BPE でごく早くくっつく。",
+    MergeOrder:
+      "新しい語「math」を覚えたルールで区切る比較図。順番どおり（ルール 1 の a＋t が先）なら「m｜at｜h」、順番を無視してルール 2 の t＋h を先に使うと「m｜a｜th」になり、別の部品の並びになる。順番が決まっているから、区切り方が毎回一通りに決まる。",
     WordAspects:
       "単語を「側面ごとの数の並び」で表す表。猫と犬は並びが似ていて、虎は「動物っぽさ」だけ猫と近く、車は大きく違う。",
     ContextClues:
@@ -130,6 +146,22 @@ const FIGURE_DESC: Record<Locale, Record<string, string>> = {
   en: {
     TokenChips:
       "Splitting a sentence into tokens (pieces): common short words are one token; long or rare words are built from sub-pieces.",
+    BpeLoop:
+      'The BPE procedure: 0. the training text (billions of words in reality; here the sentence "the cat sat on the mat", used in full); 1. cut it into words at the spaces, then into characters; 2. find the pair that sits side by side most often inside words (a + t, 3 times); 3. glue it and add the result (at) to the list; 4. repeat 2 and 3 (next: t + h, 2 times), for real until the list is as big as wanted.',
+    CharBpe:
+      'BPE on Japanese with characters as the starting pieces: 東 京 都 に 住 む ("I live in Tokyo") becomes 東京 都 に 住 む if 東京 is frequent in the training text, then 東京都 に 住 む if 東京都 is frequent too (illustrative).',
+    BpeOutputs:
+      "What remains when the gluing is finished: the list of pieces (vocabulary) and the merge rules in order (1. a + t → at, 2. t + h → th, 3. th + e → the). New text is split into characters and the rules are applied in order from rule 1.",
+    StartPieces:
+      "Starting from characters versus starting from the 256 byte values: with characters the starting set is about 100 for English but thousands and more for Japanese, and a character never seen in training cannot be read; with bytes every language starts from the same 256 and any character can always be expressed.",
+    ByteMerge:
+      "BPE on bytes: です is the six bytes 227 129 167 227 129 153; 227 + 129 is glued first into 227 129, that piece plus 167 becomes で and plus 153 becomes す, and finally で + す becomes です.",
+    TokenGap:
+      'Why Japanese tends to cost more tokens: English "cat" is 3 characters in 3 bytes and, being common in training text, its merges grow into 1 piece; Japanese 猫 is 1 character in 3 bytes and, being rare in the training text, its merges stall, leaving the character split into 2 byte pieces, for example.',
+    CharBytes:
+      "Characters as runs of bytes (numbers from 0 to 255): a is the single byte 97, é is 2 bytes, で is 227·129·167 and す is 227·129·153 (3 bytes each), an emoji is 4 bytes. Every hiragana starts with 227·129, so that pair is by far the most frequent neighbouring pair in Japanese text and is glued very early by BPE.",
+    MergeOrder:
+      'The new word "math" split with the learned rules: in the learned order (rule 1, a + t, first) it becomes m | at | h; had rule 2 (t + h) gone first it would become m | a | th. A fixed order makes every split come out the same way.',
     WordAspects:
       "A word shown as a row of numbers (one per aspect). Cat and dog have similar rows; the tiger is near the cat only in animal-ness; the car is very different.",
     ContextClues:

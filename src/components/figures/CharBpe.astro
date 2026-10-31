@@ -1,0 +1,65 @@
+---
+// BPE on Japanese with characters as the starting pieces: the same procedure
+// as on English letters, shown on one short sentence. The merges are the ones
+// that happen when 東京 and 東京都 are frequent in the training text; no
+// counts are drawn, so the figure is explicitly illustrative.
+import { CHIP_H, chipsCentred } from '../../lib/chips';
+
+interface Props {
+  lang?: 'en' | 'ja';
+}
+const { lang = 'ja' } = Astro.props;
+
+interface Row {
+  label: string;
+  toks: string[];
+  hot: number[];
+}
+
+const S = {
+  ja: {
+    aria: '日本語でも文字から出発すれば BPE は同じ：東 京 都 に 住 む → 東京 都 に 住 む → 東京都 に 住 む',
+    rows: [
+      { label: '最初は 1 文字ずつ', toks: ['東', '京', '都', 'に', '住', 'む'], hot: [] },
+      { label: '学習データに「東京」が多ければ：東 ＋ 京 → 東京', toks: ['東京', '都', 'に', '住', 'む'], hot: [0] },
+      { label: '「東京都」も多ければ：東京 ＋ 都 → 東京都', toks: ['東京都', 'に', '住', 'む'], hot: [0] },
+    ] as Row[],
+    cap: '日本語でも、1 文字を最初の部品にすれば、英語と同じ手順が動きます。学習データに「東京」や「東京都」がよく出てくれば、この順にくっついていきます（くっつく順番は、学習データ次第です）。',
+  },
+  en: {
+    aria: 'BPE works on Japanese too, with characters as the starting pieces: 東 京 都 に 住 む → 東京 都 に 住 む → 東京都 に 住 む',
+    rows: [
+      { label: 'start: one character per piece ("I live in Tokyo")', toks: ['東', '京', '都', 'に', '住', 'む'], hot: [] },
+      { label: 'if 東京 (Tokyo) is frequent in the training text: 東 + 京 → 東京', toks: ['東京', '都', 'に', '住', 'む'], hot: [0] },
+      { label: 'if 東京都 (Tokyo Metropolis) is frequent too: 東京 + 都 → 東京都', toks: ['東京都', 'に', '住', 'む'], hot: [0] },
+    ] as Row[],
+    cap: 'Japanese works the same way with its characters as the starting pieces. If 東京 and 東京都 are frequent in the training text, the merges go like this (which pairs merge, and in what order, depends on the training text).',
+  },
+}[lang];
+
+const LABEL_Y = [22, 86, 150];
+const CHIP_Y = [32, 96, 160];
+---
+
+<figure class="figure">
+  <svg viewBox="0 0 600 204" role="img" aria-label={S.aria}>
+    {
+      S.rows.map((row, r) => (
+        <>
+          <text class="f-mut" x="300" y={LABEL_Y[r]} text-anchor="middle">
+            {row.label}
+          </text>
+          {chipsCentred(row.toks, 300).map((c, i) => (
+            <>
+              <rect class={row.hot.includes(i) ? 'f-bar-bg' : 'f-box'} x={c.x} y={CHIP_Y[r]} width={c.w} height={CHIP_H} rx="7" />
+              <text class="f-lbl" x={c.x + c.w / 2} y={CHIP_Y[r] + 20} text-anchor="middle">
+                {c.t}
+              </text>
+            </>
+          ))}
+        </>
+      ))
+    }
+  </svg>
+  <figcaption set:html={S.cap} />
+</figure>

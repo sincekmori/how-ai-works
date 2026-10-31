@@ -1,14 +1,22 @@
 ---
 title: "Tokenization: Splitting Text into Pieces"
 order: 2
-description: A machine cuts text into "just-right pieces" — neither whole words nor single characters — before it reads anything. This chapter walks through why the obvious cutting schemes fail, then lets you run the piece-building procedure one step at a time.
+description: A machine cuts text into "just-right pieces" — neither whole words nor single characters — before it reads anything. This chapter walks through why the obvious cutting schemes fail, runs the piece-building procedure (BPE) one step at a time, and follows it down to bytes, where Japanese and emoji are assembled and where the cost gap between languages comes from.
 draft: false
 ---
 
 import TokenChips from "../../../components/figures/TokenChips.astro";
+import BpeLoop from "../../../components/figures/BpeLoop.astro";
+import CharBpe from "../../../components/figures/CharBpe.astro";
+import BpeOutputs from "../../../components/figures/BpeOutputs.astro";
+import MergeOrder from "../../../components/figures/MergeOrder.astro";
+import CharBytes from "../../../components/figures/CharBytes.astro";
+import StartPieces from "../../../components/figures/StartPieces.astro";
+import ByteMerge from "../../../components/figures/ByteMerge.astro";
+import TokenGap from "../../../components/figures/TokenGap.astro";
 import BpeDemo from "../../../components/BpeDemo.svelte";
 
-Suppose we hand the sentence "I really love cats" to a machine.
+Suppose we hand the sentence "the cat sat on the mat" to a machine.
 Before it can do anything else, the machine has to decide where to cut the text.
 This cutting job is called **tokenization**, and each piece it produces is called a **token**.
 
@@ -62,30 +70,74 @@ And the vocabulary stays at a manageable size.
 
 Who decides which chunks count as "frequent", and how?
 The classic method is **BPE** (Byte Pair Encoding).
-It has exactly one move:
-take the two pieces that sit next to each other most often, and glue them into one — then repeat.
+BPE decides the pieces by examining the large body of text a model is built from (the **training text**).
+The real training text has billions of words; here one short sentence stands in for all of it.
+It is one loop, repeated.
 
-Suppose the word "low" appears many times in your text.
-With everything split into single characters, the sequence "l" followed by "o" shows up again and again.
-So you glue "l" and "o" into a new piece, "lo", and add it to the vocabulary.
-Then you glue the next most frequent pair, and the next.
-This continues until the vocabulary reaches the size you want.
+<BpeLoop lang="en" />
 
-The reason to glue frequent pairs first is that it lets sentences be written as shorter strings of pieces.
-The more common a chunk, the bigger the saving from bundling it into one piece.
+The more frequent the pairs you glue, the shorter the strings of pieces that sentences become.
 
-The demo below runs this procedure one step at a time.
-Everything starts split into single characters.
-Each press of "Next step" glues the most frequently adjacent pair.
-Before you press, try to predict which pair will merge first.
+The demo below runs the procedure one step at a time, on the same sentence as the figure above.
+Predict which pair will merge first, then press "Next step".
+Once nothing is left to glue, use the lower part to apply the learned rules to a new word.
 
 <BpeDemo client:visible lang="en" />
 
+## What BPE leaves behind: a list of pieces, and an order
+
+When the gluing is finished, two things remain.
+
+<BpeOutputs lang="en" />
+
+The rules need an order because the same word can often be split two ways.
+
+<MergeOrder lang="en" />
+
+The model reads its training text split this way and learns language from it.
+Text it is given later has to be split the same way.
+
+## What about Japanese, accents, and emoji?
+
+English could start from single letters because there are so few of them.
+Japanese can start from its characters in the same way.
+
+<CharBpe lang="en" />
+
+Two things go wrong, though.
+Japanese has thousands of characters.
+And a character that never appeared in the training text can never be read: pick "dog" in the lower part of the demo, and "d" and "g" get a dashed outline, because no rule can apply to a character outside the starting pieces.
+
+The way out is to start from something finer than a character, and shared by the whole world.
+A computer stores every character as a run of numbers from 0 to 255.
+Each of those numbers is called a **byte**.
+
+<CharBytes lang="en" />
+
+Whether the starting pieces are characters or the 256 byte values changes the starting point like this.
+
+<StartPieces lang="en" />
+
+Starting from bytes, the gluing works exactly as it did on letters.
+
+<ByteMerge lang="en" />
+
+Most of today's models use this **byte-level BPE**.
+A different scheme keeps characters as the starting pieces and breaks only a rare, unlisted character into bytes.
+
+## Why some languages cost more tokens
+
+Two reasons: the length of each character, and how far the merges grow.
+
+<TokenGap lang="en" />
+
+Processing effort, price, and how much text fits in one reading are all measured in tokens.
+Recent models widen their vocabularies to one to two hundred thousand pieces and balance the languages in their training text, which narrows the gap.
+
 ## Good things to know
 
-- **Unknown characters are covered**: many recent models first build characters out of an even finer shared unit, the **byte**. Any rare character or symbol can be expressed as byte pieces in the worst case, so an "unreadable character" cannot occur in principle.
-- **Token count is cost**: processing time, price, and how much text fits in one reading are all measured in tokens. Text heavy with symbols, or in languages like Japanese, tends to use more tokens than plain English.
-- **Special pieces**: the vocabulary also reserves dedicated tokens that mark where text begins and ends, and which speaker a message in a conversation belongs to.
+- **What is on the list**: the 256 bytes, the pieces made by gluing, and the special tokens that mark where text begins and ends or who is speaking. GPT-2's list is 256 + 50,000 + 1 = 50,257 entries.
+- **Every model splits differently**: the list and the rules are fixed when a model is built, so the same sentence splits differently, into a different number of tokens, from one model to the next.
 
 This "cut into frequent chunks" entrance is shared by today's major models — GPT, Llama, Claude, Gemini, Mistral, Qwen, and more.
 

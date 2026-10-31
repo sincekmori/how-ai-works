@@ -1,0 +1,102 @@
+---
+// Every character is stored as one to four numbers from 0 to 255 (bytes) under
+// the shared UTF-8 rule. Byte-level BPE starts from those 256 values, so no
+// character is ever "unknown". Hiragana all begin with 227,129 (or 227,130),
+// which is why that pair is among the first merges on Japanese text.
+interface Props {
+  lang?: 'en' | 'ja';
+}
+const { lang = 'ja' } = Astro.props;
+
+// Language-neutral data: the characters and their UTF-8 bytes.
+const rows = [
+  { ch: 'a', bytes: [97] },
+  { ch: 'é', bytes: [195, 169] },
+  { ch: 'で', bytes: [227, 129, 167] },
+  { ch: 'す', bytes: [227, 129, 153] },
+  { ch: '😀', bytes: [240, 159, 152, 128] },
+];
+
+const S = {
+  ja: {
+    aria: '文字をバイト（0 から 255 までの数）の並びにした例',
+    headChar: '文字',
+    headBytes: 'バイト（0 から 255 までの数）',
+    notes: [
+      '1 バイト（英語の文字）',
+      '2 バイト（アクセント付きの文字）',
+      '3 バイト（日本語の文字）',
+      '3 バイト',
+      '4 バイト（絵文字）',
+    ],
+    shared: 'ひらがなは同じ始まり',
+    cap: 'コンピュータは、どんな文字も 0 から 255 までの数（バイト）の並びとして保存します。英語の文字は 1 バイト、日本語の文字は 3 バイト、絵文字は 4 バイトです。ひらがなはどれも <strong>227、129</strong>（または 227、130）で始まるので、この並びは日本語の文章で飛び抜けてよく隣り合い、BPE でごく早い段階でくっつきます。',
+  },
+  en: {
+    aria: 'Characters written as runs of bytes (numbers from 0 to 255)',
+    headChar: 'character',
+    headBytes: 'bytes (numbers from 0 to 255)',
+    notes: [
+      '1 byte (an English letter)',
+      '2 bytes (an accented letter)',
+      '3 bytes (a Japanese character)',
+      '3 bytes',
+      '4 bytes (an emoji)',
+    ],
+    shared: 'hiragana share a start',
+    cap: 'A computer stores every character as a run of one to four numbers from 0 to 255, called bytes, following one worldwide rule (UTF-8). An English letter takes 1 byte, a Japanese character 3, an emoji 4. Every hiragana begins with <strong>227, 129</strong> (or 227, 130), so that pair sits side by side constantly in Japanese text and is among the first to be glued by BPE.',
+  },
+}[lang];
+
+const X_CHAR = 54;
+const X_ARROW = 94;
+const X_BOX = 126;
+const BOX_W = 52;
+const BOX_GAP = 8;
+const X_NOTE = 376;
+// Row baselines; the gap before the hiragana rows leaves room for the group label.
+const ROW_Y = [70, 120, 196, 246, 312];
+const rowY = (i: number) => ROW_Y[i];
+const boxX = (j: number) => X_BOX + j * (BOX_W + BOX_GAP);
+// The two hiragana rows (index 2 and 3) share their first two bytes.
+const groupX = boxX(0) - 6;
+const groupW = 2 * BOX_W + BOX_GAP + 12;
+const groupY = rowY(2) - 24;
+const groupH = rowY(3) - rowY(2) + 48;
+---
+
+<figure class="figure">
+  <svg viewBox="0 0 600 345" role="img" aria-label={S.aria}>
+    <text class="f-mut" x={X_CHAR} y="30" text-anchor="middle">{S.headChar}</text>
+    <text class="f-mut" x={X_BOX} y="30" text-anchor="start">{S.headBytes}</text>
+
+    <!-- shared-prefix group behind the two hiragana rows -->
+    <rect class="f-bar-bg" x={groupX} y={groupY} width={groupW} height={groupH} rx="10"></rect>
+    <text class="f-mut" x={groupX + groupW / 2} y={groupY - 8} text-anchor="middle" style="fill: var(--accent); font-weight: 700">{S.shared}</text>
+
+    {
+      rows.map((r, i) => (
+        <>
+          <text class="f-lbl" x={X_CHAR} y={rowY(i) + 6} text-anchor="middle" style="font-size: 20px">
+            {r.ch}
+          </text>
+          <text class="f-mut" x={X_ARROW} y={rowY(i) + 5} text-anchor="middle" style="font-size: 15px">
+            →
+          </text>
+          {r.bytes.map((b, j) => (
+            <>
+              <rect class="f-box" x={boxX(j)} y={rowY(i) - 17} width={BOX_W} height="34" rx="8" />
+              <text class="f-lbl" x={boxX(j) + BOX_W / 2} y={rowY(i) + 5} text-anchor="middle">
+                {b}
+              </text>
+            </>
+          ))}
+          <text class="f-mut" x={X_NOTE} y={rowY(i) + 4} text-anchor="start">
+            {S.notes[i]}
+          </text>
+        </>
+      ))
+    }
+  </svg>
+  <figcaption set:html={S.cap} />
+</figure>
