@@ -12,7 +12,7 @@ export interface Chip {
 export const CHIP_H = 30;
 export const CHIP_GAP = 6;
 
-const WIDE = /[　-鿿豈-﫿＀-￯]|\p{Extended_Pictographic}/u;
+const WIDE = /[\u3000-\u9fff\uf900-\ufaff\uff00-\uffef]|\p{Extended_Pictographic}/u;
 
 /** Estimated width of a chip holding `t`, padding included. */
 export function chipWidth(t: string): number {
