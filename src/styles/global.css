@@ -336,13 +336,57 @@ a:hover {
   color: var(--fg-muted);
   margin: 0 0 0.3rem;
 }
+/* A plain numbered list (Tailwind's preflight resets list-style, and a flex
+   container would drop the markers too); the chapter refers to the rules by
+   number ("rule 1", "rule 5"). */
 .bpe__rules {
+  list-style: decimal;
   margin: 0;
-  padding-left: 1.4rem;
+  padding-left: 1.6rem;
+  font-size: 0.88rem;
+}
+.bpe__rules li + li {
+  margin-top: 0.15rem;
+}
+
+/* part 2: replay the learned rules on a new word */
+.bpe__try {
+  margin-top: 1rem;
+  padding-top: 0.9rem;
+  border-top: 1px dashed var(--border);
+}
+.bpe__presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.7rem;
+}
+.bpe__trace {
+  list-style: none;
+  margin: 0 0 0.6rem;
+  padding: 0;
   font-size: 0.88rem;
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: 0.4rem;
+}
+.bpe__trace li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem 0.5rem;
+}
+.bpe__result {
+  font-size: 0.92rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+}
+.bpe__focus--last {
+  margin-bottom: 0;
+}
+.bpe__tok--unk {
+  border-style: dashed;
+  color: var(--fg-muted);
 }
 
 /* ---------- "watch it learn" demo ---------- */

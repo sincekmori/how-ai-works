@@ -59,6 +59,10 @@ const FIGURE_DESC: Record<Locale, Record<string, string>> = {
   ja: {
     TokenChips:
       "文をトークン（部品）に分ける例。よく使う短い語は 1 トークン、長い・珍しい語は部品の組み合わせで表す。",
+    CharBytes:
+      "文字をバイト（0 から 255 までの数）の並びにした表。a は 97 の 1 バイト、é は 2 バイト、ね は 227・129・173、こ は 227・129・147 の 3 バイト、絵文字は 4 バイト。ひらがなはどれも 227・129 で始まるので、この並びは日本語の文章で飛び抜けてよく隣り合い、BPE でごく早くくっつく。",
+    MergeOrder:
+      "新しい語「こねこ」を、覚えたルールの順番どおりに区切ると「こ｜ねこ」→「こねこ」の 1 部品になるが、順番を無視して先に「こ＋ね」をくっつけると「こね｜こ」の 2 部品で止まる、という比較図。順番が決まっているから、区切り方が毎回一通りに決まる。",
     WordAspects:
       "単語を「側面ごとの数の並び」で表す表。猫と犬は並びが似ていて、虎は「動物っぽさ」だけ猫と近く、車は大きく違う。",
     ContextClues:
@@ -130,6 +134,10 @@ const FIGURE_DESC: Record<Locale, Record<string, string>> = {
   en: {
     TokenChips:
       "Splitting a sentence into tokens (pieces): common short words are one token; long or rare words are built from sub-pieces.",
+    CharBytes:
+      "Characters as runs of bytes (numbers from 0 to 255): a is the single byte 97, é is 2 bytes, ね is 227·129·173 and こ is 227·129·147 (3 bytes each), an emoji is 4 bytes. Every hiragana starts with 227·129, so that pair is by far the most frequent neighbouring pair in Japanese text and is glued very early by BPE.",
+    MergeOrder:
+      'After rules 1 and 2, the new word "slower" reads s | low | e | r. In the learned order (rule 3: s + low → slow) it becomes slow | e | r (3 pieces); had rule 5 (low + e) gone first it would become s | lower (2 pieces). A fixed order makes every split come out the same way.',
     WordAspects:
       "A word shown as a row of numbers (one per aspect). Cat and dog have similar rows; the tiger is near the cat only in animal-ness; the car is very different.",
     ContextClues:

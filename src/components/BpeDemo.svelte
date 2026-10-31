@@ -1,8 +1,12 @@
 <script lang="ts">
-  // Interactive BPE walkthrough (in-memory only; reload resets). Each step finds
-  // the most frequent adjacent pair across the corpus and merges it — the real
-  // algorithm, one click at a time. The corpus is illustrative and starts so the
-  // first merge matches the chapter's example (ja: ね+こ → ねこ; en: l+o → lo).
+  // Interactive BPE walkthrough (in-memory only; reload resets).
+  // Part 1 finds the most frequent adjacent pair across the corpus and merges
+  // it — the real algorithm, one click at a time. Part 2 replays the rules
+  // learned so far, in order, on a word that is not in the corpus, so the
+  // reader sees what BPE leaves behind (an ordered rule list) and what a
+  // character outside the starting pieces looks like. The corpus is
+  // illustrative and starts so the first merge matches the chapter's example
+  // (ja: ね+こ → ねこ; en: l+o → lo).
   const { lang = "ja" }: { lang?: "en" | "ja" } = $props();
 
   interface Word {
@@ -14,6 +18,13 @@
     a: string;
     b: string;
     count: number;
+  }
+
+  interface Applied {
+    rule: number;
+    a: string;
+    b: string;
+    toks: string[];
   }
 
   const T = {
@@ -33,6 +44,19 @@
       done: "もうくっつけられるペアはありません（完了）。",
       rulesTitle: "覚えた結合ルール（この順に適用される）",
       rule: (a: string, b: string) => `${a} ＋ ${b} → `,
+      tryTitle: "覚えたルールで、新しい語を区切ってみる",
+      tryWords: ["ねこねこ", "ねむる", "いぬ"],
+      tryIntro: (n: number) =>
+        n === 0
+          ? "まだルールを 1 つも覚えていないので、1 文字ずつのままです。上の「次のステップ」を押してから、戻ってきてください。"
+          : `覚えている ${n} 個のルールを、1 番から順に当てはめます。`,
+      start: "最初は 1 文字ずつ：",
+      applied: (i: number, a: string, b: string) =>
+        `ルール ${i}（${a} ＋ ${b} → ${a + b}）が当てはまった：`,
+      noneApplied: "当てはまるルールはありませんでした。",
+      result: (n: number) => `結果：${n} 部品`,
+      unknown: (chars: string[]) =>
+        `${chars.map((c) => `「${c}」`).join("")}は最初の部品（この文章に出てきた文字）にありません。どのルールも当てはまらず、モデルはここを読めません。`,
     },
     en: {
       corpus: [
@@ -50,11 +74,39 @@
       done: "No more pairs left to merge (done).",
       rulesTitle: "Merge rules learned (applied in this order)",
       rule: (a: string, b: string) => `${a} + ${b} → `,
+      tryTitle: "Use the learned rules on a new word",
+      tryWords: ["slower", "lowest", "cat"],
+      tryIntro: (n: number) =>
+        n === 0
+          ? 'No rule has been learned yet, so the word stays one letter per piece. Press "Next step" above, then come back.'
+          : n === 1
+            ? "Applying the one rule learned so far."
+            : `Applying the ${n} rules learned so far, in order from rule 1.`,
+      start: "Start, one letter per piece:",
+      applied: (i: number, a: string, b: string) => `rule ${i} (${a} + ${b} → ${a + b}) applied:`,
+      noneApplied: "No rule applied.",
+      result: (n: number) => `Result: ${n} ${n === 1 ? "piece" : "pieces"}`,
+      unknown: (chars: string[]) =>
+        `${chars.map((c) => `"${c}"`).join(", ")} ${chars.length === 1 ? "is" : "are"} not among the starting pieces (the letters that appear in this text). No rule can apply there, and the model cannot read it.`,
     },
   }[lang];
 
   const { corpus } = T;
   const split = (w: string) => [...w];
+
+  // Glue every occurrence of the pair (a, b) in one word's token list.
+  function mergePair(toks: string[], a: string, b: string): string[] {
+    const out: string[] = [];
+    for (let i = 0; i < toks.length; i += 1) {
+      if (toks[i] === a && toks[i + 1] === b) {
+        out.push(a + b);
+        i += 1;
+      } else {
+        out.push(toks[i]);
+      }
+    }
+    return out;
+  }
 
   let segments = $state<string[][]>(corpus.map((w) => split(w.word)));
   let merges = $state<[string, string][]>([]);
@@ -90,18 +142,7 @@
     if (!pair) {
       return;
     }
-    segments = segments.map((toks) => {
-      const out: string[] = [];
-      for (let i = 0; i < toks.length; i += 1) {
-        if (toks[i] === pair.a && toks[i + 1] === pair.b) {
-          out.push(pair.a + pair.b);
-          i += 1;
-        } else {
-          out.push(toks[i]);
-        }
-      }
-      return out;
-    });
+    segments = segments.map((toks) => mergePair(toks, pair.a, pair.b));
     merges = [...merges, [pair.a, pair.b]];
   }
 
@@ -121,6 +162,29 @@
       (toks[ti] === pair.b && toks[ti - 1] === pair.a)
     );
   }
+
+  // Part 2: replay the learned rules, in order, on a word outside the corpus.
+  // The starting pieces are the characters of the corpus; a character outside
+  // that set can never be merged (no rule mentions it), which is the
+  // "unknown character" problem the chapter then solves with bytes.
+  const known = new Set(corpus.flatMap((w) => split(w.word)));
+  const isUnknown = (t: string) => split(t).length === 1 && !known.has(t);
+
+  let tryWord = $state<string>(T.tryWords[0]);
+  const tryChars = $derived(split(tryWord));
+
+  const trace = $derived.by(() => {
+    let toks = split(tryWord);
+    const applied: Applied[] = [];
+    merges.forEach(([a, b], i) => {
+      const next = mergePair(toks, a, b);
+      if (next.length < toks.length) {
+        toks = next;
+        applied.push({ rule: i + 1, a, b, toks });
+      }
+    });
+    return { toks, applied, unknown: [...new Set(toks.filter((t) => isUnknown(t)))] };
+  });
 </script>
 
 <div class="widget bpe">
@@ -161,4 +225,43 @@
       {/each}
     </ol>
   {/if}
+
+  <div class="bpe__try">
+    <p class="bpe__rules-title">{T.tryTitle}</p>
+    <div class="bpe__presets">
+      {#each T.tryWords as w (w)}
+        <button class="btn" class:btn--accent={w === tryWord} onclick={() => (tryWord = w)}>
+          {w}
+        </button>
+      {/each}
+    </div>
+    <p class="bpe__focus">{T.tryIntro(merges.length)}</p>
+    <ul class="bpe__trace">
+      <li>
+        <span>{T.start}</span>
+        <span class="bpe__toks">
+          {#each tryChars as t, i (i)}
+            <span class="bpe__tok" class:bpe__tok--unk={isUnknown(t)}>{t}</span>
+          {/each}
+        </span>
+      </li>
+      {#each trace.applied as s (s.rule)}
+        <li>
+          <span>{T.applied(s.rule, s.a, s.b)}</span>
+          <span class="bpe__toks">
+            {#each s.toks as t, i (i)}
+              <span class="bpe__tok" class:bpe__tok--unk={isUnknown(t)}>{t}</span>
+            {/each}
+          </span>
+        </li>
+      {/each}
+      {#if merges.length > 0 && trace.applied.length === 0}
+        <li><span>{T.noneApplied}</span></li>
+      {/if}
+    </ul>
+    <p class="bpe__result">{T.result(trace.toks.length)}</p>
+    {#if trace.unknown.length > 0}
+      <p class="bpe__focus bpe__focus--last">{T.unknown(trace.unknown)}</p>
+    {/if}
+  </div>
 </div>

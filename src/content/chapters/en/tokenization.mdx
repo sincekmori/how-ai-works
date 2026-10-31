@@ -1,11 +1,13 @@
 ---
 title: "Tokenization: Splitting Text into Pieces"
 order: 2
-description: A machine cuts text into "just-right pieces" — neither whole words nor single characters — before it reads anything. This chapter walks through why the obvious cutting schemes fail, then lets you run the piece-building procedure one step at a time.
+description: A machine cuts text into "just-right pieces" — neither whole words nor single characters — before it reads anything. This chapter walks through why the obvious cutting schemes fail, runs the piece-building procedure (BPE) one step at a time, and follows it down to bytes, where Japanese and emoji are assembled and where the cost gap between languages comes from.
 draft: false
 ---
 
 import TokenChips from "../../../components/figures/TokenChips.astro";
+import CharBytes from "../../../components/figures/CharBytes.astro";
+import MergeOrder from "../../../components/figures/MergeOrder.astro";
 import BpeDemo from "../../../components/BpeDemo.svelte";
 
 Suppose we hand the sentence "I really love cats" to a machine.
@@ -74,18 +76,111 @@ This continues until the vocabulary reaches the size you want.
 The reason to glue frequent pairs first is that it lets sentences be written as shorter strings of pieces.
 The more common a chunk, the bigger the saving from bundling it into one piece.
 
+## Cut into words before counting
+
+The "most frequent neighbouring pair" is not counted across the whole text as one long string.
+If it were, the end of one word and the start of the next would count as a pair too.
+In English text, a word-final "s" followed by a space occurs constantly, so a meaningless "s + space" piece would be glued almost immediately.
+So the text is first cut into words at spaces and punctuation, and the gluing happens only inside a word.
+Nothing is ever glued across a word boundary.
+Languages without spaces, such as Japanese, need a different arrangement.
+Some schemes treat a run of characters up to the next punctuation mark as one chunk, and others skip this step and process the text as it is.
+
+The same word shows up thousands or millions of times, so counting it afresh at every occurrence would be wasteful.
+Instead, each distinct word is listed once with the number of times it appears, and every pair inside it is weighted by that number.
+The "×4" and "×3" at the left of the demo below are those counts.
+If "low" appears 4 times, the pair "l + o" counts 4 from that word alone.
+
 The demo below runs this procedure one step at a time.
 Everything starts split into single characters.
 Each press of "Next step" glues the most frequently adjacent pair.
 Before you press, try to predict which pair will merge first.
+Once nothing is left to glue, use the lower part of the demo to apply the learned rules to a new word.
 
 <BpeDemo client:visible lang="en" />
 
+## What BPE leaves behind: a list of pieces, and an order
+
+Once training is over, how does new text get split?
+BPE leaves two things behind.
+One is the finished list of pieces, the vocabulary.
+The other is an **ordered list of merge rules**: which pair was glued first, which second, and so on.
+To split new text, you start from single characters and replay the rules in exactly the order they were learned.
+The "Merge rules learned" in the demo is that list, and the lower part of the demo shows it being replayed on a new word.
+
+To see why the order matters, take the word "slower", which is not in the demo's text.
+After rules 1 and 2 it reads "s | low | e | r", and two rules now compete for "low": rule 3 glues "s + low", and rule 5 glues "low + e".
+With two candidates, something has to decide.
+That is what the order is for.
+Rule 3 comes first, so the word becomes "slow | e | r", and rule 5 no longer finds a "low" to work on.
+Had rule 5 gone first, the word would have become "s | lower" instead.
+Because the order is fixed, every piece of text splits exactly one way.
+
+<MergeOrder lang="en" />
+
+This "same answer every time" matters more than it looks.
+The model learned language from text split in one particular way.
+If the split drifted at the time of use, the model would be looking at sequences of pieces it never saw, and what it learned would not carry over.
+
+One more thing to notice: pick "cat" in the lower part of the demo, and the pieces "c" and "a" get a dashed outline.
+A character that is not among the starting pieces matches no rule at all, and the model cannot read it.
+Is a character outside the list a dead end?
+
+## What about Japanese, accents, and emoji?
+
+The demo used the letters that appeared in its text as the starting pieces.
+For English, letters, digits and punctuation fit in about a hundred pieces.
+Many languages are not so compact.
+Japanese has two syllabaries plus kanji: the everyday set alone has 2,136 characters, and with names and older words the count runs into the tens of thousands.
+Such a large starting set bloats the vocabulary, and worse still is any character that never appeared in the training text.
+Like "c" and "a" above, a character missing from the list cannot be built from anything, and the model has to skip it.
+
+The way out is to start from something finer than a character, and shared by the whole world.
+A computer stores every character as a run of numbers from 0 to 255.
+Each of those numbers is called a **byte**.
+One worldwide rule, UTF-8, fixes which numbers each character becomes: the letter "a" is the single byte 97, and the Japanese character "ね" is the three bytes 227, 129, 173.
+
+<CharBytes lang="en" />
+
+So instead of characters, the starting pieces are the 256 possible byte values.
+The text is split into bytes rather than characters, and then the very same BPE runs on top.
+The starting set is 256 pieces whatever the language, and every character in every script, emoji included, is some combination of those 256.
+An "unreadable character" cannot happen, in principle.
+Most of today's models use this **byte-level BPE**.
+
+The gluing goes exactly as before.
+Every hiragana starts with the bytes 227, 129 (or 227, 130).
+In Japanese text, the pair "227 + 129" is by far the most common neighbouring pair, so it is glued very early.
+Next, that "227 129" glued with 173 gives "ね", glued with 147 gives "こ", and then "ね + こ" gives "ねこ".
+Bytes build characters, and characters grow into chunks of words.
+
+There is one side effect.
+The gluing ignores character boundaries, so a piece can end mid-character: say, the last two bytes of one character plus the first byte of the next.
+When the model writes such a piece, the software that shows the text waits for the next piece until the character is complete before displaying it.
+
+A different scheme also exists: keep whole characters as the starting pieces, and fall back to bytes only for a rare character that is missing from the list.
+Only the starting point differs; the procedure of gluing the most frequent neighbours is the same either way.
+
+## Why some languages cost more tokens
+
+The same message often takes more tokens in Japanese, or in many other languages, than in English.
+The reasons are already on this page.
+
+The first is the starting length.
+An English letter is 1 byte and a Japanese character is almost always 3, so before any gluing, Japanese starts out three times as long.
+The second is how far the gluing gets.
+BPE glues the most frequent pairs first, so if most of the training text is English, English words quickly become single pieces.
+Japanese sequences rarely get their turn and tend to remain as single characters, or even as fragments of a character.
+The 256 starting pieces are fair to every language, but the finished vocabulary mirrors the language mix of the text it was trained on.
+
+More tokens means more cost and more time.
+Processing effort, price, and how much text fits in one reading are all measured in tokens.
+Recent models have grown their vocabularies to between one and two hundred thousand pieces, and balance their training text across languages, partly to narrow this gap.
+
 ## Good things to know
 
-- **Unknown characters are covered**: many recent models first build characters out of an even finer shared unit, the **byte**. Any rare character or symbol can be expressed as byte pieces in the worst case, so an "unreadable character" cannot occur in principle.
-- **Token count is cost**: processing time, price, and how much text fits in one reading are all measured in tokens. Text heavy with symbols, or in languages like Japanese, tends to use more tokens than plain English.
-- **Special pieces**: the vocabulary also reserves dedicated tokens that mark where text begins and ends, and which speaker a message in a conversation belongs to.
+- **What is on the list**: with byte-level BPE, the vocabulary holds the 256 starting bytes, the pieces created by gluing, and a few dedicated pieces (special tokens) that mark where text begins and ends or which speaker a message belongs to. GPT-2's vocabulary, for example, is 256 + 50,000 glued pieces + 1 special token = 50,257 entries.
+- **Every model splits differently**: the list and the rules are fixed when a model is built, so the same sentence splits differently, into a different number of tokens, from one model to the next.
 
 This "cut into frequent chunks" entrance is shared by today's major models — GPT, Llama, Claude, Gemini, Mistral, Qwen, and more.
 

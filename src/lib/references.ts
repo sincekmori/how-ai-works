@@ -72,6 +72,18 @@ export const references: Record<string, Reference[]> = {
       url: "https://arxiv.org/abs/1808.06226",
     },
     {
+      title: "Language Models are Unsupervised Multitask Learners (GPT-2, byte-level BPE)",
+      by: "Radford et al.",
+      year: 2019,
+      url: "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+    },
+    {
+      title: "Neural Machine Translation with Byte-Level Subwords",
+      by: "Wang, Cho & Gu",
+      year: 2019,
+      url: "https://arxiv.org/abs/1909.03341",
+    },
+    {
       title: "Summary of the tokenizers",
       by: "Hugging Face docs",
       url: "https://huggingface.co/docs/transformers/tokenizer_summary",

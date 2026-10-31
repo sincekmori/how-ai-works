@@ -1,0 +1,142 @@
+---
+// BPE leaves behind an ORDERED list of merge rules, not only a list of pieces.
+// A new word is split by replaying the rules in that order; replaying them in
+// another order can give a different split. The fixed order is what makes every
+// split reproducible, i.e. the same split the model saw during training.
+interface Props {
+  lang?: 'en' | 'ja';
+}
+const { lang = 'ja' } = Astro.props;
+
+interface Step {
+  label: string;
+  toks: string[];
+}
+interface Column {
+  head: string;
+  steps: Step[];
+  result: string;
+}
+
+const S = {
+  ja: {
+    aria: '同じ語でも、ルールを当てはめる順番で区切り方が変わる例',
+    top: '新しい語「こねこ」を、覚えたルールで区切る',
+    start: ['こ', 'ね', 'こ'],
+    cols: [
+      {
+        head: '学習した順番どおり',
+        steps: [
+          { label: 'ルール 1：ね ＋ こ → ねこ', toks: ['こ', 'ねこ'] },
+          { label: 'ルール 2：こ ＋ ねこ → こねこ', toks: ['こねこ'] },
+        ],
+        result: '1 部品',
+      },
+      {
+        head: 'もし順番を無視したら',
+        steps: [
+          { label: '先にルール 5：こ ＋ ね → こね', toks: ['こね', 'こ'] },
+          { label: '「こね ＋ こ」というルールはない', toks: ['こね', 'こ'] },
+        ],
+        result: '2 部品',
+      },
+    ] as Column[],
+    bottom: '順番を決めておけば、区切り方はいつも一通りに決まる。',
+    cap: 'BPE が残すのは部品の一覧表だけでなく、<strong>どの順番でくっつけたか</strong> というルールの列です。新しい語を区切るときは、学習したときと同じ順番でルールを当てはめます。順番を変えると別の区切り方になるので、大事なのは「毎回同じ答えになること」。どちらの区切り方が良いかではなく、モデルが学習中に見ていたのと同じ区切り方になることに意味があります。',
+  },
+  en: {
+    aria: 'The same word splits differently depending on the order the rules are applied in',
+    top: 'After rules 1 and 2, the new word "slower" looks like this:',
+    start: ['s', 'low', 'e', 'r'],
+    cols: [
+      {
+        head: 'In the learned order',
+        steps: [
+          { label: 'rule 3: s + low → slow', toks: ['slow', 'e', 'r'] },
+          { label: 'rule 5 needs "low", which is gone', toks: ['slow', 'e', 'r'] },
+        ],
+        result: '3 pieces',
+      },
+      {
+        head: 'If the order were ignored',
+        steps: [
+          { label: 'rule 5 first: low + e → lowe', toks: ['s', 'lowe', 'r'] },
+          { label: 'rule 6: lowe + r → lower', toks: ['s', 'lower'] },
+        ],
+        result: '2 pieces',
+      },
+    ] as Column[],
+    bottom: 'With a fixed order, every split comes out the same way.',
+    cap: 'BPE leaves behind more than a list of pieces: it also leaves <strong>the order in which the pairs were glued</strong>. A new word is split by replaying the rules in that same order. Replaying them in another order can give a different split, so what matters is that the answer comes out the same every time. Neither split is "better"; the point is to produce exactly the split the model saw during training.',
+  },
+}[lang];
+
+const CHIP_H = 30;
+const CHIP_GAP = 6;
+const chipW = (t: string) => (lang === 'ja' ? 17 * [...t].length + 18 : 9 * t.length + 16);
+// Lay a row of chips out centred on cx; returns each chip's x and width.
+const layout = (toks: string[], cx: number) => {
+  const ws = toks.map((t) => chipW(t));
+  const total = ws.reduce((a, b) => a + b, 0) + CHIP_GAP * (ws.length - 1);
+  let x = cx - total / 2;
+  return toks.map((t, i) => {
+    const chip = { t, x, w: ws[i] };
+    x += ws[i] + CHIP_GAP;
+    return chip;
+  });
+};
+const colX = [150, 450];
+const Y_START = 42;
+const Y_HEAD = 108;
+const Y_STEP = [132, 198];
+const Y_RESULT = 268;
+---
+
+<figure class="figure">
+  <svg viewBox="0 0 600 320" role="img" aria-label={S.aria}>
+    <text class="f-lbl" x="300" y="24" text-anchor="middle">{S.top}</text>
+    {
+      layout(S.start, 300).map((c) => (
+        <>
+          <rect class="f-bar-bg" x={c.x} y={Y_START} width={c.w} height={CHIP_H} rx="7" />
+          <text class="f-lbl" x={c.x + c.w / 2} y={Y_START + 20} text-anchor="middle">
+            {c.t}
+          </text>
+        </>
+      ))
+    }
+    <path class="f-axis" d={`M 300 ${Y_START + CHIP_H + 4} L 150 ${Y_HEAD - 18}`}></path>
+    <path class="f-axis" d={`M 300 ${Y_START + CHIP_H + 4} L 450 ${Y_HEAD - 18}`}></path>
+
+    {
+      S.cols.map((col, ci) => (
+        <>
+          <text class="f-lbl" x={colX[ci]} y={Y_HEAD} text-anchor="middle" style="font-weight: 700">
+            {col.head}
+          </text>
+          {col.steps.map((s, si) => (
+            <>
+              <text class="f-mut" x={colX[ci]} y={Y_STEP[si]} text-anchor="middle">
+                {s.label}
+              </text>
+              {layout(s.toks, colX[ci]).map((c) => (
+                <>
+                  <rect class="f-box" x={c.x} y={Y_STEP[si] + 10} width={c.w} height={CHIP_H} rx="7" />
+                  <text class="f-lbl" x={c.x + c.w / 2} y={Y_STEP[si] + 30} text-anchor="middle">
+                    {c.t}
+                  </text>
+                </>
+              ))}
+            </>
+          ))}
+          <text class="f-num" x={colX[ci]} y={Y_RESULT} text-anchor="middle" style="font-size: 17px">
+            {col.result}
+          </text>
+        </>
+      ))
+    }
+
+    <text class="f-mut" x="300" y="304" text-anchor="middle">{S.bottom}</text>
+  </svg>
+  <figcaption set:html={S.cap} />
+</figure>
