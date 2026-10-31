@@ -10,10 +10,14 @@
     freq: number;
   }
 
+  interface Pair {
+    a: string;
+    b: string;
+    count: number;
+  }
+
   const T = {
     ja: {
-      // SEP='' is safe here because every base character is a single code unit.
-      sep: "",
       corpus: [
         { word: "ねこ", freq: 4 },
         { word: "こねこ", freq: 3 },
@@ -31,9 +35,6 @@
       rule: (a: string, b: string) => `${a} ＋ ${b} → `,
     },
     en: {
-      // A non-empty separator is required so multi-character tokens (e.g. "lo")
-      // split back correctly; a space can never appear inside a token here.
-      sep: " ",
       corpus: [
         { word: "low", freq: 4 },
         { word: "slow", freq: 3 },
@@ -53,33 +54,35 @@
   }[lang];
 
   const { corpus } = T;
-  const SEP = T.sep;
   const split = (w: string) => [...w];
 
   let segments = $state<string[][]>(corpus.map((w) => split(w.word)));
   let merges = $state<[string, string][]>([]);
 
+  // The most frequent adjacent pair across the corpus (null once nothing is left
+  // to merge). Tokens grow to several characters after a merge, so a pair cannot
+  // be recovered by splitting a joined string: the key only has to be
+  // unambiguous, and the pair itself travels in the value. Ties go to the pair
+  // seen first, as in the reference implementation.
   const best = $derived.by(() => {
-    const counts = new Map<string, number>();
+    const counts = new Map<string, Pair>();
     segments.forEach((toks, wi) => {
       for (let i = 0; i < toks.length - 1; i += 1) {
-        const key = toks[i] + SEP + toks[i + 1];
-        counts.set(key, (counts.get(key) ?? 0) + corpus[wi].freq);
+        const a = toks[i];
+        const b = toks[i + 1];
+        const key = JSON.stringify([a, b]);
+        const pair = counts.get(key) ?? { a, b, count: 0 };
+        pair.count += corpus[wi].freq;
+        counts.set(key, pair);
       }
     });
-    let bestKey: string | null = null;
-    let bestN = 0;
-    for (const [k, n] of counts) {
-      if (n > bestN) {
-        bestN = n;
-        bestKey = k;
+    let top: Pair | null = null;
+    for (const pair of counts.values()) {
+      if (!top || pair.count > top.count) {
+        top = pair;
       }
     }
-    if (!bestKey) {
-      return null;
-    }
-    const [a, b] = SEP ? bestKey.split(SEP) : [...bestKey];
-    return { a, b, count: bestN };
+    return top;
   });
 
   function step() {
