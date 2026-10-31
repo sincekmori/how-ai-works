@@ -1,10 +1,12 @@
 <script lang="ts">
   // Interactive BPE walkthrough (in-memory only; reload resets).
   // Part 1 finds the most frequent adjacent pair across the words and merges
-  // it — the real algorithm, one click at a time. The words are listed exactly
-  // as they occur (duplicates included), so every count shown can be checked
-  // by eye, and the first merge matches the chapter's figure (ja: 東+京 → 東京;
-  // en: a+t → at). Part 2 replays the rules learned so far, in order, on a
+  // it — the real algorithm, one click at a time. The words are the chapter
+  // figure's short text, listed exactly as they occur (duplicates included), so
+  // every count shown can be checked by eye. The demo stops once no pair occurs
+  // twice (a real tokenizer stops at its target vocabulary size); when several
+  // pairs tie, the one seen first wins, and the demo says so. Part 2 replays
+  // the rules learned so far, in order, on a
   // word outside the list, so the reader sees what BPE leaves behind (an
   // ordered rule list) and what a character outside the starting pieces looks
   // like.
@@ -16,6 +18,10 @@
     count: number;
   }
 
+  interface Best extends Pair {
+    ties: number;
+  }
+
   interface Applied {
     rule: number;
     a: string;
@@ -25,18 +31,19 @@
 
   const T = {
     ja: {
-      corpus: ["東京", "東京都", "京都", "東京駅", "東京", "京都"],
+      corpus: ["東京", "京都", "東京駅", "京都駅", "東京都庁", "東京湾"],
       title: "BPE を 1 ステップずつ体験する",
       next: "次のステップ →",
       reset: "最初から",
       stepLabel: (n: number) => `くっつけた回数: ${n}`,
       focus: (a: string, b: string, c: number) =>
         `一番多いペアは <b>${a}</b> ＋ <b>${b}</b> → <b>${a + b}</b>（${c} 回）。「次のステップ」でこれをくっつけます。`,
-      done: "もうくっつけられるペアはありません（完了）。",
+      tie: " 同じ回数のペアが他にもありますが、先に出てきたものを選びます。",
+      done: "2 回以上出てくるペアがなくなったので、このデモはここで終わりです。本物は、一覧表が望みの大きさになるまで続けます。",
       rulesTitle: "覚えた結合ルール（この順に適用される）",
       rule: (a: string, b: string) => `${a} ＋ ${b} → `,
       tryTitle: "覚えたルールで、新しい語を区切ってみる",
-      tryWords: ["京都駅", "東京都庁", "大阪"],
+      tryWords: ["東京都", "京都市", "大阪"],
       tryIntro: (n: number) =>
         n === 0
           ? "まだルールを 1 つも覚えていないので、1 文字ずつのままです。上の「次のステップ」を押してから、戻ってきてください。"
@@ -57,7 +64,8 @@
       stepLabel: (n: number) => `Merges so far: ${n}`,
       focus: (a: string, b: string, c: number) =>
         `The most frequent pair is <b>${a}</b> + <b>${b}</b> → <b>${a + b}</b> (${c} times). Press "Next step" to merge it.`,
-      done: "No more pairs left to merge (done).",
+      tie: " Other pairs tie at this count; the one that appears first wins.",
+      done: "No pair occurs twice any more, so the demo stops here. A real tokenizer keeps going until the list reaches the size it wants.",
       rulesTitle: "Merge rules learned (applied in this order)",
       rule: (a: string, b: string) => `${a} + ${b} → `,
       tryTitle: "Use the learned rules on a new word",
@@ -97,8 +105,8 @@
   let segments = $state<string[][]>(corpus.map((w) => split(w)));
   let merges = $state<[string, string][]>([]);
 
-  // The most frequent adjacent pair across the words (null once nothing is
-  // left to merge). Tokens grow to several characters after a merge, so a pair
+  // The most frequent adjacent pair across the words (null once no pair occurs
+  // twice). Tokens grow to several characters after a merge, so a pair
   // cannot be recovered by splitting a joined string: the key only has to be
   // unambiguous, and the pair itself travels in the value. Ties go to the pair
   // seen first, as in the reference implementation.
@@ -120,7 +128,17 @@
         top = pair;
       }
     }
-    return top;
+    if (!top || top.count < 2) {
+      return null;
+    }
+    let ties = 0;
+    for (const pair of counts.values()) {
+      if (pair.count === top.count) {
+        ties += 1;
+      }
+    }
+    const result: Best = { a: top.a, b: top.b, count: top.count, ties };
+    return result;
   });
 
   function step() {
@@ -184,7 +202,7 @@
 
   <p class="bpe__focus">
     {#if best}
-      {@html T.focus(best.a, best.b, best.count)}
+      {@html T.focus(best.a, best.b, best.count) + (best.ties > 1 ? T.tie : "")}
     {:else}
       {T.done}
     {/if}

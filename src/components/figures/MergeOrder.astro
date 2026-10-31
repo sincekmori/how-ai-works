@@ -30,21 +30,21 @@ const S = {
         head: '学習した順番どおり',
         steps: [
           { label: 'ルール 1：東 ＋ 京 → 東京', toks: ['東京', '都'] },
-          { label: 'ルール 3：東京 ＋ 都 → 東京都', toks: ['東京都'] },
+          { label: 'ルール 2：京 ＋ 都 → 京都（京 が残っていないので何もしない）', toks: ['東京', '都'] },
         ],
-        result: '1 部品',
+        result: '東京の「都」',
       },
       {
         head: 'もし順番を無視したら',
         steps: [
           { label: '先にルール 2：京 ＋ 都 → 京都', toks: ['東', '京都'] },
-          { label: '「東 ＋ 京都」というルールはない', toks: ['東', '京都'] },
+          { label: 'ルール 1：東 ＋ 京 → 東京（京 が残っていないので何もしない）', toks: ['東', '京都'] },
         ],
-        result: '2 部品',
+        result: '東と「京都」',
       },
     ] as Column[],
     bottom: '順番を決めておけば、区切り方はいつも一通りに決まる。',
-    cap: 'BPE が残すのは部品の一覧表だけでなく、<strong>どの順番でくっつけたか</strong> というルールの列です。新しい語を区切るときは、学習したときと同じ順番でルールを当てはめます。順番を変えると「東京｜都」が「東｜京都」になり、読み方まで変わってしまいます。大事なのは、モデルが学習中に見ていたのと同じ区切り方に毎回なることです。',
+    cap: 'BPE が残すのは部品の一覧表だけでなく、<strong>どの順番でくっつけたか</strong> というルールの列です。新しい語を区切るときは、ルールを覚えたときと同じ順番で当てはめます。順番を変えると「東京｜都」が「東｜京都」になり、読み方まで変わってしまいます。大事なのは、モデルが学習データで見ていたのと同じ区切り方に毎回なることです。',
   },
   en: {
     aria: 'The same word splits differently depending on the order the rules are applied in',
@@ -55,21 +55,21 @@ const S = {
         head: 'In the learned order',
         steps: [
           { label: 'rule 1: a + t → at', toks: ['m', 'at', 'h'] },
-          { label: 'rule 7: m + at → mat', toks: ['mat', 'h'] },
+          { label: 'rule 2: t + h → th (no "t" is left before "h": nothing happens)', toks: ['m', 'at', 'h'] },
         ],
-        result: '2 pieces',
+        result: 'm | at | h',
       },
       {
         head: 'If the order were ignored',
         steps: [
           { label: 'rule 2 first: t + h → th', toks: ['m', 'a', 'th'] },
-          { label: 'no rule glues "a + th"', toks: ['m', 'a', 'th'] },
+          { label: 'rule 1: a + t → at (no "t" is left after "a": nothing happens)', toks: ['m', 'a', 'th'] },
         ],
-        result: '3 pieces',
+        result: 'm | a | th',
       },
     ] as Column[],
     bottom: 'With a fixed order, every split comes out the same way.',
-    cap: 'BPE leaves behind more than a list of pieces: it also leaves <strong>the order in which the pairs were glued</strong>. A new word is split by replaying the rules in that same order. Replaying them in another order gives a different split ("mat | h" versus "m | a | th"), so what matters is that the answer comes out the same every time: exactly the split the model saw during training.',
+    cap: 'BPE leaves behind more than a list of pieces: it also leaves <strong>the order in which the pairs were glued</strong>. A new word is split by replaying the rules in that same order. Replaying them in another order gives a different split ("m | at | h" versus "m | a | th"), so what matters is that the answer comes out the same every time: exactly the split the model saw in its training text.',
   },
 }[lang];
 
@@ -117,7 +117,7 @@ const Y_RESULT = 268;
               ))}
             </>
           ))}
-          <text class="f-num" x={colX[ci]} y={Y_RESULT} text-anchor="middle" style="font-size: 17px">
+          <text class="f-lbl" x={colX[ci]} y={Y_RESULT} text-anchor="middle" style="font-weight: 700">
             {col.result}
           </text>
         </>
