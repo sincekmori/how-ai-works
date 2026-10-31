@@ -77,7 +77,7 @@ interface Cell {
 
 // Running text (row 0): estimated glyph widths at 14px.
 const TEXT_PX = 14;
-const textW = (t: string) => [...t].reduce((w, c) => w + (c === ' ' ? 9 : /[\u3000-\u9fff\uff00-\uffef]/.test(c) ? TEXT_PX : 7.5), 0);
+const textW = (t: string) => [...t].reduce((w, c) => w + (c === ' ' ? 9 : /[\u3000-\u9FFF\uFF00-\uFFEF]/.test(c) ? TEXT_PX : 7.5), 0);
 const passageLines = S.passage.map((line) => {
   let x = X0 + 4;
   return line.map((seg) => {
