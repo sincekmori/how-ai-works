@@ -20,46 +20,46 @@ interface Row {
 
 const S = {
   ja: {
-    aria: '英語の cat と日本語の ねこ で、出発点のバイト数とくっつけの育ち方が違い、部品の数が変わる図',
+    aria: '英語の cat（3 文字 3 バイト）と日本語の 猫（1 文字 3 バイト）で、くっつけの育ち方が違い、部品の数が変わる図',
     heads: ['出発点（バイト）', 'くっつけの育ち方', '結果（例）'],
     rows: [
       {
-        label: '英語の「cat」',
+        label: '英語の「cat」：3 文字',
         bytes: ['99', '97', '116'],
         note: ['学習データに多い', '→ よく育つ'],
         result: ['cat'],
         count: '1 部品',
       },
       {
-        label: '日本語の「ねこ」',
-        bytes: ['227', '129', '173', '227', '129', '147'],
+        label: '日本語の「猫」：1 文字',
+        bytes: ['231', '140', '171'],
         note: ['学習データに少ない', '→ 育ちにくい'],
-        result: ['ね', 'こ'],
+        result: ['231 140', '171'],
         count: '2 部品',
       },
     ] as Row[],
-    cap: '英語の 1 文字は 1 バイト、日本語の 1 文字は 3 バイトなので、日本語は 3 倍の長さから始まります。さらに BPE は学習データに多い並びからくっつけるので、英語中心のデータで学習すると日本語のくっつけが育ちません。結果の部品数は一例で、モデルによって変わります。',
+    cap: '同じ 3 バイトでも、英語なら 3 文字分、日本語なら 1 文字分です。日本語の 1 文字は、英語の 3 倍の長さから始まります。さらに BPE は学習データに多い並びからくっつけるので、英語中心のデータで学習すると日本語のくっつけが育たず、1 文字が 2 つ 3 つの部品に割れたまま残ることもあります。部品の数は一例で、モデルによって変わります。',
   },
   en: {
-    aria: 'English "cat" versus Japanese "ねこ": a different starting length in bytes and different merge growth give different piece counts',
+    aria: 'English "cat" (3 characters, 3 bytes) versus Japanese "猫" (1 character, 3 bytes): different merge growth gives different piece counts',
     heads: ['start (bytes)', 'how far merges grow', 'result (example)'],
     rows: [
       {
-        label: 'English "cat"',
+        label: 'English "cat": 3 characters',
         bytes: ['99', '97', '116'],
         note: ['common in training text', '→ merges grow'],
         result: ['cat'],
         count: '1 piece',
       },
       {
-        label: 'Japanese "ねこ" (cat)',
-        bytes: ['227', '129', '173', '227', '129', '147'],
+        label: 'Japanese "猫" (cat): 1 character',
+        bytes: ['231', '140', '171'],
         note: ['rare in training text', '→ merges stall'],
-        result: ['ね', 'こ'],
+        result: ['231 140', '171'],
         count: '2 pieces',
       },
     ] as Row[],
-    cap: 'An English letter is 1 byte and a Japanese character is 3, so Japanese starts out three times as long. BPE then glues the sequences that are frequent in the training text, so with English-heavy data the Japanese merges never grow far. The piece counts are one example and differ from model to model.',
+    cap: 'The same 3 bytes hold 3 English letters but a single Japanese character, so each Japanese character starts out three times as long. BPE then glues the sequences that are frequent in the training text, so with English-heavy data the Japanese merges never grow far, and a character can even stay split into two or three byte pieces. The piece counts are one example and differ from model to model.',
   },
 }[lang];
 

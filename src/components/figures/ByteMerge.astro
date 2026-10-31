@@ -17,22 +17,22 @@ interface Row {
 
 const S = {
   ja: {
-    aria: 'バイトの列に BPE を当てる手順：227＋129 がくっつき、それが ね と こ になり、最後に ねこ になる',
+    aria: 'バイトの列に BPE を当てる手順：227＋129 がくっつき、それが で と す になり、最後に です になる',
     rows: [
-      { label: '「ねこ」をバイトに分ける', toks: ['227', '129', '173', '227', '129', '147'], hot: [] },
+      { label: '「です」をバイトに分ける', toks: ['227', '129', '167', '227', '129', '153'], hot: [] },
       { label: 'ルール：227 ＋ 129 → 227 129', toks: ['227 129', '173', '227 129', '147'], hot: [0, 2] },
-      { label: 'ルール：227 129 ＋ 173 → ね、227 129 ＋ 147 → こ', toks: ['ね', 'こ'], hot: [0, 1] },
-      { label: 'ルール：ね ＋ こ → ねこ', toks: ['ねこ'], hot: [0] },
+      { label: 'ルール：227 129 ＋ 167 → で、227 129 ＋ 153 → す', toks: ['で', 'す'], hot: [0, 1] },
+      { label: 'ルール：で ＋ す → です', toks: ['です'], hot: [0] },
     ] as Row[],
     cap: 'バイトの列から文字が組み立てられ、文字から語が育ちます。くっつける作業は文字の境目を気にしないので、文字の途中で切れた部品ができることもあり、その場合は画面に出す側が文字の完成を待ってから表示します。',
   },
   en: {
-    aria: 'BPE applied to bytes: 227+129 is glued first, the glued piece becomes ね and こ, and finally ねこ',
+    aria: 'BPE applied to bytes: 227+129 is glued first, the glued piece becomes で and す, and finally です',
     rows: [
-      { label: '"ねこ" (cat) as bytes', toks: ['227', '129', '173', '227', '129', '147'], hot: [] },
+      { label: '"です" (the polite "is") as bytes', toks: ['227', '129', '167', '227', '129', '153'], hot: [] },
       { label: 'rule: 227 + 129 → 227 129', toks: ['227 129', '173', '227 129', '147'], hot: [0, 2] },
-      { label: 'rules: 227 129 + 173 → ね, 227 129 + 147 → こ', toks: ['ね', 'こ'], hot: [0, 1] },
-      { label: 'rule: ね + こ → ねこ', toks: ['ねこ'], hot: [0] },
+      { label: 'rules: 227 129 + 167 → で, 227 129 + 153 → す', toks: ['で', 'す'], hot: [0, 1] },
+      { label: 'rule: で + す → です', toks: ['です'], hot: [0] },
     ] as Row[],
     cap: 'Bytes build characters, and characters grow into words. The gluing ignores character boundaries, so a piece can end mid-character; when that happens, the software showing the text waits until the character is complete before displaying it.',
   },

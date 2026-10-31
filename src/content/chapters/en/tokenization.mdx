@@ -7,7 +7,6 @@ draft: false
 
 import TokenChips from "../../../components/figures/TokenChips.astro";
 import BpeLoop from "../../../components/figures/BpeLoop.astro";
-import WordTally from "../../../components/figures/WordTally.astro";
 import BpeOutputs from "../../../components/figures/BpeOutputs.astro";
 import MergeOrder from "../../../components/figures/MergeOrder.astro";
 import CharBytes from "../../../components/figures/CharBytes.astro";
@@ -76,13 +75,7 @@ It is one loop, repeated.
 
 The more frequent the pairs you glue, the shorter the strings of pieces that sentences become.
 
-## Counting happens inside words
-
-Before any pair is counted, the text is cut into words.
-
-<WordTally lang="en" />
-
-The demo below runs the procedure one step at a time.
+The demo below runs the procedure one step at a time, on the same six words as the figure above.
 Predict which pair will merge first, then press "Next step".
 Once nothing is left to glue, use the lower part to apply the learned rules to a new word.
 
@@ -100,7 +93,7 @@ The rules need an order because the same word can often be split two ways.
 
 The model learned language from text split one particular way, so the text it is given later has to be split the same way.
 
-One more thing: pick "cat" in the lower part of the demo, and "c" and "a" get a dashed outline.
+One more thing: pick "dog" in the lower part of the demo, and "d" and "g" get a dashed outline.
 A character that is not among the starting pieces matches no rule, so the model cannot read it.
 Is a character outside the list a dead end?
 
@@ -124,7 +117,7 @@ A different scheme keeps characters as the starting pieces and breaks only a rar
 
 ## Why some languages cost more tokens
 
-Two reasons: the starting length, and how far the merges grow.
+Two reasons: the length of each character, and how far the merges grow.
 
 <TokenGap lang="en" />
 

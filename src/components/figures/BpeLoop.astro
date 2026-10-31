@@ -1,88 +1,109 @@
 ---
-// The whole BPE procedure as one loop, with a concrete instance in each step:
-// split into characters, find the most frequent neighbouring pair, glue it and
-// add the result to the list, repeat until the list is as big as wanted.
-import { CHIP_H, chipsCentred } from '../../lib/chips';
-
+// The whole BPE procedure on a small, fully visible text: split the words into
+// characters, find the pair that sits side by side most often (every
+// occurrence is highlighted, so the count can be checked by eye), glue it and
+// add the result to the list, then repeat. Rows 2 and 3 are computed from the
+// words so the figure cannot drift from its own data.
 interface Props {
   lang?: 'en' | 'ja';
 }
 const { lang = 'ja' } = Astro.props;
 
-interface Step {
-  title: string;
-  rows: string[][];
-  note?: string;
-}
-
 const S = {
   ja: {
-    aria: 'BPE の手順：1 文字ずつに分け、一番多く隣り合うペアをくっつけて登録し、繰り返す',
-    steps: [
-      { title: '① 1 文字ずつに分ける', rows: [['ね', 'こ'], ['こ', 'ね', 'こ']] },
-      { title: '② 一番多いペアを探す', rows: [['ね', 'こ']], note: '7 回' },
-      { title: '③ くっつけて登録', rows: [['ねこ']], note: '一覧表に追加' },
-    ] as Step[],
-    repeat: '④ 一覧表が望みの大きさになるまで、②と③を繰り返す',
-    cap: 'BPE の手順はこれだけです。例では「ね」と「こ」が一番多く隣り合っているので、くっつけた「ねこ」を一覧表に加え、次に多いペアへ進みます。',
+    aria: 'BPE の手順：語を 1 文字ずつに分け、一番多く隣り合うペア（東＋京、4 回）をくっつけて一覧表に登録し、繰り返す',
+    words: ['東京', '東京都', '京都', '東京駅', '東京', '京都'],
+    pair: ['東', '京'],
+    step1: '① 語ごとに切り、1 文字ずつに分ける（語の境目はまたがない）',
+    step2: '② 語の中で一番多く隣り合っているペアを探す → 東 ＋ 京 が 4 回',
+    step3: '③ くっつけて、一覧表に登録する → 「東京」を追加',
+    repeat: '④ 一覧表が望みの大きさになるまで ② と ③ を繰り返す（次は 京 ＋ 都、2 回）',
+    cap: 'BPE の手順はこれだけです。②では語の中で隣り合っているペアを全部数えます。「東 ＋ 京」が 4 回で一番多いので、くっつけた「東京」を一覧表に加え、次に多いペア（京 ＋ 都、2 回）へ進みます。',
   },
   en: {
-    aria: 'The BPE procedure: split into characters, glue the most frequent neighbouring pair, add it to the list, repeat',
-    steps: [
-      { title: '1. split into characters', rows: [['l', 'o', 'w'], ['s', 'l', 'o', 'w']] },
-      { title: '2. find the top pair', rows: [['l', 'o']], note: '12 times' },
-      { title: '3. glue, add to the list', rows: [['lo']], note: 'new piece' },
-    ] as Step[],
-    repeat: '4. repeat 2 and 3 until the list is as big as you want',
-    cap: 'That is the whole procedure. In the example "l" and "o" sit next to each other most often, so "lo" joins the list and the search moves on to the next most frequent pair.',
+    aria: 'The BPE procedure: split the words into characters, glue the most frequent neighbouring pair (a + t, 3 times), add it to the list, repeat',
+    words: ['the', 'cat', 'sat', 'on', 'the', 'mat'],
+    pair: ['a', 't'],
+    step1: '1. cut into words, then into characters (nothing is counted across a word boundary)',
+    step2: '2. find the pair that sits side by side most often inside words → a + t, 3 times',
+    step3: '3. glue it and add the result to the list → "at" joins the list',
+    repeat: '4. repeat 2 and 3 until the list is as big as you want (next: t + h, 2 times)',
+    cap: 'That is the whole procedure. Step 2 counts every neighbouring pair inside the words; "a + t" wins with 3, so "at" joins the list, and the search moves on to the next most frequent pair (t + h, 2 times).',
   },
 }[lang];
 
-const BOX_W = 172;
-const BOX_H = 118;
-const BOX_Y = 38;
-const boxX = [18, 214, 410];
-const cx = (i: number) => boxX[i] + BOX_W / 2;
-const rowY = (r: number) => BOX_Y + 36 + r * 36;
-const loopY = BOX_Y + BOX_H + 18;
+const CELL = lang === 'ja' ? 30 : 22;
+const CELL_GAP = 3;
+const WORD_GAP = 12;
+const CHIP_H = 30;
+const X0 = 16;
+const [A, B] = S.pair;
+
+interface Cell {
+  t: string;
+  x: number;
+  w: number;
+  hot: boolean;
+}
+
+// Lay out a row of words; `isHot` decides which cells are highlighted.
+const cellW = (t: string) => CELL + ([...t].length - 1) * (lang === 'ja' ? 16 : 8.5);
+const layout = (words: string[][], isHot: (t: string, toks: string[], i: number) => boolean): Cell[] => {
+  const cells: Cell[] = [];
+  let x = X0;
+  words.forEach((toks, wi) => {
+    toks.forEach((t, i) => {
+      const w = cellW(t);
+      cells.push({ t, x, w, hot: isHot(t, toks, i) });
+      x += w + CELL_GAP;
+    });
+    x += wi < words.length - 1 ? WORD_GAP - CELL_GAP : 0;
+  });
+  return cells;
+};
+const merge = (toks: string[]): string[] => {
+  const out: string[] = [];
+  for (let i = 0; i < toks.length; i += 1) {
+    if (toks[i] === A && toks[i + 1] === B) {
+      out.push(A + B);
+      i += 1;
+    } else {
+      out.push(toks[i]);
+    }
+  }
+  return out;
+};
+
+const chars = S.words.map((w) => [...w]);
+const isPair = (t: string, toks: string[], i: number) =>
+  (t === A && toks[i + 1] === B) || (t === B && toks[i - 1] === A);
+const rows = [
+  { label: S.step1, cells: layout(chars, () => false), y: 30 },
+  { label: S.step2, cells: layout(chars, isPair), y: 100 },
+  { label: S.step3, cells: layout(chars.map((w) => merge(w)), (t) => t === A + B), y: 170 },
+];
 ---
 
 <figure class="figure">
-  <svg viewBox="0 0 600 215" role="img" aria-label={S.aria}>
+  <svg viewBox="0 0 600 252" role="img" aria-label={S.aria}>
     {
-      S.steps.map((st, i) => (
+      rows.map((row) => (
         <>
-          <rect class="f-box" x={boxX[i]} y={BOX_Y} width={BOX_W} height={BOX_H} rx="12" />
-          <text class="f-mut" x={cx(i)} y={BOX_Y + 22} text-anchor="middle" style="font-weight: 700">
-            {st.title}
+          <text class="f-mut" x={X0} y={row.y - 8} text-anchor="start" style="font-weight: 700">
+            {row.label}
           </text>
-          {st.rows.map((row, r) =>
-            chipsCentred(row, cx(i), 4).map((c) => (
-              <>
-                <rect class={i === 0 ? 'f-box' : 'f-bar-bg'} x={c.x} y={rowY(r)} width={c.w} height={CHIP_H} rx="7" />
-                <text class="f-lbl" x={c.x + c.w / 2} y={rowY(r) + 20} text-anchor="middle">
-                  {c.t}
-                </text>
-              </>
-            )),
-          )}
-          {st.note && (
-            <text class="f-num" x={cx(i)} y={BOX_Y + 102} text-anchor="middle" style="font-size: 15px">
-              {st.note}
-            </text>
-          )}
-          {i < 2 && (
-            <text class="f-lbl" x={boxX[i] + BOX_W + 12} y={BOX_Y + BOX_H / 2 + 8} text-anchor="middle" style="font-size: 24px">
-              →
-            </text>
-          )}
+          {row.cells.map((c) => (
+            <>
+              <rect class={c.hot ? 'f-bar-bg' : 'f-box'} x={c.x} y={row.y} width={c.w} height={CHIP_H} rx="6" />
+              <text class="f-lbl" x={c.x + c.w / 2} y={row.y + 20} text-anchor="middle">
+                {c.t}
+              </text>
+            </>
+          ))}
         </>
       ))
     }
-    <!-- loop back from step 3 to step 2 -->
-    <path class="f-axis" d={`M ${cx(2)} ${BOX_Y + BOX_H} L ${cx(2)} ${loopY} L ${cx(1)} ${loopY} L ${cx(1)} ${BOX_Y + BOX_H + 4}`}></path>
-    <path class="f-axis" d={`M ${cx(1) - 5} ${BOX_Y + BOX_H + 11} L ${cx(1)} ${BOX_Y + BOX_H + 3} L ${cx(1) + 5} ${BOX_Y + BOX_H + 11}`}></path>
-    <text class="f-mut" x="300" y="202" text-anchor="middle">{S.repeat}</text>
+    <text class="f-mut" x={X0} y="236" text-anchor="start" style="font-weight: 700">{S.repeat}</text>
   </svg>
   <figcaption set:html={S.cap} />
 </figure>

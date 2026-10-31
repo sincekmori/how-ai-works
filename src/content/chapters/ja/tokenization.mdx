@@ -7,7 +7,6 @@ draft: false
 
 import TokenChips from "../../../components/figures/TokenChips.astro";
 import BpeLoop from "../../../components/figures/BpeLoop.astro";
-import WordTally from "../../../components/figures/WordTally.astro";
 import BpeOutputs from "../../../components/figures/BpeOutputs.astro";
 import MergeOrder from "../../../components/figures/MergeOrder.astro";
 import CharBytes from "../../../components/figures/CharBytes.astro";
@@ -77,13 +76,8 @@ import BpeDemo from "../../../components/BpeDemo.svelte";
 
 よく出る並びからくっつけるほど、文を短い部品の列で表せます。
 
-## 数えるのは、語の中だけ
-
-ペアを数える前に、文章を語ごとに切っておきます。
-
-<WordTally />
-
 下のデモで、この手順を 1 ステップずつ動かせます。
+語は上の図と同じ 6 つです。
 最初にくっつくペアを予想してから、「次のステップ」を押してみてください。
 くっつけ終わったら、下段で、覚えたルールを新しい語に当てはめてみてください。
 
@@ -99,9 +93,10 @@ import BpeDemo from "../../../components/BpeDemo.svelte";
 
 <MergeOrder />
 
+「東京｜都」と「東｜京都」では、意味まで変わってしまいます。
 モデルは学習中に見た区切り方で言葉を覚えているので、使うときも同じ区切り方でなければなりません。
 
-ところで、デモの下段で「いぬ」を選ぶと、「ぬ」が点線になります。
+ところで、デモの下段で「大阪」を選ぶと、「大」と「阪」が点線になります。
 最初の部品にない文字には、どのルールも当てはまらず、モデルは読めません。
 一覧表にない文字は、どうにもならないのでしょうか。
 
@@ -125,7 +120,7 @@ import BpeDemo from "../../../components/BpeDemo.svelte";
 
 ## なぜ日本語は、トークンが多くなりやすいのか
 
-理由は二つ、出発点の長さと、くっつけの育ち方です。
+理由は二つ、1 文字あたりの長さと、くっつけの育ち方です。
 
 <TokenGap />
 

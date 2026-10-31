@@ -1,18 +1,14 @@
 <script lang="ts">
   // Interactive BPE walkthrough (in-memory only; reload resets).
-  // Part 1 finds the most frequent adjacent pair across the corpus and merges
-  // it — the real algorithm, one click at a time. Part 2 replays the rules
-  // learned so far, in order, on a word that is not in the corpus, so the
-  // reader sees what BPE leaves behind (an ordered rule list) and what a
-  // character outside the starting pieces looks like. The corpus is
-  // illustrative and starts so the first merge matches the chapter's example
-  // (ja: ね+こ → ねこ; en: l+o → lo).
+  // Part 1 finds the most frequent adjacent pair across the words and merges
+  // it — the real algorithm, one click at a time. The words are listed exactly
+  // as they occur (duplicates included), so every count shown can be checked
+  // by eye, and the first merge matches the chapter's figure (ja: 東+京 → 東京;
+  // en: a+t → at). Part 2 replays the rules learned so far, in order, on a
+  // word outside the list, so the reader sees what BPE leaves behind (an
+  // ordered rule list) and what a character outside the starting pieces looks
+  // like.
   const { lang = "ja" }: { lang?: "en" | "ja" } = $props();
-
-  interface Word {
-    word: string;
-    freq: number;
-  }
 
   interface Pair {
     a: string;
@@ -29,12 +25,7 @@
 
   const T = {
     ja: {
-      corpus: [
-        { word: "ねこ", freq: 4 },
-        { word: "こねこ", freq: 3 },
-        { word: "ねむい", freq: 2 },
-        { word: "こねる", freq: 2 },
-      ] as Word[],
+      corpus: ["東京", "東京都", "京都", "東京駅", "東京", "京都"],
       title: "BPE を 1 ステップずつ体験する",
       next: "次のステップ →",
       reset: "最初から",
@@ -45,7 +36,7 @@
       rulesTitle: "覚えた結合ルール（この順に適用される）",
       rule: (a: string, b: string) => `${a} ＋ ${b} → `,
       tryTitle: "覚えたルールで、新しい語を区切ってみる",
-      tryWords: ["ねこねこ", "ねむる", "いぬ"],
+      tryWords: ["京都駅", "東京都庁", "大阪"],
       tryIntro: (n: number) =>
         n === 0
           ? "まだルールを 1 つも覚えていないので、1 文字ずつのままです。上の「次のステップ」を押してから、戻ってきてください。"
@@ -56,15 +47,10 @@
       noneApplied: "当てはまるルールはありませんでした。",
       result: (n: number) => `結果：${n} 部品`,
       unknown: (chars: string[]) =>
-        `${chars.map((c) => `「${c}」`).join("")}は最初の部品（この文章に出てきた文字）にありません。どのルールも当てはまらず、モデルはここを読めません。`,
+        `${chars.map((c) => `「${c}」`).join("")}は最初の部品（上の語に出てきた文字）にありません。どのルールも当てはまらず、モデルはここを読めません。`,
     },
     en: {
-      corpus: [
-        { word: "low", freq: 4 },
-        { word: "slow", freq: 3 },
-        { word: "lower", freq: 2 },
-        { word: "lot", freq: 3 },
-      ] as Word[],
+      corpus: ["the", "cat", "sat", "on", "the", "mat"],
       title: "Try BPE one step at a time",
       next: "Next step →",
       reset: "Restart",
@@ -75,7 +61,7 @@
       rulesTitle: "Merge rules learned (applied in this order)",
       rule: (a: string, b: string) => `${a} + ${b} → `,
       tryTitle: "Use the learned rules on a new word",
-      tryWords: ["slower", "lowest", "cat"],
+      tryWords: ["that", "math", "dog"],
       tryIntro: (n: number) =>
         n === 0
           ? 'No rule has been learned yet, so the word stays one letter per piece. Press "Next step" above, then come back.'
@@ -87,7 +73,7 @@
       noneApplied: "No rule applied.",
       result: (n: number) => `Result: ${n} ${n === 1 ? "piece" : "pieces"}`,
       unknown: (chars: string[]) =>
-        `${chars.map((c) => `"${c}"`).join(", ")} ${chars.length === 1 ? "is" : "are"} not among the starting pieces (the letters that appear in this text). No rule can apply there, and the model cannot read it.`,
+        `${chars.map((c) => `"${c}"`).join(", ")} ${chars.length === 1 ? "is" : "are"} not among the starting pieces (the letters in the words above). No rule can apply there, and the model cannot read it.`,
     },
   }[lang];
 
@@ -108,26 +94,26 @@
     return out;
   }
 
-  let segments = $state<string[][]>(corpus.map((w) => split(w.word)));
+  let segments = $state<string[][]>(corpus.map((w) => split(w)));
   let merges = $state<[string, string][]>([]);
 
-  // The most frequent adjacent pair across the corpus (null once nothing is left
-  // to merge). Tokens grow to several characters after a merge, so a pair cannot
-  // be recovered by splitting a joined string: the key only has to be
+  // The most frequent adjacent pair across the words (null once nothing is
+  // left to merge). Tokens grow to several characters after a merge, so a pair
+  // cannot be recovered by splitting a joined string: the key only has to be
   // unambiguous, and the pair itself travels in the value. Ties go to the pair
   // seen first, as in the reference implementation.
   const best = $derived.by(() => {
     const counts = new Map<string, Pair>();
-    segments.forEach((toks, wi) => {
+    for (const toks of segments) {
       for (let i = 0; i < toks.length - 1; i += 1) {
         const a = toks[i];
         const b = toks[i + 1];
         const key = JSON.stringify([a, b]);
         const pair = counts.get(key) ?? { a, b, count: 0 };
-        pair.count += corpus[wi].freq;
+        pair.count += 1;
         counts.set(key, pair);
       }
-    });
+    }
     let top: Pair | null = null;
     for (const pair of counts.values()) {
       if (!top || pair.count > top.count) {
@@ -147,7 +133,7 @@
   }
 
   function reset() {
-    segments = corpus.map((w) => split(w.word));
+    segments = corpus.map((w) => split(w));
     merges = [];
   }
 
@@ -163,11 +149,11 @@
     );
   }
 
-  // Part 2: replay the learned rules, in order, on a word outside the corpus.
-  // The starting pieces are the characters of the corpus; a character outside
-  // that set can never be merged (no rule mentions it), which is the
-  // "unknown character" problem the chapter then solves with bytes.
-  const known = new Set(corpus.flatMap((w) => split(w.word)));
+  // Part 2: replay the learned rules, in order, on a word outside the list.
+  // The starting pieces are the characters of the list; a character outside
+  // that set can never be merged (no rule mentions it), which is the "unknown
+  // character" problem the chapter then solves with bytes.
+  const known = new Set(corpus.flatMap((w) => split(w)));
   const isUnknown = (t: string) => split(t).length === 1 && !known.has(t);
 
   let tryWord = $state<string>(T.tryWords[0]);
@@ -205,9 +191,8 @@
   </p>
 
   <ul class="bpe__words">
-    {#each segments as toks, wi (corpus[wi].word)}
+    {#each segments as toks, wi (wi)}
       <li>
-        <span class="bpe__freq">×{corpus[wi].freq}</span>
         <span class="bpe__toks">
           {#each toks as t, ti (ti)}
             <span class="bpe__tok" class:hot={hot(wi, ti)}>{t}</span>
