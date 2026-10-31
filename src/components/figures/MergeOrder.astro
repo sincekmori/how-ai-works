@@ -30,7 +30,7 @@ const S = {
         head: '学習した順番どおり',
         steps: [
           { label: 'ルール 1：東 ＋ 京 → 東京', toks: ['東京', '都'] },
-          { label: 'ルール 2：京 ＋ 都 → 京都（京 が残っていないので何もしない）', toks: ['東京', '都'] },
+          { label: 'ルール 2（京 ＋ 都）：京 が残っていないので、何もしない', toks: ['東京', '都'] },
         ],
         result: '東京の「都」',
       },
@@ -38,7 +38,7 @@ const S = {
         head: 'もし順番を無視したら',
         steps: [
           { label: '先にルール 2：京 ＋ 都 → 京都', toks: ['東', '京都'] },
-          { label: 'ルール 1：東 ＋ 京 → 東京（京 が残っていないので何もしない）', toks: ['東', '京都'] },
+          { label: 'ルール 1（東 ＋ 京）：京 が残っていないので、何もしない', toks: ['東', '京都'] },
         ],
         result: '東と「京都」',
       },
@@ -55,7 +55,7 @@ const S = {
         head: 'In the learned order',
         steps: [
           { label: 'rule 1: a + t → at', toks: ['m', 'at', 'h'] },
-          { label: 'rule 2: t + h → th (no "t" is left before "h": nothing happens)', toks: ['m', 'at', 'h'] },
+          { label: 'rule 2 (t + h): no "t" before "h", so nothing', toks: ['m', 'at', 'h'] },
         ],
         result: 'm | at | h',
       },
@@ -63,7 +63,7 @@ const S = {
         head: 'If the order were ignored',
         steps: [
           { label: 'rule 2 first: t + h → th', toks: ['m', 'a', 'th'] },
-          { label: 'rule 1: a + t → at (no "t" is left after "a": nothing happens)', toks: ['m', 'a', 'th'] },
+          { label: 'rule 1 (a + t): no "t" after "a", so nothing', toks: ['m', 'a', 'th'] },
         ],
         result: 'm | a | th',
       },
