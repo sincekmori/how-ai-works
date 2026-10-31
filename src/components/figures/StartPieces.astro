@@ -18,22 +18,22 @@ const S = {
   ja: {
     aria: '最初の部品を文字にする場合と 256 種類のバイトにする場合の比較',
     heads: ['文字から出発', '256 種類のバイトから出発'],
-    rowLabels: [['最初の部品の数'], ['学習で一度も', '見なかった文字']],
+    rowLabels: [['最初の部品の数'], ['学習データに', '出てこない文字']],
     cells: [
       [{ lines: ['英語：約 100 種', '日本語：数千〜数万種'] }, { lines: ['どの言語でも 256 種'] }],
       [{ lines: ['読めない'], mark: 'ng' }, { lines: ['必ず表せる'], mark: 'ok' }],
     ] as Cell[][],
-    cap: '文字を最初の部品にすると、出発点の大きさが言語で大きく変わり、学習で見なかった文字は読めません。256 種類のバイトから出発すれば、どの言語でも出発点は同じで、どんな文字も、絵文字でさえ、必ず表せます。',
+    cap: '文字を最初の部品にすると、出発点の大きさが言語で大きく変わり、学習データに出てこない文字は読めません。256 種類のバイトから出発すれば、どの言語でも出発点は同じで、どんな文字も、絵文字でさえ、必ず表せます。',
   },
   en: {
     aria: 'Starting from characters versus starting from the 256 byte values',
     heads: ['Start from characters', 'Start from the 256 bytes'],
-    rowLabels: [['starting pieces'], ['a character never', 'seen in training']],
+    rowLabels: [['starting pieces'], ['a character absent', 'from the training text']],
     cells: [
       [{ lines: ['English: about 100', 'Japanese: thousands and more'] }, { lines: ['any language: 256'] }],
       [{ lines: ['cannot be read'], mark: 'ng' }, { lines: ['always expressible'], mark: 'ok' }],
     ] as Cell[][],
-    cap: 'Starting from characters makes the starting set depend on the language, and a character unseen in training cannot be read at all. Starting from the 256 byte values gives every language the same starting set, and any character, emoji included, can always be expressed.',
+    cap: 'Starting from characters makes the starting set depend on the language, and a character absent from the training text cannot be read at all. Starting from the 256 byte values gives every language the same starting set, and any character, emoji included, can always be expressed.',
   },
 }[lang];
 

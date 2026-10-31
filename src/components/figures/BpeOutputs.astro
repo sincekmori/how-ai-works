@@ -12,23 +12,23 @@ const { lang = 'ja' } = Astro.props;
 const S = {
   ja: {
     aria: 'BPE の学習が残す二つのもの：部品の一覧表と、順番つきの結合ルール。新しい文章はその順番でルールを当てはめて区切る',
-    train: ['学習', 'くっつけを繰り返す'],
+    train: ['学習データで', 'くっつけを繰り返す'],
     vocabTitle: '部品の一覧表（語彙）',
     vocab: ['東', '京', '東京', '京都', '…'],
     rulesTitle: '結合ルール（順番つき）',
     rules: ['1. 東 ＋ 京 → 東京', '2. 京 ＋ 都 → 京都', '3. 東京 ＋ 都 → 東京都', '…'],
     use: ['新しい文章を区切る', '1 文字ずつに分けてから、', 'ルールを 1 番から順に', '当てはめる'],
-    cap: '学習が終わると、部品の一覧表と、順番つきの結合ルールが残ります。新しい文章は、まず 1 文字ずつに分け、学習したときと同じ順番でルールを当てはめて区切ります。',
+    cap: 'くっつけを繰り返し終わると、部品の一覧表と、順番つきの結合ルールが残ります。新しい文章は、まず 1 文字ずつに分け、ルールを覚えたときと同じ順番で当てはめて区切ります。',
   },
   en: {
     aria: 'What BPE training leaves behind: the list of pieces and an ordered list of merge rules; new text is split by replaying the rules in that order',
-    train: ['Training', 'glue, repeat'],
+    train: ['On the training text:', 'glue, repeat'],
     vocabTitle: 'list of pieces (vocabulary)',
     vocab: ['t', 'h', 'at', 'th', 'the', '…'],
     rulesTitle: 'merge rules (in order)',
     rules: ['1. a + t → at', '2. t + h → th', '3. th + e → the', '…'],
     use: ['Splitting new text', 'split into characters,', 'then apply the rules', 'in order from rule 1'],
-    cap: 'Training leaves two things behind: the list of pieces and the merge rules in the order they were learned. New text is split by starting from single characters and replaying the rules in exactly that order.',
+    cap: 'When the gluing is finished, two things remain: the list of pieces and the merge rules in the order they were learned. New text is split by starting from single characters and replaying the rules in exactly that order.',
   },
 }[lang];
 
@@ -43,8 +43,8 @@ const vocabChips = chipsFrom(S.vocab, MID.x + 12, 5);
 <figure class="figure">
   <svg viewBox="0 0 600 240" role="img" aria-label={S.aria}>
     <rect class="f-box" x={LEFT.x} y={LEFT.y} width={LEFT.w} height={LEFT.h} rx="12"></rect>
-    <text class="f-lbl" x={LEFT.x + LEFT.w / 2} y={LEFT.y + 44} text-anchor="middle" style="font-weight: 700">{S.train[0]}</text>
-    <text class="f-mut" x={LEFT.x + LEFT.w / 2} y={LEFT.y + 66} text-anchor="middle">{S.train[1]}</text>
+    <text class="f-mut" x={LEFT.x + LEFT.w / 2} y={LEFT.y + 42} text-anchor="middle" style="font-weight: 700; fill: var(--fg)">{S.train[0]}</text>
+    <text class="f-mut" x={LEFT.x + LEFT.w / 2} y={LEFT.y + 64} text-anchor="middle">{S.train[1]}</text>
     <text class="f-lbl" x={(LEFT.x + LEFT.w + MID.x) / 2} y="129" text-anchor="middle" style="font-size: 24px">→</text>
 
     <rect class="f-box" x={MID.x} y={TOP.y} width={MID.w} height={TOP.h} rx="12"></rect>

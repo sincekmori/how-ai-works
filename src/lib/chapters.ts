@@ -58,11 +58,11 @@ const ATTRIBUTION: Record<Locale, (url: string) => string> = {
 const FIGURE_DESC: Record<Locale, Record<string, string>> = {
   ja: {
     TokenChips:
-      "文をトークン（部品）に分ける例。よく使う短い語は 1 トークン、長い・珍しい語は部品の組み合わせで表す。",
+      "文をトークン（部品）に分ける例。よく使う短い語（東京）は 1 トークン、長い・珍しい語（東京タワー）は部品の組み合わせ（東京＋タワー）で表す。",
     BpeLoop:
-      "BPE の手順の図。① 語（東京、東京都、京都、東京駅、東京、京都）を 1 文字ずつに分ける（語の境目はまたがない）→ ② 語の中で一番多く隣り合うペアを探す（東＋京が 4 回）→ ③ くっつけて一覧表に登録（東京）→ ④ 一覧表が望みの大きさになるまで ② と ③ を繰り返す（次は京＋都、2 回）。",
+      "BPE の手順の図。⓪ 学習データの短い文章（本物は何億語）から、地名の 6 語（東京、東京都、京都、東京駅、東京、京都）だけを取り出す → ① 1 文字ずつに分ける → ② 語の中で一番多く隣り合うペアを探す（語の境目はまたがない。東＋京が 4 回）→ ③ くっつけて一覧表に登録（東京）→ ④ 一覧表が望みの大きさになるまで ② と ③ を繰り返す（次は京＋都、2 回）。",
     BpeOutputs:
-      "BPE の学習が残す二つのものの図。部品の一覧表（語彙）と、順番つきの結合ルール（1. 東＋京→東京、2. 京＋都→京都、3. 東京＋都→東京都、…）。新しい文章は 1 文字ずつに分け、ルールを 1 番から順に当てはめて区切る。",
+      "くっつけを繰り返し終わったあとに残る二つのものの図。部品の一覧表（語彙）と、順番つきの結合ルール（1. 東＋京→東京、2. 京＋都→京都、3. 東京＋都→東京都、…）。新しい文章は 1 文字ずつに分け、ルールを 1 番から順に当てはめて区切る。",
     StartPieces:
       "最初の部品を「文字」にする場合と「256 種類のバイト」にする場合の比較表。文字だと最初の部品は英語で約 100 種、日本語で数千〜数万種になり、学習で見なかった文字は読めない。バイトだとどの言語でも 256 種で、どんな文字も必ず表せる。",
     ByteMerge:
@@ -145,9 +145,9 @@ const FIGURE_DESC: Record<Locale, Record<string, string>> = {
     TokenChips:
       "Splitting a sentence into tokens (pieces): common short words are one token; long or rare words are built from sub-pieces.",
     BpeLoop:
-      "The BPE procedure: 1. split the words (the, cat, sat, on, the, mat) into characters, never counting across a word boundary; 2. find the pair that sits side by side most often inside words (a + t, 3 times); 3. glue it and add the result (at) to the list; 4. repeat 2 and 3 until the list is as big as wanted (next: t + h, 2 times).",
+      'The BPE procedure: 0. the training text (billions of words in reality; here the sentence "the cat sat on the mat"); 1. cut it into words, then into characters; 2. find the pair that sits side by side most often inside words, never across a boundary (a + t, 3 times); 3. glue it and add the result (at) to the list; 4. repeat 2 and 3 until the list is as big as wanted (next: t + h, 2 times).',
     BpeOutputs:
-      "What BPE training leaves behind: the list of pieces (vocabulary) and the merge rules in order (1. a + t → at, 2. t + h → th, 3. th + e → the, …). New text is split into characters and the rules are applied in order from rule 1.",
+      "What remains when the gluing is finished: the list of pieces (vocabulary) and the merge rules in order (1. a + t → at, 2. t + h → th, 3. th + e → the, …). New text is split into characters and the rules are applied in order from rule 1.",
     StartPieces:
       "Starting from characters versus starting from the 256 byte values: with characters the starting set is about 100 for English but thousands and more for Japanese, and a character never seen in training cannot be read; with bytes every language starts from the same 256 and any character can always be expressed.",
     ByteMerge:

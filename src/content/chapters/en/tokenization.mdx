@@ -15,7 +15,7 @@ import ByteMerge from "../../../components/figures/ByteMerge.astro";
 import TokenGap from "../../../components/figures/TokenGap.astro";
 import BpeDemo from "../../../components/BpeDemo.svelte";
 
-Suppose we hand the sentence "I really love cats" to a machine.
+Suppose we hand the sentence "the cat sat on the mat" to a machine.
 Before it can do anything else, the machine has to decide where to cut the text.
 This cutting job is called **tokenization**, and each piece it produces is called a **token**.
 
@@ -69,6 +69,8 @@ And the vocabulary stays at a manageable size.
 
 Who decides which chunks count as "frequent", and how?
 The classic method is **BPE** (Byte Pair Encoding).
+BPE decides the pieces by examining the large body of text a model is built from (the **training text**).
+The real training text has billions of words, so here we follow a single sentence.
 It is one loop, repeated.
 
 <BpeLoop lang="en" />
@@ -83,7 +85,7 @@ Once nothing is left to glue, use the lower part to apply the learned rules to a
 
 ## What BPE leaves behind: a list of pieces, and an order
 
-When training ends, two things remain.
+When the gluing is finished, two things remain.
 
 <BpeOutputs lang="en" />
 
@@ -91,7 +93,8 @@ The rules need an order because the same word can often be split two ways.
 
 <MergeOrder lang="en" />
 
-The model learned language from text split one particular way, so the text it is given later has to be split the same way.
+The model reads its training text split this way and learns language from it.
+Text it is given later has to be split the same way.
 
 One more thing: pick "dog" in the lower part of the demo, and "d" and "g" get a dashed outline.
 A character that is not among the starting pieces matches no rule, so the model cannot read it.
