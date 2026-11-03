@@ -117,7 +117,7 @@ const otherLocales = LOCALES.filter((l) => l !== lang);
         } catch {}
       })();
     </script>
-    {isProd && <link rel="stylesheet" href={localeHref(lang, 'pagefind/pagefind-ui.css')} />}
+    {isProd && <link rel="stylesheet" href={withBase('pagefind/pagefind-ui.css')} />}
   </head>
   <body>
     <div class="app">
@@ -302,9 +302,9 @@ const otherLocales = LOCALES.filter((l) => l !== lang);
       isProd && (
         <script
           is:inline
-          src={localeHref(lang, 'pagefind/pagefind-ui.js')}
+          src={withBase('pagefind/pagefind-ui.js')}
           onload="new PagefindUI({ element: '#search', bundlePath: this.dataset.bundle, showSubResults: true, resetStyles: false });"
-          data-bundle={localeHref(lang, 'pagefind/')}
+          data-bundle={withBase('pagefind/')}
         />
       )
     }
